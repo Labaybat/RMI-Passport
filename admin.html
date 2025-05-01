@@ -35,9 +35,10 @@
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    const SUPABASE_URL = "https://hvycjokchqstzhwbpves.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2eWNqb2tjaHFzdHpod2JwdmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwOTYyMTIsImV4cCI6MjA2MTY3MjIxMn0.Vrl9r_f5NWe0KbO_c3QqiHVMZVgXofCFpJ4BjnnVN0o";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = createClient(
+      "https://hvycjokchqstzhwbpves.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2eWNqb2tjaHFzdHpod2JwdmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwOTYyMTIsImV4cCI6MjA2MTY3MjIxMn0.Vrl9r_f5NWe0KbO_c3QqiHVMZVgXofCFpJ4BjnnVN0o"
+    );
 
     window.addEventListener("DOMContentLoaded", () => {
       const loginSection = document.getElementById("login-section");
@@ -77,6 +78,7 @@
             <td>${app.first_name} ${app.last_name}</td>
             <td>${app.email || "-"}</td>
             <td>${app.dob || "-"}</td>
+            <td>${app.status || "-"}</td>
             <td>${app.created_at?.slice(0, 10) || "-"}</td>
             <td><button class="view-btn">View</button></td>
           `;
@@ -84,6 +86,16 @@
           btn.addEventListener("click", () => {
             modalContent.innerHTML = `
               <h3>${app.first_name} ${app.last_name}</h3>
+              <p><strong>Status:</strong>
+                <select id="status-select">
+                  <option value="Submitted"${app.status === "Submitted" ? " selected" : ""}>Submitted</option>
+                  <option value="Under Review"${app.status === "Under Review" ? " selected" : ""}>Under Review</option>
+                  <option value="Approved"${app.status === "Approved" ? " selected" : ""}>Approved</option>
+                  <option value="Rejected"${app.status === "Rejected" ? " selected" : ""}>Rejected</option>
+                </select>
+              </p>
+              <button id="update-status-btn">Update Status</button>
+              <hr/>
               <p><strong>DOB:</strong> ${app.dob}</p>
               <p><strong>Birth Place:</strong> ${app.birth_place}</p>
               <p><strong>Nationality:</strong> ${app.nationality}</p>
@@ -104,6 +116,21 @@
               <p><strong>Application Date:</strong> ${app.application_date}</p>
             `;
             modal.style.display = "block";
+
+            document.getElementById("update-status-btn").onclick = async () => {
+              const newStatus = document.getElementById("status-select").value;
+              const { error } = await supabase
+                .from("passport_applications")
+                .update({ status: newStatus })
+                .eq("id", app.id);
+              if (!error) {
+                alert("Status updated!");
+                modal.style.display = "none";
+                loadApplications();
+              } else {
+                alert("Error updating status.");
+              }
+            };
           });
           tableBody.appendChild(row);
         });
@@ -128,6 +155,7 @@
           <th>Full Name</th>
           <th>Email</th>
           <th>DOB</th>
+          <th>Status</th>
           <th>Submitted At</th>
           <th>Action</th>
         </tr>
