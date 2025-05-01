@@ -142,8 +142,8 @@
   <h1 style="text-align:center;">Admin Dashboard</h1>
 
   <div id="login-section" style="text-align:center;">
-    <input type="password" id="admin-password" placeholder="Enter admin password" />
-    <button id="login-btn">Login</button>
+    <input type="password" id="admin-password" onkeydown="event.stopPropagation();" placeholder="Enter admin password" />
+    <button type="button" id="login-btn">Login</button>
   </div>
 
   <div id="dashboard" style="display:none; padding:20px;">
