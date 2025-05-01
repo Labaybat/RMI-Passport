@@ -73,50 +73,5 @@
       <p>Read the full <a href="passport-act.html" target="_blank">Passport Act</a>.</p>
     </div>
   </div>
-
-<!-- Modal -->
-<div class="modal fade" id="applicationTypeModal" tabindex="-1" aria-labelledby="applicationTypeModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="applicationTypeModalLabel">Who are you applying for?</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="d-grid gap-2">
-          <button onclick="redirectToForm('self')" class="btn btn-primary">Myself</button>
-          <button onclick="redirectToForm('child')" class="btn btn-secondary">My Child</button>
-          <button onclick="redirectToForm('father')" class="btn btn-secondary">My Father</button>
-          <button onclick="redirectToForm('mother')" class="btn btn-secondary">My Mother</button>
-          <button onclick="redirectToForm('brother')" class="btn btn-secondary">My Brother</button>
-          <button onclick="redirectToForm('sister')" class="btn btn-secondary">My Sister</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-function redirectToForm(type) {
-  const pageMap = {
-    self: "application-self.html",
-    child: "application-child.html",
-    father: "application-father.html",
-    mother: "application-mother.html",
-    brother: "application-brother.html",
-    sister: "application-sister.html"
-  };
-  window.location.href = pageMap[type];
-}
-document.addEventListener("DOMContentLoaded", () => {
-  const startBtn = document.querySelector("a[href='application.html']");
-  if (startBtn) {
-    startBtn.setAttribute("data-bs-toggle", "modal");
-    startBtn.setAttribute("data-bs-target", "#applicationTypeModal");
-    startBtn.setAttribute("href", "#");
-  }
-});
-</script>
-
 </body>
 </html>
