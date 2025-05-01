@@ -107,5 +107,46 @@
     </form>
   </div>
   <script src="script.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const relationshipSelectHTML = `
+        <label for="applyingFor">Who are you applying for?</label>
+        <select id="applyingFor" onchange="updateFormLabels()">
+            <option value="self">Myself</option>
+            <option value="child">My child</option>
+            <option value="father">My father</option>
+            <option value="mother">My mother</option>
+            <option value="other">Other immediate family</option>
+        </select>
+    `;
+
+    const form = document.querySelector("form");
+    form.insertAdjacentHTML("afterbegin", relationshipSelectHTML);
+
+    window.updateFormLabels = function () {
+        const value = document.getElementById("applyingFor").value;
+        const nameLabel = document.querySelector("label[for='fullname']");
+        if (!nameLabel) return;
+
+        switch(value) {
+            case "child":
+                nameLabel.textContent = "What is your child's full name?";
+                break;
+            case "father":
+                nameLabel.textContent = "What is your father's full name?";
+                break;
+            case "mother":
+                nameLabel.textContent = "What is your mother's full name?";
+                break;
+            case "other":
+                nameLabel.textContent = "What is your family member's full name?";
+                break;
+            default:
+                nameLabel.textContent = "What is your full name?";
+        }
+    };
+});
+</script>
 </body>
 </html>
