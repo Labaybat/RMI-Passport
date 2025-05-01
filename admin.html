@@ -54,32 +54,139 @@
       } else {
         alert("Incorrect password");
       }
-    });
+    
+        setTimeout(() => {
+          document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.id.replace('view-', '');
+              const app = appMap[id];
+              if (app) {
+                modalContent.innerHTML = `
+                  <h3>${app.first_name} ${app.last_name}</h3>
+                  <p><strong>DOB:</strong> ${app.dob}</p>
+                  <p><strong>Birth Place:</strong> ${app.birth_place}</p>
+                  <p><strong>Nationality:</strong> ${app.nationality}</p>
+                  <p><strong>Sex:</strong> ${app.sex}</p>
+                  <p><strong>Height:</strong> ${app.height}</p>
+                  <p><strong>Eye Color:</strong> ${app.eye_color}</p>
+                  <p><strong>Hair Color:</strong> ${app.hair_color}</p>
+                  <p><strong>Home Address:</strong> ${app.home_address}</p>
+                  <p><strong>Mailing Address:</strong> ${app.mailing_address}</p>
+                  <p><strong>Phone:</strong> ${app.phone}</p>
+                  <p><strong>Email:</strong> ${app.email}</p>
+                  <p><strong>Father Name:</strong> ${app.father_name}</p>
+                  <p><strong>Father POB:</strong> ${app.father_pob}</p>
+                  <p><strong>Mother Name:</strong> ${app.mother_name}</p>
+                  <p><strong>Mother POB:</strong> ${app.mother_pob}</p>
+                  <p><strong>Has Passport:</strong> ${app.has_passport ? "Yes" : "No"}</p>
+                  <p><strong>Signature:</strong> ${app.signature}</p>
+                  <p><strong>Application Date:</strong> ${app.application_date}</p>
+                `;
+                modal.style.display = "block";
+              }
+            });
+          });
+        }, 100);
+      });
+
 
     document.getElementById("close-modal").onclick = function () {
       modal.style.display = "none";
     };
 
     async function loadApplications() {
-      const { data, error } = await supabase.from("passport_applications").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("passport_applications").select("*").order("created_at", { ascending: false 
+        setTimeout(() => {
+          document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.id.replace('view-', '');
+              const app = appMap[id];
+              if (app) {
+                modalContent.innerHTML = `
+                  <h3>${app.first_name} ${app.last_name}</h3>
+                  <p><strong>DOB:</strong> ${app.dob}</p>
+                  <p><strong>Birth Place:</strong> ${app.birth_place}</p>
+                  <p><strong>Nationality:</strong> ${app.nationality}</p>
+                  <p><strong>Sex:</strong> ${app.sex}</p>
+                  <p><strong>Height:</strong> ${app.height}</p>
+                  <p><strong>Eye Color:</strong> ${app.eye_color}</p>
+                  <p><strong>Hair Color:</strong> ${app.hair_color}</p>
+                  <p><strong>Home Address:</strong> ${app.home_address}</p>
+                  <p><strong>Mailing Address:</strong> ${app.mailing_address}</p>
+                  <p><strong>Phone:</strong> ${app.phone}</p>
+                  <p><strong>Email:</strong> ${app.email}</p>
+                  <p><strong>Father Name:</strong> ${app.father_name}</p>
+                  <p><strong>Father POB:</strong> ${app.father_pob}</p>
+                  <p><strong>Mother Name:</strong> ${app.mother_name}</p>
+                  <p><strong>Mother POB:</strong> ${app.mother_pob}</p>
+                  <p><strong>Has Passport:</strong> ${app.has_passport ? "Yes" : "No"}</p>
+                  <p><strong>Signature:</strong> ${app.signature}</p>
+                  <p><strong>Application Date:</strong> ${app.application_date}</p>
+                `;
+                modal.style.display = "block";
+              }
+            });
+          });
+        }, 100);
+      });
+
       if (error) {
         console.error("Error loading applications", error);
         return;
       }
 
       tableBody.innerHTML = "";
+      
+      const appMap = {};
       data.forEach((app, index) => {
+        appMap[app.id] = app;
+    
         const row = document.createElement("tr");
+        const buttonId = 'view-' + app.id;
         row.innerHTML = `
           <td>${index + 1}</td>
           <td>${app.first_name} ${app.last_name}</td>
           <td>${app.email || "-"}</td>
           <td>${app.dob || "-"}</td>
           <td>${app.created_at?.slice(0, 10) || "-"}</td>
-          <td><button onclick='viewDetails(${JSON.stringify(app)})'>View</button></td>
+          <td><button id='${buttonId}' class='view-btn'>View</button></td>
         `;
         tableBody.appendChild(row);
+      
+        setTimeout(() => {
+          document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.id.replace('view-', '');
+              const app = appMap[id];
+              if (app) {
+                modalContent.innerHTML = `
+                  <h3>${app.first_name} ${app.last_name}</h3>
+                  <p><strong>DOB:</strong> ${app.dob}</p>
+                  <p><strong>Birth Place:</strong> ${app.birth_place}</p>
+                  <p><strong>Nationality:</strong> ${app.nationality}</p>
+                  <p><strong>Sex:</strong> ${app.sex}</p>
+                  <p><strong>Height:</strong> ${app.height}</p>
+                  <p><strong>Eye Color:</strong> ${app.eye_color}</p>
+                  <p><strong>Hair Color:</strong> ${app.hair_color}</p>
+                  <p><strong>Home Address:</strong> ${app.home_address}</p>
+                  <p><strong>Mailing Address:</strong> ${app.mailing_address}</p>
+                  <p><strong>Phone:</strong> ${app.phone}</p>
+                  <p><strong>Email:</strong> ${app.email}</p>
+                  <p><strong>Father Name:</strong> ${app.father_name}</p>
+                  <p><strong>Father POB:</strong> ${app.father_pob}</p>
+                  <p><strong>Mother Name:</strong> ${app.mother_name}</p>
+                  <p><strong>Mother POB:</strong> ${app.mother_pob}</p>
+                  <p><strong>Has Passport:</strong> ${app.has_passport ? "Yes" : "No"}</p>
+                  <p><strong>Signature:</strong> ${app.signature}</p>
+                  <p><strong>Application Date:</strong> ${app.application_date}</p>
+                `;
+                modal.style.display = "block";
+              }
+            });
+          });
+        }, 100);
       });
+
     }
 
     window.viewDetails = (app) => {
