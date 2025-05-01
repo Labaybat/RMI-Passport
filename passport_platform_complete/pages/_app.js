@@ -1,1 +1,0 @@
-// Custom App component for global styles
