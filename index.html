@@ -73,32 +73,5 @@
       <p>Read the full <a href="passport-act.html" target="_blank">Passport Act</a>.</p>
     </div>
   </div>
-
-<!-- Application Target Popup -->
-<div id="applyPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
-  <div style="background:white;padding:20px;border-radius:8px;text-align:center;">
-    <h3>Who are you applying for?</h3>
-    <button onclick="redirectTo('apply.html')">Myself</button>
-    <button onclick="redirectTo('apply-child.html')">My Child</button>
-    <button onclick="redirectTo('apply-father.html')">My Father</button>
-    <button onclick="redirectTo('apply-mother.html')">My Mother</button>
-    <button onclick="redirectTo('apply-brother.html')">My Brother</button>
-    <button onclick="redirectTo('apply-sister.html')">My Sister</button>
-    <br><br>
-    <button onclick="closePopup()">Cancel</button>
-  </div>
-</div>
-
-<script>
-function openPopup() {
-    document.getElementById('applyPopup').style.display = 'flex';
-}
-function closePopup() {
-    document.getElementById('applyPopup').style.display = 'none';
-}
-function redirectTo(path) {
-    window.location.href = path;
-}
-</script>
 </body>
 </html>
