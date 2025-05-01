@@ -1,94 +1,58 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Marshall Islands Passport Application</title>
-    <link rel="stylesheet" href="style.css">
-    <script type="module">
-      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-      window.supabase = { createClient };
-    </script>
+  <meta charset="UTF-8" />
+  <title>Marshall Islands Passport Application</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #f9f9f9;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    ul {
+      text-align: left;
+      max-width: 400px;
+      margin: 1rem auto;
+    }
+    a.button {
+      background: #2c3e50;
+      color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 2rem;
+    }
+  </style>
 </head>
 <body>
-    <h1>Marshall Islands Passport Application Form</h1>
-    <form id="passportForm">
-        <h2>Personal Information</h2>
-        <label>First Name:</label>
-        <input type="text" name="firstName" required><br>
+  <div class="container">
+    <h1>Republic of the Marshall Islands</h1>
+    <h2>Passport Application Portal</h2>
+    <p>Welcome to the official online passport application system for Marshallese citizens.</p>
 
-        <label>Last Name:</label>
-        <input type="text" name="lastName" required><br>
+    <h3>Before You Apply:</h3>
+    <ul>
+      <li>Ensure you are a citizen of the Republic of the Marshall Islands</li>
+      <li>Prepare a recent passport photo (digital)</li>
+      <li>Have a copy of your birth certificate or ID ready</li>
+      <li>You must complete and submit the form truthfully</li>
+    </ul>
 
-        <label>Date of Birth:</label>
-        <input type="date" name="dob" required><br>
-
-        <label>Place of Birth:</label>
-        <input type="text" name="birthPlace" required><br>
-
-        <label>Nationality:</label>
-        <input type="text" name="nationality" required><br>
-
-        <label>Sex:</label>
-        <select name="sex" required>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-        </select><br>
-
-        <label>Height (ft/in):</label>
-        <input type="text" name="height" required><br>
-
-        <label>Eye Color:</label>
-        <input type="text" name="eyeColor" required><br>
-
-        <label>Hair Color:</label>
-        <input type="text" name="hairColor" required><br>
-
-        <label>Home Address:</label>
-        <input type="text" name="homeAddress" required><br>
-
-        <label>Mailing Address:</label>
-        <input type="text" name="mailingAddress"><br>
-
-        <label>Phone Number:</label>
-        <input type="text" name="phone"><br>
-
-        <label>Email Address:</label>
-        <input type="email" name="email"><br>
-
-        <h2>Parental Information</h2>
-        <label>Father’s Full Name:</label>
-        <input type="text" name="fatherName"><br>
-
-        <label>Father’s Place of Birth:</label>
-        <input type="text" name="fatherPOB"><br>
-
-        <label>Mother’s Full Name:</label>
-        <input type="text" name="motherName"><br>
-
-        <label>Mother’s Place of Birth:</label>
-        <input type="text" name="motherPOB"><br>
-
-        <h2>Document Uploads</h2>
-        <label>Passport Photo:</label>
-        <input type="file" name="passportPhoto" accept="image/*" required><br>
-
-        <label>Copy of Birth Certificate or ID:</label>
-        <input type="file" name="idCopy" accept="image/*,.pdf" required><br>
-
-        <h2>Declaration</h2>
-        <label>Have you ever held a Marshallese passport?</label>
-        <input type="radio" name="hasPassport" value="Yes" required> Yes
-        <input type="radio" name="hasPassport" value="No"> No<br>
-
-        <label>Signature:</label>
-        <input type="text" name="signature" required><br>
-
-        <label>Date:</label>
-        <input type="date" name="applicationDate" required><br>
-
-        <br><button type="submit">Submit Application</button>
-    </form>
-
-    <script type="module" src="script.js"></script>
+    <a class="button" href="apply.html">Start Application</a>
+  </div>
 </body>
 </html>
