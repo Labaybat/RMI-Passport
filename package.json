@@ -1,0 +1,5 @@
+{
+  "name": "passport-app",
+  "scripts": { "dev": "next dev" },
+  "dependencies": { "next": "latest", "react": "latest", "@supabase/supabase-js": "latest" }
+}
