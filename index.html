@@ -1,56 +1,77 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Passport Portal</title>
+  <meta charset="UTF-8" />
+  <title>Marshall Islands Passport Application</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-    .popup { display: none; margin-top: 20px; }
-    .popup button {
-        display: inline-block;
-        margin: 5px;
-        padding: 10px 20px;
-        background-color: #2c5d7f;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
+    body { background: url('seal.png') no-repeat center center fixed; background-size: 400px; opacity: 1; }
+    .container { background-color: rgba(255,255,255,0.95); }
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      text-align: center;
     }
-    .popup button:hover { background-color: #1b3e58; }
-    #startBtn {
-        padding: 10px 30px;
-        font-size: 18px;
-        background-color: #2c5d7f;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #f9f9f9;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    ul {
+      text-align: left;
+      max-width: 500px;
+      margin: 1rem auto;
+    }
+    a.button {
+      background: #2c3e50;
+      color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 2rem;
+    }
+    .legal {
+      text-align: left;
+      margin-top: 2rem;
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
-  <h1>Republic of the Marshall Islands</h1>
-  <h2>Passport Application Portal</h2>
-  <p>Click below to start the application</p>
-  <button id="startBtn" onclick="togglePopup()">Start Application</button>
+  <div class="container">
+    <img src="seal.png" alt="RMI Seal" width="100" style="margin-bottom: 1rem;" />
+    <h1>Republic of the Marshall Islands</h1>
+    <h2>Passport Application Portal</h2>
+    <p>Welcome to the official online passport application system for Marshallese citizens.</p>
 
-  <div class="popup" id="popup">
-    <h3>Who are you applying for?</h3>
-    <div>
-      <button onclick="location.href='apply-myself.html'">Myself</button>
-      <button onclick="location.href='apply-child.html'">My Child</button>
-      <button onclick="location.href='apply-father.html'">My Father</button>
-      <button onclick="location.href='apply-mother.html'">My Mother</button>
-      <button onclick="location.href='apply-brother.html'">My Brother</button>
-      <button onclick="location.href='apply-sister.html'">My Sister</button>
+    <h3>Before You Apply:</h3>
+    <ul>
+      <li>You must be a citizen of the Republic of the Marshall Islands</li>
+      <li>Prepare a recent passport-style photo (digital)</li>
+      <li>Upload a copy of your birth certificate or valid Marshallese ID</li>
+      <li>Make sure all information submitted is accurate and true</li>
+    </ul>
+
+    <a class="button" href="apply.html">Start Application</a>
+
+    <div class="legal">
+      <h3>Important Legal Notices (Passport Act 2020)</h3>
+      <ul>
+        <li>All passport applicants must be Marshallese citizens (Section 301).</li>
+        <li>False or misleading statements in your application are punishable by law (Section 310).</li>
+        <li>Passports remain the property of the Republic of the Marshall Islands (Section 311).</li>
+        <li>The Ministry of Foreign Affairs and Trade is responsible for issuing passports (Section 303).</li>
+      </ul>
+      <p>Read the full <a href="passport-act.html" target="_blank">Passport Act</a>.</p>
     </div>
   </div>
-
-  <script>
-    function togglePopup() {
-        var popup = document.getElementById('popup');
-        popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
-    }
-  </script>
 </body>
 </html>
