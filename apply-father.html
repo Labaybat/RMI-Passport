@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Passport Application - Father</title>
+  <meta charset="UTF-8">
+  <title>Apply for Passport</title>
 </head>
 <body>
-    <h2>Passport Application - Father</h2>
-    <form>
-        <label>What is your father's full name?</label><br>
-        <input type="text" name="full_name" required><br><br>
+  <h1>Passport Application - Father</h1>
+  <form action="/submit" method="post">
+    <label for="fullname">What is your father's full name?</label><br>
+    <input type="text" id="fullname" name="fullname" required><br><br>
 
-        <!-- Add more fields as needed -->
+    <label for="dob">What is your father's date of birth?</label><br>
+    <input type="date" id="dob" name="dob" required><br><br>
 
-        <input type="submit" value="Submit Application">
-    </form>
+    <input type="submit" value="Submit Application">
+  </form>
 </body>
 </html>
