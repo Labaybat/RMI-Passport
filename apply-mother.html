@@ -1,1 +1,38 @@
-<h1>Passport Application - Mother</h1><form><label>What is your mother's full name?</label><input type='text'><br><label>What is your mother's date of birth?</label><input type='date'><br><input type='submit'></form>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Passport Application - Mother</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+        h1 { color: #333; }
+        form label { display: block; margin-top: 10px; }
+        form input, form select { width: 100%; padding: 8px; margin-top: 4px; }
+        .submit-btn { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Passport Application - Mother</h1>
+    <form>
+        <label for="fullname">What is your mother's full name?</label>
+        <input type="text" id="fullname" name="fullname" required>
+
+        <label for="dob">What is your mother's date of birth?</label>
+        <input type="date" id="dob" name="dob" required>
+
+        <label for="birthplace">Place of Birth</label>
+        <input type="text" id="birthplace" name="birthplace" required>
+
+        <label for="nationality">Nationality</label>
+        <input type="text" id="nationality" name="nationality" required>
+
+        <label for="passport-photo">Upload Passport Photo</label>
+        <input type="file" id="passport-photo" name="passport-photo" required>
+
+        <label for="id-document">Upload Birth Certificate or ID</label>
+        <input type="file" id="id-document" name="id-document" required>
+
+        <button type="submit" class="submit-btn">Submit Application</button>
+    </form>
+</body>
+</html>
