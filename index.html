@@ -60,7 +60,7 @@
       <li>Make sure all information submitted is accurate and true</li>
     </ul>
 
-    <a class="button" href="apply.html">Start Application</a>
+    <a class="button" href="#" onclick="openPopup()">Start Application</a>
 
     <div class="legal">
       <h3>Important Legal Notices (Passport Act 2020)</h3>
@@ -73,5 +73,30 @@
       <p>Read the full <a href="passport-act.html" target="_blank">Passport Act</a>.</p>
     </div>
   </div>
+
+<!-- Popup Modal -->
+<div id="applyPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">
+    <div style="background:#fff; padding:20px; max-width:400px; margin:100px auto;">
+        <h2>Who are you applying for?</h2>
+        <button onclick="goToForm('child')">My Child</button>
+        <button onclick="goToForm('father')">My Father</button>
+        <button onclick="goToForm('mother')">My Mother</button>
+        <button onclick="goToForm('brother')">My Brother</button>
+        <button onclick="goToForm('sister')">My Sister</button>
+        <button onclick="closePopup()">Cancel</button>
+    </div>
+</div>
+<script>
+function openPopup() {
+    document.getElementById('applyPopup').style.display = 'block';
+}
+function closePopup() {
+    document.getElementById('applyPopup').style.display = 'none';
+}
+function goToForm(relation) {
+    window.location.href = 'apply-' + relation + '.html';
+}
+</script>
+
 </body>
 </html>
