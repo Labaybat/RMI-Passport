@@ -33,6 +33,7 @@
     }
   </style>
   <script type="module">
+window.addEventListener("DOMContentLoaded", () => {
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
     const SUPABASE_URL = "https://hvycjokchqstzhwbpves.supabase.co";
@@ -213,7 +214,8 @@
       `;
       modal.style.display = "block";
     };
-  </script>
+  });
+</script>
 </head>
 <body>
   <h1 style="text-align:center;">Admin Dashboard</h1>
