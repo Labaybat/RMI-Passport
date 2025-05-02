@@ -129,5 +129,48 @@
   });
 </script>
 
+
+<!-- Success Popup -->
+<div id="success-popup" style="
+  display:none;
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #e0ffe0;
+  padding: 20px 30px;
+  border: 2px solid #4CAF50;
+  border-radius: 8px;
+  font-weight: bold;
+  font-family: sans-serif;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 9999;
+">
+  ✅ Application submitted successfully!
+</div>
+
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  const supabase = createClient("https://hvycjokchqstzhwbpves.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2eWNqb2tjaHFzdHpod2JwdmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwOTYyMTIsImV4cCI6MjA2MTY3MjIxMn0.Vrl9r_f5NWe0KbO_c3QqiHVMZVgXofCFpJ4BjnnVN0o");
+
+  document.getElementById("passport-form").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const form = event.target;
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    const { error } = await supabase.from("passport_applications").insert([data]);
+    if (error) {
+      alert("❌ Failed to submit application.");
+      console.error(error);
+    } else {
+      const popup = document.getElementById("success-popup");
+      popup.style.display = "block";
+      setTimeout(() => popup.style.display = "none", 3000);
+      form.reset();
+    }
+  });
+</script>
+
 </body>
 </html>
