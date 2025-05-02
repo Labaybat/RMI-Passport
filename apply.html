@@ -107,5 +107,27 @@
     </form>
   </div>
   <script src="script.js"></script>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+  const supabase = createClient("https://hvycjokchqstzhwbpves.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2eWNqb2tjaHFzdHpod2JwdmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwOTYyMTIsImV4cCI6MjA2MTY3MjIxMn0.Vrl9r_f5NWe0KbO_c3QqiHVMZVgXofCFpJ4BjnnVN0o");
+
+  document.getElementById("passport-form").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const form = event.target;
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    const { error } = await supabase.from("passport_applications").insert([data]);
+    if (error) {
+      alert("❌ Failed to submit application. Please try again.");
+      console.error(error);
+    } else {
+      alert("✅ Application submitted successfully!");
+      form.reset();
+    }
+  });
+</script>
+
 </body>
 </html>
