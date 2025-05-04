@@ -92,7 +92,7 @@
     document.getElementById('google-login').addEventListener('click', async () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: 'https://rmi-passport.vercel.app/dashboard.html' }
+        options: { redirectTo: 'https://rmi-passport.vercel.app/index.html' }
       });
       if (error) console.error("Google login failed:", error.message);
     });
