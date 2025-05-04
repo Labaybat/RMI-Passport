@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Admin Dashboard - Passport Applications</title>
-  
+  <link rel="stylesheet" href="style.css" />
   <style>
     #modal {
       display: none;
@@ -40,70 +40,13 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2eWNqb2tjaHFzdHpod2JwdmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwOTYyMTIsImV4cCI6MjA2MTY3MjIxMn0.Vrl9r_f5NWe0KbO_c3QqiHVMZVgXofCFpJ4BjnnVN0o"
     );
 
-    
-
-
-window.addEventListener("DOMContentLoaded", () => {
-  const loginSection = document.getElementById("login-section");
-  const dashboardSection = document.getElementById("dashboard");
-  const tableBody = document.querySelector("#applications tbody");
-  const modal = document.getElementById("modal");
-  const modalContent = document.getElementById("modal-body");
-  const closeModalBtn = document.getElementById("close-modal");
-
-  document.getElementById("logout-btn").addEventListener("click", () => {
-  loginSection.style.display = "block";
-  dashboardSection.style.display = "none";
-});
-
-document.getElementById("search-input").addEventListener("input", () => {
-  const query = document.getElementById("search-input").value.toLowerCase();
-  const rows = tableBody.querySelectorAll("tr");
-  rows.forEach(row => {
-    const name = row.children[1].innerText.toLowerCase();
-    const email = row.children[2].innerText.toLowerCase();
-    row.style.display = name.includes(query) || email.includes(query) ? "" : "none";
-  });
-});
-
-document.getElementById("status-filter").addEventListener("change", () => {
-  const filter = document.getElementById("status-filter").value;
-  const rows = tableBody.querySelectorAll("tr");
-  rows.forEach(row => {
-    const status = row.children[4].innerText;
-    row.style.display = filter === "" || status === filter ? "" : "none";
-  });
-});
-
-document.getElementById("export-csv").addEventListener("click", () => {
-  let csv = "No,Name,Email,DOB,Status,Submitted\n";
-  tableBody.querySelectorAll("tr").forEach(row => {
-    const cols = Array.from(row.children).map(td => td.innerText.replace(/,/g, ""));
-    csv += cols.slice(0, 6).join(",") + "\n";
-  });
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "applications.csv";
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
-tableBody.addEventListener("change", async (event) => {
-  if (event.target.classList.contains("status-select")) {
-    const newStatus = event.target.value;
-    const id = event.target.getAttribute("data-id");
-    const { error } = await supabase
-      .from("passport_applications")
-      .update({ status: newStatus })
-      .eq("id", id);
-    if (error) {
-      alert("Failed to update status");
-      console.error(error);
-    }
-  }
-});
+    window.addEventListener("DOMContentLoaded", () => {
+      const loginSection = document.getElementById("login-section");
+      const dashboardSection = document.getElementById("dashboard");
+      const tableBody = document.querySelector("#applications tbody");
+      const modal = document.getElementById("modal");
+      const modalContent = document.getElementById("modal-body");
+      const closeModalBtn = document.getElementById("close-modal");
 
       closeModalBtn.onclick = () => {
         modal.style.display = "none";
@@ -205,20 +148,7 @@ tableBody.addEventListener("change", async (event) => {
 
   <div id="dashboard" style="display:none; padding:20px;">
     <h2>Submitted Passport Applications</h2>
-    
-<div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
-  <input type="text" id="search-input" placeholder="Search by name or email" style="padding: 6px; flex: 1;" />
-  <select id="status-filter" style="padding: 6px;">
-    <option value="">All Statuses</option>
-    <option value="Pending">Pending</option>
-    <option value="Approved">Approved</option>
-    <option value="Denied">Denied</option>
-  </select>
-  <button id="export-csv" style="padding: 6px;">Export CSV</button>
-  <button id="logout-btn" style="padding: 6px;">Logout</button>
-</div>
-
-<table id="applications" border="1" cellspacing="0" cellpadding="10" style="width:100%; border-collapse: collapse;">
+    <table id="applications" border="1" cellspacing="0" cellpadding="10" style="width:100%; border-collapse: collapse;">
       <thead>
         <tr>
           <th>#</th>
