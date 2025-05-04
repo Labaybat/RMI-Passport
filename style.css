@@ -1,11 +1,1 @@
-body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-}
-form label {
-    display: inline-block;
-    margin-bottom: 10px;
-}
-input[type="radio"] {
-    margin-right: 5px;
-}
+body { font-family: Arial; }
