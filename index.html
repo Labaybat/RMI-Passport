@@ -49,6 +49,9 @@
 <body><div style="text-align:right; padding:10px;">
 <span id="welcomeUser" style="font-weight:bold; margin-right: 10px;"></span>
 <button id="logoutBtn" style="display:none; padding:6px 12px; background:#dc3545; color:#fff; border:none; border-radius:4px; cursor:pointer;">Logout</button>
+
+<button id="loginBtn" style="display:none; padding:6px 12px; background:#007bff; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-right: 5px;">Login</button>
+<button id="signupBtn" style="display:none; padding:6px 12px; background:#28a745; color:#fff; border:none; border-radius:4px; cursor:pointer;">Sign Up</button>
 </div>
 <div class="container">
 <img alt="RMI Seal" src="seal.png" style="margin-bottom: 1rem;" width="100"/>
@@ -92,5 +95,17 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
   await supabase.auth.signOut();
   window.location.href = "login.html";
 });
+
+document.getElementById("loginBtn").addEventListener("click", () => {
+  window.location.href = "login.html";
+});
+document.getElementById("signupBtn").addEventListener("click", () => {
+  window.location.href = "signup.html";
+});
+
+if (!user) {
+  document.getElementById("loginBtn").style.display = "inline-block";
+  document.getElementById("signupBtn").style.display = "inline-block";
+}
 </script></body>
 </html>
