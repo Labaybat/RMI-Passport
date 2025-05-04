@@ -1,111 +1,122 @@
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>Marshall Islands Passport Application</title>
-<link href="style.css" rel="stylesheet"/>
-<style>
-    body { background: url('seal.png') no-repeat center center fixed; background-size: 400px; opacity: 1; }
-    .container { background-color: rgba(255,255,255,0.95); }
+  <meta charset="UTF-8" />
+  <title>RMI Passport Portal</title>
+  <style>
     body {
-      font-family: sans-serif;
-      padding: 2rem;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      flex-direction: column;
       text-align: center;
     }
-    .container {
-      max-width: 700px;
-      margin: auto;
-      background: #f9f9f9;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
+
     h1 {
-      color: #2c3e50;
+      color: #333;
+      margin-bottom: 40px;
     }
-    ul {
-      text-align: left;
-      max-width: 500px;
-      margin: 1rem auto;
+
+    .button-group {
+      display: flex;
+      gap: 20px;
     }
-    a.button {
-      background: #2c3e50;
-      color: #fff;
-      padding: 1rem 2rem;
-      border-radius: 5px;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 2rem;
+
+    button {
+      padding: 15px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
     }
-    .legal {
-      text-align: left;
-      margin-top: 2rem;
-      font-size: 0.9rem;
+
+    #login-btn {
+      background-color: #007bff;
+      color: white;
+    }
+
+    #signup-btn {
+      background-color: #28a745;
+      color: white;
+    }
+
+    #dashboard-btn {
+      background-color: #6c63ff;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.9;
     }
   </style>
 </head>
-<body><div style="text-align:right; padding:10px;">
-<span id="welcomeUser" style="font-weight:bold; margin-right: 10px;"></span>
-<button id="logoutBtn" style="display:none; padding:6px 12px; background:#dc3545; color:#fff; border:none; border-radius:4px; cursor:pointer;">Logout</button>
+<body>
+  <h1>Welcome to the RMI Passport Portal</h1>
+  <div class="button-group">
+    <button id="login-btn">Login</button>
+    <button id="signup-btn">Sign Up</button>
+    <button id="dashboard-btn" style="display:none;">View My Application</button>
+  </div>
 
-<button id="loginBtn" style="display:none; padding:6px 12px; background:#007bff; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-right: 5px;">Login</button>
-<button id="signupBtn" style="display:none; padding:6px 12px; background:#28a745; color:#fff; border:none; border-radius:4px; cursor:pointer;">Sign Up</button>
-</div>
-<div class="container">
-<img alt="RMI Seal" src="seal.png" style="margin-bottom: 1rem;" width="100"/>
-<h1>Republic of the Marshall Islands</h1>
-<h2>Passport Application Portal</h2>
-<p>Welcome to the official online passport application system for Marshallese citizens.</p>
-<h3>Before You Apply:</h3>
-<ul>
-<li>You must be a citizen of the Republic of the Marshall Islands</li>
-<li>Prepare a recent passport-style photo (digital)</li>
-<li>Upload a copy of your birth certificate or valid Marshallese ID</li>
-<li>Make sure all information submitted is accurate and true</li>
-</ul>
-<a class="button" href="apply.html">Start Application</a>
-<div class="legal">
-<h3>Important Legal Notices (Passport Act 2020)</h3>
-<ul>
-<li>All passport applicants must be Marshallese citizens (Section 301).</li>
-<li>False or misleading statements in your application are punishable by law (Section 310).</li>
-<li>Passports remain the property of the Republic of the Marshall Islands (Section 311).</li>
-<li>The Ministry of Foreign Affairs and Trade is responsible for issuing passports (Section 303).</li>
-</ul>
-<p>Read the full <a href="passport-act.html" target="_blank">Passport Act</a>.</p>
-</div>
-</div>
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-const supabase = createClient(
-  'https://injquzndhzqcamtenbum.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew'
-);
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-supabase.auth.getUser().then(({ data: { user } }) => {
-  if (user) {
-    document.getElementById('welcomeUser').textContent = `Welcome, ${user.email}`;
-    document.getElementById('logoutBtn').style.display = "inline-block";
-  }
-});
+    const supabase = createClient(
+      'https://injquzndhzqcamtenbum.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew'
+    );
 
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  window.location.href = "login.html";
-});
+    document.getElementById("login-btn").addEventListener("click", () => {
+      window.location.href = "login.html";
+    });
 
-document.getElementById("loginBtn").addEventListener("click", () => {
-  window.location.href = "login.html";
-});
-document.getElementById("signupBtn").addEventListener("click", () => {
-  window.location.href = "signup.html";
-});
+    document.getElementById("signup-btn").addEventListener("click", () => {
+      window.location.href = "signup.html";
+    });
 
-if (!user) {
-  document.getElementById("loginBtn").style.display = "inline-block";
-  document.getElementById("signupBtn").style.display = "inline-block";
-}
-</script></body>
+    document.getElementById("dashboard-btn").addEventListener("click", () => {
+      window.location.href = "dashboard.html";
+    });
+
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        document.getElementById("dashboard-btn").style.display = "inline-block";
+        document.getElementById("login-btn").style.display = "none";
+        document.getElementById("signup-btn").style.display = "none";
+      }
+    };
+
+    checkUser();
+  </script>
+
+  <div id="user-info" style="margin-top: 20px; font-family: sans-serif;"></div>
+  <button id="logout-btn" style="padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; display: none;">Logout</button>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(
+      'https://injquzndhzqcamtenbum.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew'
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      document.getElementById("user-info").textContent = "Logged in as: " + user.email;
+      document.getElementById("logout-btn").style.display = "inline-block";
+    }
+
+    document.getElementById("logout-btn").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.reload();
+    });
+  </script>
+</body>
+
 </html>
