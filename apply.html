@@ -1,60 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Apply for Passport</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Apply for Passport</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <form id="passport-form">
-    <!-- Other form fields skipped for brevity -->
+    <h2>Declaration</h2>
+    <form id="passportForm">
+        <label>Have you ever held a Marshallese passport?</label><br>
+        <label><input type="radio" name="has_passport" value="Yes"> Yes</label>
+        <label><input type="radio" name="has_passport" value="No"> No</label><br><br>
 
-    <h3>Declaration</h3>
-    <label>Have you ever held a Marshallese passport?</label>
-    <div class="radio-group">
-      <label><input type="radio" name="hasPassport" value="Yes" required> Yes</label>
-      <label><input type="radio" name="hasPassport" value="No"> No</label>
-    </div>
+        <label>Signature:</label>
+        <input type="text" name="signature"><br><br>
 
-    <label>Signature:</label>
-    <input type="text" name="signature" required />
+        <label>Date:</label>
+        <input type="date" name="applicationDate"><br><br>
 
-    <label>Date:</label>
-    <input type="date" name="applicationDate" required />
+        <button type="submit">Submit Application</button>
+    </form>
 
-    <button type="submit">Submit Application</button>
-  </form>
-
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    const supabase = createClient(
-      "https://xfhgpqicwymetceuaixm.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmaGdwcWljd3ltZXRjZXVhaXhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxNjE1MjksImV4cCI6MjA2MTczNzUyOX0.gYeQN_m8TmGQq_NIBbf5TvrPvKU6lDPa_iBUtllg6mY"
-    );
-
-    document.getElementById("passport-form").addEventListener("submit", async function(event) {
-      event.preventDefault();
-      const form = event.target;
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-
-      // Ensure correct format for date
-      if (data.applicationDate) {
-        data.applicationDate = new Date(data.applicationDate).toISOString().split('T')[0];
-      }
-
-      const { error } = await supabase
-        .from("passport_applications")
-        .insert([data]);
-
-      if (error) {
-        alert("❌ Failed to submit application. Please try again.");
-        console.error(error);
-      } else {
-        window.location.href = "payment.html";
-      }
-    });
-  </script>
+    <script src="script.js"></script>
 </body>
 </html>
