@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sign Up</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body { font-family: Arial; text-align: center; padding-top: 100px; }
+    button, input { padding: 10px; margin: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Create Account</h1>
+  <input type="email" id="email" placeholder="Email"><br>
+  <input type="password" id="password" placeholder="Password"><br>
+  <button onclick="signup()">Sign Up</button>
+  <button onclick="signupWithGoogle()">Sign Up with Google</button>
+  <p>Already have an account? <a href="login.html">Login</a></p>
+
+  <script>
+    const supabase = supabase.createClient("https://injquzndhzqcamtenbum.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew");
+
+    async function signup() {
+      const { error } = await supabase.auth.signUp({
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+      });
+      if (!error) alert("Signup successful! Check your email to confirm.");
+      else alert(error.message);
+    }
+
+    async function signupWithGoogle() {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: 'https://rmi-passport.vercel.app/index.html' }
+      });
+    }
+  </script>
+</body>
+</html>
