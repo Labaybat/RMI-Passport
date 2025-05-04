@@ -111,7 +111,7 @@
 <script type="module">
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  const supabase = createClient("https://hvycjokchqstzhwbpves.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2eWNqb2tjaHFzdHpod2JwdmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwOTYyMTIsImV4cCI6MjA2MTY3MjIxMn0.Vrl9r_f5NWe0KbO_c3QqiHVMZVgXofCFpJ4BjnnVN0o");
+  const supabase = createClient("https://xfhgpqicwymetceuaixm.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmaGdwcWljd3ltZXRjZXVhaXhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxNjE1MjksImV4cCI6MjA2MTczNzUyOX0.gYeQN_m8TmGQq_NIBbf5TvrPvKU6lDPa_iBUtllg6mY");
 
   document.getElementById("passport-form").addEventListener("submit", async function(event) {
     event.preventDefault();
@@ -123,7 +123,7 @@
       alert("❌ Failed to submit application. Please try again.");
       console.error(error);
     } else {
-      alert("✅ Application submitted successfully!");
+      window.location.href = "payment.html";
       form.reset();
     }
   });
@@ -152,7 +152,7 @@
 
 <script type="module">
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-  const supabase = createClient("https://hvycjokchqstzhwbpves.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2eWNqb2tjaHFzdHpod2JwdmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwOTYyMTIsImV4cCI6MjA2MTY3MjIxMn0.Vrl9r_f5NWe0KbO_c3QqiHVMZVgXofCFpJ4BjnnVN0o");
+  const supabase = createClient("https://xfhgpqicwymetceuaixm.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmaGdwcWljd3ltZXRjZXVhaXhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxNjE1MjksImV4cCI6MjA2MTczNzUyOX0.gYeQN_m8TmGQq_NIBbf5TvrPvKU6lDPa_iBUtllg6mY");
 
   document.getElementById("passport-form").addEventListener("submit", async function(event) {
     event.preventDefault();
@@ -193,7 +193,7 @@
       alert("❌ Failed to submit application.");
       console.error(error);
     } else {
-      alert("✅ Application submitted successfully!");
+      window.location.href = "payment.html";
       form.reset();
     }
   });
