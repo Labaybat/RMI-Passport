@@ -1,35 +1,88 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Sign Up</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <meta charset="UTF-8">
+  <title>Login - RMI Passport</title>
   <style>
-    body { font-family: Arial; text-align: center; padding-top: 100px; }
-    button, input { padding: 10px; margin: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 360px;
+    }
+    h2 {
+      margin-bottom: 1rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .google-btn {
+      background-color: #db4437;
+      margin-top: 0.5rem;
+    }
+    .link {
+      margin-top: 1rem;
+      display: block;
+    }
   </style>
 </head>
 <body>
-  <h1>Create Account</h1>
-  <input type="email" id="email" placeholder="Email"><br>
-  <input type="password" id="password" placeholder="Password"><br>
-  <button onclick="signup()">Sign Up</button>
-  <button onclick="signupWithGoogle()">Sign Up with Google</button>
-  <p>Already have an account? <a href="login.html">Login</a></p>
+  <div class="card">
+    <h2>Create Account</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="emailSignup()">Sign Up</button>
+    <button class="google-btn" onclick="googleLogin()">Sign Up with Google</button>
+    <a class="link" href="login.html">Already have an account? Log in</a>
+  </div>
 
-  <script>
-    const supabase = supabase.createClient("https://injquzndhzqcamtenbum.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew");
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    const supabase = createClient(
+      'https://injquzndhzqcamtenbum.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew'
+    );
 
-    async function signup() {
-      const { error } = await supabase.auth.signUp({
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value,
-      });
-      if (!error) alert("Signup successful! Check your email to confirm.");
-      else alert(error.message);
+    async function emailSignup() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) return alert(error.message);
+      window.location.href = "index.html";
     }
 
-    async function signupWithGoogle() {
+    async function googleLogin() {
       await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: 'https://rmi-passport.vercel.app/index.html' }
