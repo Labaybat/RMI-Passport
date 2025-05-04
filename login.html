@@ -72,19 +72,6 @@
   </form>
 
   <button id="google-login">Sign in with Google</button>
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-const supabase = createClient(
-'https://injquzndhzqcamtenbum.supabase.co',
-'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew'
-);
-document.getElementById("google-login").addEventListener("click", async () => {
-  await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: "https://rmi-passport.vercel.app/index.html" }
-  });
-});
-</script>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -99,7 +86,7 @@ document.getElementById("google-login").addEventListener("click", async () => {
       const password = document.getElementById('login-password').value;
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) alert('Login failed: ' + error.message);
-      else window.location.href = 'dashboard.html';
+      else window.location.href = 'index.html';
     });
 
     document.getElementById('google-login').addEventListener('click', async () => {
