@@ -70,6 +70,9 @@
       Welcome to the official RMI Passport Application Portal. Use this platform to submit, track, and manage your passport application securely.
     </p>
     <a href="apply.html" class="button">Start Application</a>
+    
+<a href="dashboard.html" class="button" style="background:#10b981; margin-left: 0.5rem;">View My Submitted Applications</a>
+
   </div>
 
   <div class="footer">
@@ -88,5 +91,42 @@
       document.getElementById('userWelcome').textContent = `Signed in as ${user.email}`;
     }
   </script>
+
+<style>
+  .logout-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: 'Georgia', serif;
+  }
+  .logout-btn:hover {
+    background-color: #b91c1c;
+  }
+</style>
+<button class="logout-btn" id="logoutBtn">Logout</button>
+
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient(
+    'https://injquzndhzqcamtenbum.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew'
+  );
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    });
+  }
+</script>
+
 </body>
 </html>
