@@ -1,1 +1,21 @@
-<!DOCTYPE html><html><head><title>Apply</title></head><body><form>Passport Form</form></body></html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Apply for Passport</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/apply.js" defer></script>
+</head>
+<body>
+    <h1>Passport Application Form</h1>
+    <form id="passport-form">
+        <label>Have you ever held a Marshallese passport?</label><br>
+        <input type="radio" name="has_passport" value="yes"> Yes
+        <input type="radio" name="has_passport" value="no"> No<br><br>
+        <label>Signature:</label><br>
+        <input type="text" name="signature"><br><br>
+        <label>Date:</label><br>
+        <input type="date" name="date"><br><br>
+        <button type="submit">Submit Application</button>
+    </form>
+</body>
+</html>
