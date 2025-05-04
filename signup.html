@@ -62,8 +62,8 @@
     <h2>Create Account</h2>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
-    <button onclick="emailSignup()">Sign Up</button>
-    <button class="google-btn" onclick="googleLogin()">Sign Up with Google</button>
+    <button id="signupBtn">Sign Up</button>
+    <button class="google-btn" id="googleSignupBtn">Sign Up with Google</button>
     <a class="link" href="login.html">Already have an account? Log in</a>
   </div>
 
@@ -88,6 +88,8 @@
         options: { redirectTo: 'https://rmi-passport.vercel.app/index.html' }
       });
     }
-  </script>
+  document.getElementById("signupBtn").addEventListener("click", emailSignup);
+document.getElementById("googleSignupBtn").addEventListener("click", googleLogin);
+</script>
 </body>
 </html>
