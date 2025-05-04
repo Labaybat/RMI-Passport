@@ -3,6 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <title>My Passport Application</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    #application-info {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    p {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+  </style>
 </head>
 <body>
   <h2>My Passport Application</h2>
@@ -30,13 +62,15 @@
 
       const container = document.getElementById('application-info');
       if (error || !data) {
-        container.innerHTML = "No application found.";
+        container.innerHTML = "<p>No application found. Please complete the application form.</p>";
       } else {
         container.innerHTML = `
-          <p><strong>Status:</strong> ${data.status || 'pending'}</p>
+          <p><strong>Status:</strong> <span style="color: #007bff; font-weight: bold;">
+        ${data.status ? data.status.toUpperCase() : 'PENDING'}
+    </span></p>
           <p><strong>Full Name:</strong> ${data.firstName} ${data.lastName}</p>
           <p><strong>Date of Birth:</strong> ${data.dob}</p>
-          <p><strong>Submitted On:</strong> ${data.applicationDate}</p>
+          <p><strong>Submitted On:</strong> ${data.applicationDate || 'N/A'}</p>
         `;
       }
     };

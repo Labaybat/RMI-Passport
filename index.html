@@ -1,14 +1,64 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>RMI Passport Application</title>
+  <title>RMI Passport Portal</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 40px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 20px;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #login-btn {
+      background-color: #007bff;
+      color: white;
+    }
+
+    #signup-btn {
+      background-color: #28a745;
+      color: white;
+    }
+
+    #dashboard-btn {
+      background-color: #6c63ff;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
 </head>
 <body>
   <h1>Welcome to the RMI Passport Portal</h1>
-
-  <div id="auth-buttons">
+  <div class="button-group">
     <button id="login-btn">Login</button>
     <button id="signup-btn">Sign Up</button>
     <button id="dashboard-btn" style="display:none;">View My Application</button>
@@ -34,7 +84,6 @@
       window.location.href = "dashboard.html";
     });
 
-    // Check if user is logged in
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
