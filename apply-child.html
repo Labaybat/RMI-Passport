@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Apply for RMI Passport</title>
+</head>
+<body>
+  <h2>Child Passport Application</h2>
+
+  <form id="passport-form">
+    <input type="text" id="childFirstName" placeholder="First Name" required /><br />
+    <input type="text" id="childLastName" placeholder="Last Name" required /><br />
+    <input type="date" id="childDob" required /><br />
+    <input type="text" id="childBirthPlace" placeholder="Place of Birth" required /><br />
+    <button type="submit">Submit Application</button>
+  </form>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://injquzndhzqcamtenbum.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew'
+    );
+
+    document.getElementById("passport-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("Please log in first.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const formData = {
+        user_id: user.id,
+        firstName: document.getElementById("childFirstName").value,
+        lastName: document.getElementById("childLastName").value,
+        dob: document.getElementById("childDob").value,
+        birthPlace: document.getElementById("childBirthPlace").value,
+        applicationDate: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from("passport_applications")
+        .insert([formData]);
+
+      if (error) {
+        alert("Submission failed: " + error.message);
+      } else {
+        alert("Application submitted successfully!");
+        window.location.href = "dashboard.html";
+      }
+    });
+  </script>
+</body>
+</html>

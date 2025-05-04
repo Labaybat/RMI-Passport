@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Dashboard - RMI Passport Portal</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #00274d;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .logout-btn {
+            background-color: #cc0000;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .container {
+            padding: 2rem;
+        }
+        .application {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>My Passport Applications</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+    <div class="container">
+        <div class="application">
+            <p><strong>Status:</strong> No application found.</p>
+            <p>Please complete the application form.</p>
+        </div>
+    </div>
+    <script src="supabase.js"></script>
+    <script>
+        function logout() {
+            supabase.auth.signOut().then(() => {
+                window.location.href = "login.html";
+            });
+        }
+    </script>
+</body>
+</html>
