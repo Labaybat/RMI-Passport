@@ -2,28 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Login with Google</title>
+  <title>Login</title>
 </head>
 <body>
-  <h2>Login to Apply for Your Passport</h2>
+  <h2>Login to Your Account</h2>
+
+  <form id="login-form">
+    <input type="email" id="login-email" placeholder="Email" required />
+    <input type="password" id="login-password" placeholder="Password" required />
+    <button type="submit">Login</button>
+  </form>
+
+  <hr>
+
   <button id="google-login">Sign in with Google</button>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
     const supabase = createClient(
       'https://injquzndhzqcamtenbum.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew'
     );
 
-    document.getElementById('google-login').addEventListener('click', async () => {
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        alert('Login failed: ' + error.message);
+      } else {
+        window.location.href = 'dashboard.html';
+      }
+    });
+
+    document.getElementById("google-login").addEventListener("click", async () => {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
-          redirectTo: 'https://rmi-passport.vercel.app/apply.html'
+          redirectTo: "https://rmi-passport.vercel.app/dashboard.html"
         }
       });
-      if (error) console.error('Login failed:', error.message);
+      if (error) {
+        console.error("Google login failed:", error.message);
+      }
     });
   </script>
 </body>

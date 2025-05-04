@@ -3,75 +3,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Marshall Islands Passport Application</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body { background: url('seal.png') no-repeat center center fixed; background-size: 400px; opacity: 1; }
-    .container { background-color: rgba(255,255,255,0.95); }
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-      text-align: center;
-    }
-    .container {
-      max-width: 700px;
-      margin: auto;
-      background: #f9f9f9;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-    h1 {
-      color: #2c3e50;
-    }
-    ul {
-      text-align: left;
-      max-width: 500px;
-      margin: 1rem auto;
-    }
-    a.button {
-      background: #2c3e50;
-      color: #fff;
-      padding: 1rem 2rem;
-      border-radius: 5px;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 2rem;
-    }
-    .legal {
-      text-align: left;
-      margin-top: 2rem;
-      font-size: 0.9rem;
-    }
-  </style>
+  <title>RMI Passport Application</title>
 </head>
 <body>
-  <div class="container">
-    <img src="seal.png" alt="RMI Seal" width="100" style="margin-bottom: 1rem;" />
-    <h1>Republic of the Marshall Islands</h1>
-    <h2>Passport Application Portal</h2>
-    <p>Welcome to the official online passport application system for Marshallese citizens.</p>
+  <h1>Welcome to the RMI Passport Portal</h1>
 
-    <h3>Before You Apply:</h3>
-    <ul>
-      <li>You must be a citizen of the Republic of the Marshall Islands</li>
-      <li>Prepare a recent passport-style photo (digital)</li>
-      <li>Upload a copy of your birth certificate or valid Marshallese ID</li>
-      <li>Make sure all information submitted is accurate and true</li>
-    </ul>
-
-    <a class="button" href="apply.html">Start Application</a>
-
-    <div class="legal">
-      <h3>Important Legal Notices (Passport Act 2020)</h3>
-      <ul>
-        <li>All passport applicants must be Marshallese citizens (Section 301).</li>
-        <li>False or misleading statements in your application are punishable by law (Section 310).</li>
-        <li>Passports remain the property of the Republic of the Marshall Islands (Section 311).</li>
-        <li>The Ministry of Foreign Affairs and Trade is responsible for issuing passports (Section 303).</li>
-      </ul>
-      <p>Read the full <a href="passport-act.html" target="_blank">Passport Act</a>.</p>
-    </div>
+  <div id="auth-buttons">
+    <button id="login-btn">Login</button>
+    <button id="signup-btn">Sign Up</button>
+    <button id="dashboard-btn" style="display:none;">View My Application</button>
   </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://injquzndhzqcamtenbum.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew'
+    );
+
+    document.getElementById("login-btn").addEventListener("click", () => {
+      window.location.href = "login.html";
+    });
+
+    document.getElementById("signup-btn").addEventListener("click", () => {
+      window.location.href = "signup.html";
+    });
+
+    document.getElementById("dashboard-btn").addEventListener("click", () => {
+      window.location.href = "dashboard.html";
+    });
+
+    // Check if user is logged in
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        document.getElementById("dashboard-btn").style.display = "inline-block";
+        document.getElementById("login-btn").style.display = "none";
+        document.getElementById("signup-btn").style.display = "none";
+      }
+    };
+
+    checkUser();
+  </script>
 </body>
 </html>

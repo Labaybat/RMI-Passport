@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Passport Application</title>
+</head>
+<body>
+  <h2>My Passport Application</h2>
+  <div id="application-info">Loading...</div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(
+      'https://injquzndhzqcamtenbum.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew'
+    );
+
+    const loadApplication = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('passport_applications')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      const container = document.getElementById('application-info');
+      if (error || !data) {
+        container.innerHTML = "No application found.";
+      } else {
+        container.innerHTML = `
+          <p><strong>Status:</strong> ${data.status || 'pending'}</p>
+          <p><strong>Full Name:</strong> ${data.firstName} ${data.lastName}</p>
+          <p><strong>Date of Birth:</strong> ${data.dob}</p>
+          <p><strong>Submitted On:</strong> ${data.applicationDate}</p>
+        `;
+      }
+    };
+
+    loadApplication();
+  </script>
+</body>
+</html>
