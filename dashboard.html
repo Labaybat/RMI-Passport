@@ -120,3 +120,85 @@
 </script>
 </body>
 </html>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+  'https://injquzndhzqcamtenbum.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6InB1YmxpYyIsImlhdCI6MTcwNzQxMDE2MSwiZXhwIjoyMDIzOTg2MTYxfQ.YmH6WqJ3Nk6FbN-QvdqAf4nEPBhnp9Y3ExaUob-AzDI'
+);
+
+const userGreeting = document.getElementById("userGreeting");
+const infoDiv = document.getElementById("applicationInfo");
+const metaDiv = document.getElementById("appMeta");
+
+async function loadApplication() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    infoDiv.innerHTML = "<p>Please sign in to view your application.</p>";
+    return;
+  }
+
+  const user = session.user;
+  userGreeting.textContent = `Welcome, ${user.email}`;
+
+  const { data, error } = await supabase
+    .from("passport_applications")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+
+  if (error || !data) {
+    infoDiv.innerHTML = "<p>No saved application found. Please begin your application.</p>";
+    return;
+  }
+
+  const saved = data.form_data;
+  const submitted = data.submitted || false;
+  const updated = new Date(data.updated_at).toLocaleString();
+
+  const summary = Object.entries(saved).map(([key, val]) => {
+    return `<div><strong>${key.replace(/_/g, ' ')}:</strong> ${val}</div>`;
+  }).join('');
+  infoDiv.innerHTML = summary;
+
+  metaDiv.innerHTML = `
+    <div><strong>Last Updated:</strong> ${updated}</div>
+    <div><strong>Application Status:</strong> ${submitted ? "✅ Submitted" : "📝 In Progress"}</div>
+  `;
+
+  if (submitted) {
+    document.getElementById("submitBtn").style.display = "none";
+    document.getElementById("editBtn").textContent = "View My Application";
+  }
+}
+
+// Submit the application (flag as submitted)
+document.getElementById("submitBtn").addEventListener("click", async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
+  const user = session.user;
+
+  const { error } = await supabase
+    .from("passport_applications")
+    .update({ submitted: true })
+    .eq("user_id", user.id);
+
+  if (!error) {
+    alert("✅ Your application has been submitted.");
+    window.location.reload();
+  }
+});
+
+document.getElementById("editBtn").addEventListener("click", () => {
+  window.location.href = "apply.html";
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  await supabase.auth.signOut();
+  window.location.href = "login.html";
+});
+
+loadApplication();
+</script>
