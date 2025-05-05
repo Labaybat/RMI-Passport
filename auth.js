@@ -1,1 +1,1 @@
-// Placeholder for Supabase authentication logic
+// Supabase auth integration goes here

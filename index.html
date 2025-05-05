@@ -19,23 +19,30 @@
       overflow: hidden;
     }
     .header {
-      background-color: #003366;
+      background-color: #002e5b;
       color: white;
-      padding: 10px 20px;
+      padding: 15px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 1.1rem;
     }
     .header h1 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
+      margin: 0;
+      font-weight: normal;
     }
     .header .btn {
       background: white;
-      color: #003366;
-      padding: 8px 16px;
+      color: #002e5b;
+      padding: 10px 18px;
       text-decoration: none;
       border-radius: 4px;
       font-weight: bold;
+      transition: background 0.3s ease;
+    }
+    .header .btn:hover {
+      background: #f0f0f0;
     }
     .main {
       display: flex;
@@ -47,26 +54,25 @@
       text-align: center;
     }
     .main img {
-      width: 100px;
+      width: 110px;
       margin-bottom: 1rem;
     }
     .main h2 {
-      color: #003366;
+      color: #002e5b;
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
     }
     .highlights {
-      max-width: 700px;
-      margin: 1rem 0;
+      max-width: 750px;
       font-size: 1rem;
-    }
-    .highlights p {
-      margin: 0.5rem 0;
+      line-height: 1.6;
     }
     .actions {
-      margin-top: 1.5rem;
+      margin-top: 2rem;
     }
     .btn-primary {
       display: inline-block;
-      margin: 10px;
+      margin: 0 10px;
       padding: 12px 25px;
       background: #003c8f;
       color: white;
@@ -82,17 +88,19 @@
 </head>
 <body>
   <div class="header">
-    <h1>Republic of the Marshall Islands – Passport Portal</h1>
+    <h1>Republic of the Marshall Islands – Passport Application System</h1>
     <a class="btn" href="login.html">Login</a>
   </div>
   <div class="main">
-    <img src="seal.png" alt="RMI Seal" />
+    <img src="seal.png" alt="RMI Government Seal" />
     <h2>Secure Online Passport Application</h2>
-    <p class="highlights">
-      The <strong>Passport Act 2020</strong> governs the issuance of Regular, Official, and Diplomatic passports to lawful Marshallese citizens.
-      Applications are reviewed by a designated Passport Review Panel under the supervision of the Attorney General.
-      Providing false information is a criminal offense under this act.
-    </p>
+    <div class="highlights">
+      <p>
+        The <strong>Passport Act 2020</strong> governs the issuance of Regular, Official, and Diplomatic passports 
+        to lawful Marshallese citizens. Applications are reviewed by a designated Passport Review Panel under the 
+        supervision of the Attorney General. Providing false information is a criminal offense under this act.
+      </p>
+    </div>
     <div class="actions">
       <a class="btn-primary" href="register.html">Start Application</a>
       <a class="btn-primary" href="PL-2020-18-THE-PASSPORT-ACT2020.pdf" target="_blank">View Full Passport Act (PDF)</a>
