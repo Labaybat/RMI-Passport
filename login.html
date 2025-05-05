@@ -1,10 +1,11 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Login - RMI Passport</title>
-  <style>
+<meta charset="utf-8"/>
+<title>Login - RMI Passport</title>
+<style>
     body {
       font-family: Arial, sans-serif;
       background: #f3f4f6;
@@ -58,16 +59,15 @@
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Sign in to the RMI Passport Portal</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button id="loginBtn">Sign In</button>
-    <button class="google-btn" id="googleLoginBtn">Sign In with Google</button>
-    <a class="link" href="signup.html">Don't have an account? Sign up</a>
-  </div>
-
-  <script type="module">
+<div class="card">
+<h2>Sign in to the RMI Passport Portal</h2>
+<input id="email" placeholder="Email" type="email"/>
+<input id="password" placeholder="Password" type="password"/>
+<button id="loginBtn">Sign In</button>
+<button class="google-btn" id="googleLoginBtn">Sign In with Google</button>
+<a class="link" href="signup.html">Don't have an account? Sign up</a>
+</div>
+<script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
     const supabase = createClient(
       'https://injquzndhzqcamtenbum.supabase.co',

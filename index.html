@@ -1,10 +1,11 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Republic of the Marshall Islands - Passport Portal</title>
-  <style>
+<meta charset="utf-8"/>
+<title>Republic of the Marshall Islands - Passport Portal</title>
+<style>
     body {
       font-family: 'Georgia', serif;
       background-color: #f0f4f8;
@@ -60,26 +61,22 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>Republic of the Marshall Islands</h1>
-    <div id="userWelcome" style="font-size: 0.9rem; color: #aad4ff; margin-top: 5px;"></div>
-  </header>
-  <div class="container">
-    <h2>Passport Application Portal</h2>
-    <p>
+<header>
+<h1>Republic of the Marshall Islands</h1>
+<div id="userWelcome" style="font-size: 0.9rem; color: #aad4ff; margin-top: 5px;"></div>
+</header>
+<div class="container">
+<h2>Passport Application Portal</h2>
+<p>
       Welcome to the official RMI Passport Application Portal. Use this platform to submit, track, and manage your passport application securely.
     </p>
-    <a href="apply.html" class="button">Start Application</a>
-    
-<a href="dashboard.html" class="button" style="background:#10b981; margin-left: 0.5rem;">View My Submitted Applications</a>
-
+<a class="button" href="apply.html">Start Application</a>
+<a class="button" href="dashboard.html" style="background:#10b981; margin-left: 0.5rem;">View My Submitted Applications</a>
+</div>
+<div class="footer">
+    © 2025 Republic of the Marshall Islands. All rights reserved.
   </div>
-
-  <div class="footer">
-    &copy; 2025 Republic of the Marshall Islands. All rights reserved.
-  </div>
-
-  <script type="module">
+<script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(
       'https://injquzndhzqcamtenbum.supabase.co',
@@ -91,7 +88,6 @@
       document.getElementById('userWelcome').textContent = `Signed in as ${user.email}`;
     }
   </script>
-
 <style>
   .logout-btn {
     position: absolute;
@@ -111,8 +107,6 @@
   }
 </style>
 <button class="logout-btn" id="logoutBtn">Logout</button>
-
-
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
   const supabase = createClient(
@@ -127,6 +121,5 @@
     });
   }
 </script>
-
 </body>
 </html>
