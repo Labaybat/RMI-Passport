@@ -148,9 +148,9 @@
       </div>
 
       <div class="buttons">
-        <button type="button" onclick="prevStep()">Back</button>
-        <button type="button" onclick="saveProgress()">Save</button>
-        <button type="button" onclick="nextStep()">Next</button>
+        <button type="button" >Back</button>
+        <button type="button" >Save</button>
+        <button type="button" >Next</button>
       </div>
     </form>
   
@@ -249,6 +249,50 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Initialize
+  showStep(currentStep);
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  let currentStep = 0;
+  const steps = document.querySelectorAll(".form-step");
+  const nextBtn = document.getElementById("nextButton");
+  const backBtn = document.getElementById("backButton");
+  const progressBar = document.getElementById("progressBar");
+
+  function showStep(index) {
+    steps.forEach((step, i) => {
+      step.classList.toggle("active", i === index);
+    });
+    updateProgress(index);
+  }
+
+  function updateProgress(stepIndex) {
+    const percent = ((stepIndex + 1) / steps.length) * 100;
+    progressBar.style.width = percent + "%";
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      if (currentStep < steps.length - 1) {
+        currentStep++;
+        showStep(currentStep);
+      }
+    });
+  }
+
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      if (currentStep > 0) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    });
+  }
+
+  // Start on step 0
   showStep(currentStep);
 });
 </script>
