@@ -3,60 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RMI Passport Portal</title>
+  <title>RMI Passport Application Portal</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
     html, body {
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #f5f9ff;
+      background: #f0f4f8;
+      color: #222;
       height: 100vh;
       overflow: hidden;
-      color: #333;
     }
-    .landing-wrapper {
-      display: flex; flex-direction: column;
-      justify-content: center; align-items: center;
-      height: 100vh; padding: 2rem; text-align: center;
+    .header {
+      background-color: #003366;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    img.seal { max-width: 120px; margin-bottom: 1rem; }
-    h1 { font-size: 1.75rem; margin: 0.5rem 0; }
-    h2 { color: #1a4680; margin: 0.25rem 0; }
-    .highlights {
-      max-width: 700px; margin: 1rem auto;
+    .header h1 {
+      font-size: 1.5rem;
     }
-    .highlights p {
-      margin: 0.5rem 0; font-size: 0.95rem;
-    }
-    .actions { margin-top: 1.5rem; }
-    .btn {
-      display: inline-block; padding: 12px 25px;
-      background: #003c8f; color: #fff;
-      border-radius: 6px; text-decoration: none;
+    .header .btn {
+      background: white;
+      color: #003366;
+      padding: 8px 16px;
+      text-decoration: none;
+      border-radius: 4px;
       font-weight: bold;
     }
-    .btn:hover { background: #002b6b; }
-    .link {
-      display: block; margin-top: 1rem;
-      font-size: 0.9rem;
+    .main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 60px);
+      padding: 2rem;
+      text-align: center;
+    }
+    .main img {
+      width: 100px;
+      margin-bottom: 1rem;
+    }
+    .main h2 {
+      color: #003366;
+    }
+    .highlights {
+      max-width: 700px;
+      margin: 1rem 0;
+      font-size: 1rem;
+    }
+    .highlights p {
+      margin: 0.5rem 0;
+    }
+    .actions {
+      margin-top: 1.5rem;
+    }
+    .btn-primary {
+      display: inline-block;
+      margin: 10px;
+      padding: 12px 25px;
+      background: #003c8f;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .btn-primary:hover {
+      background: #002a6c;
     }
   </style>
 </head>
 <body>
-  <div class="landing-wrapper">
-    <img src="seal.png" alt="RMI Seal" class="seal" />
-    <h1>Republic of the Marshall Islands</h1>
-    <h2>Official Passport Application Portal</h2>
-    <div class="highlights">
-      <p><strong>The Passport Act 2020</strong> governs the secure issuance of Regular, Official, and Diplomatic passports to lawful citizens of the Republic.</p>
-      <p>Only verified Marshallese citizens may apply. Applications are reviewed under the supervision of the Attorney General and a dedicated Passport Review Panel.</p>
-      <p>Forgery, bribery, or submission of false information is a criminal offense under national law, punishable by fines or imprisonment.</p>
-      <p>Regular passports are valid for <strong>10 years</strong>; Official and Diplomatic for <strong>5 years</strong>.</p>
-    </div>
+  <div class="header">
+    <h1>Republic of the Marshall Islands – Passport Portal</h1>
+    <a class="btn" href="login.html">Login</a>
+  </div>
+  <div class="main">
+    <img src="seal.png" alt="RMI Seal" />
+    <h2>Secure Online Passport Application</h2>
+    <p class="highlights">
+      The <strong>Passport Act 2020</strong> governs the issuance of Regular, Official, and Diplomatic passports to lawful Marshallese citizens.
+      Applications are reviewed by a designated Passport Review Panel under the supervision of the Attorney General.
+      Providing false information is a criminal offense under this act.
+    </p>
     <div class="actions">
-      <a class="btn" href="register.html">Start Application</a>
-      <a class="link" href="PL-2020-18-THE-PASSPORT-ACT2020.pdf" target="_blank">View Full Passport Act (PDF)</a>
+      <a class="btn-primary" href="register.html">Start Application</a>
+      <a class="btn-primary" href="PL-2020-18-THE-PASSPORT-ACT2020.pdf" target="_blank">View Full Passport Act (PDF)</a>
     </div>
   </div>
 </body>
