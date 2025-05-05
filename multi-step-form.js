@@ -1,79 +1,32 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+const supabase = createClient('https://injquzndhzqcamtenbum.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew');
 
-const { createClient } = supabase;
-const supabaseUrl = 'https://injquzndhzqcamtenbum.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzODg1NTEsImV4cCI6MjA2MTk2NDU1MX0.pZnLipghLKXmWISsTUYK3WQl0cr_kJr39Ly571a3yew';
-const supabaseClient = createClient(supabaseUrl, supabaseKey);
+document.getElementById('passport-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-let currentStep = 0;
-const steps = document.querySelectorAll(".form-step");
-const form = document.getElementById("passportForm");
-const nextBtn = document.getElementById("nextBtn");
-const prevBtn = document.getElementById("prevBtn");
-const saveBtn = document.getElementById("saveBtn");
-const submitBtn = document.getElementById("submitBtn");
+  const firstName = document.getElementById('first-name').value;
+  const lastName = document.getElementById('last-name').value;
+  const dob = document.getElementById('dob').value;
 
-function showStep(step) {
-    steps.forEach((el, i) => {
-        el.style.display = i === step ? "block" : "none";
-    });
-    prevBtn.style.display = step > 0 ? "inline" : "none";
-    nextBtn.style.display = step < steps.length - 1 ? "inline" : "none";
-    submitBtn.style.display = step === steps.length - 1 ? "inline" : "none";
-}
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
+    alert('You must be logged in to submit the form.');
+    return;
+  }
 
-showStep(currentStep);
+  const user_id = userData.user.id;
 
-nextBtn.addEventListener("click", async () => {
-    await autoSave();
-    if (currentStep < steps.length - 1) {
-        currentStep++;
-        showStep(currentStep);
-    }
+  const { error } = await supabase.from('passport_applications').insert([{
+    user_id,
+    first_name: firstName,
+    last_name: lastName,
+    dob
+  }]);
+
+  if (error) {
+    alert('Failed to submit application: ' + error.message);
+  } else {
+    alert('Application submitted successfully!');
+    window.location.href = 'dashboard.html';
+  }
 });
-
-prevBtn.addEventListener("click", () => {
-    if (currentStep > 0) {
-        currentStep--;
-        showStep(currentStep);
-    }
-});
-
-saveBtn.addEventListener("click", async () => {
-    await autoSave(true);
-    alert("Application progress saved.");
-});
-
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    data.submitted = true;
-    data.created_at = new Date().toISOString();
-
-    const user = await supabaseClient.auth.getUser();
-    data.user_id = user.data.user?.id || null;
-
-    const { error } = await supabaseClient.from("passport_applications").upsert(data, {
-        onConflict: ["user_id"]
-    });
-
-    if (error) {
-        alert("Submission error: " + error.message);
-    } else {
-        window.location.href = "dashboard.html";
-    }
-});
-
-async function autoSave(isManual = false) {
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    data.updated_at = new Date().toISOString();
-    if (!isManual) data.submitted = false;
-
-    const user = await supabaseClient.auth.getUser();
-    data.user_id = user.data.user?.id || null;
-
-    await supabaseClient.from("passport_applications").upsert(data, {
-        onConflict: ["user_id"]
-    });
-}

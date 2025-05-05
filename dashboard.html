@@ -1,120 +1,63 @@
 
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>My Dashboard</title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" type="module">
-  async function logout() {
-    await supabase.auth.signOut();
-    window.location.href = "login.html";
-  }
-
-</script>
-<style>
+  <meta charset="UTF-8" />
+  <title>User Dashboard</title>
+  <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      background-color: #f2f4f8;
+      background: #f4f4f4;
+      padding: 20px;
     }
-    header {
-      background-color: #003366;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-      position: fixed;
-      top: 0;
-      width: 100%;
-      z-index: 1000;
-    }
-    main {
-      padding: 6rem 1rem 2rem;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .card {
+    .container {
       background: white;
-      padding: 1.5rem;
+      padding: 20px;
       border-radius: 8px;
+      max-width: 600px;
+      margin: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     h2 {
-      color: #003366;
+      margin-top: 0;
     }
-    .info-item {
-      margin: 0.5rem 0;
+    .application {
+      background: #f9f9f9;
+      padding: 15px;
+      margin-top: 15px;
+      border-left: 5px solid #007BFF;
     }
-    .label {
-      font-weight: bold;
+    .no-app {
+      color: #777;
+      margin-top: 20px;
+    }
+    .actions {
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
     }
   </style>
 </head>
 <body>
-<header>
-<h1>Welcome to Your Dashboard</h1>
-</header>
-<main>
-<div class="card" id="userData">
-<h2>Your Application Info</h2>
-<p>Loading your application...</p>
-</div>
-<div style="margin-top: 2rem; text-align: center;">
-<button onclick="window.location.href='apply.html'" style="padding: 0.5rem 1.5rem; background-color: #0055a5; color: white; border: none; border-radius: 4px; margin-right: 1rem; cursor: pointer;">Edit My Application</button>
-<button onclick="logout()" style="padding: 0.5rem 1.5rem; background-color: #cc0000; color: white; border: none; border-radius: 4px; cursor: pointer;">Logout</button>
-</div>
-</main>
-<script>
-    const SUPABASE_URL = "https://injquzndhzqcamtenbum.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDM2MzA4NzYsImV4cCI6MjAyOTEwNjg3Nn0.AkHgW3ylGnWk1WxHRX9ab-JCcePHhPSDCVxJkFHRPog";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    async function checkSession() {
-      const { data, error } = await supabase.auth.getSession();
-      if (!data.session) {
-        alert("Please log in to access the dashboard.");
-        window.location.href = "login.html";
-      } else {
-        const userEmail = data.session.user.email;
-        fetchApplication(userEmail);
-      }
-    }
-
-    async function fetchApplication(email) {
-      const { data, error } = await supabase
-        .from("passport_applications")
-        .select("*")
-        .eq("email", email)
-        .single();
-
-      const container = document.getElementById("userData");
-      if (error || !data) {
-        container.innerHTML = "<p>No application found.</p>";
-      } else {
-        container.innerHTML = `
-          <h2>Your Application Info</h2>
-          <div class="info-item"><span class="label">First Name:</span> ${data.firstName || "—"}</div>
-          <div class="info-item"><span class="label">Last Name:</span> ${data.lastName || "—"}</div>
-          <div class="info-item"><span class="label">Date of Birth:</span> ${data.dob || "—"}</div>
-          <div class="info-item"><span class="label">Birth Place:</span> ${data.birthPlace || "—"}</div>
-          <div class="info-item"><span class="label">Nationality:</span> ${data.nationality || "—"}</div>
-          <div class="info-item"><span class="label">Sex:</span> ${data.sex || "—"}</div>
-          <div class="info-item"><span class="label">Height:</span> ${data.height || "—"}</div>
-          <div class="info-item"><span class="label">Eye Color:</span> ${data.eyeColor || "—"}</div>
-          <div class="info-item"><span class="label">Hair Color:</span> ${data.hairColor || "—"}</div>
-          <div class="info-item"><span class="label">Home Address:</span> ${data.homeAddress || "—"}</div>
-        `;
-      }
-    }
-
-    checkSession();
-  
-  async function logout() {
-    await supabase.auth.signOut();
-    window.location.href = "login.html";
-  }
-
-</script>
+  <div class="container">
+    <h2>Welcome to Your Dashboard</h2>
+    <div id="user-info"></div>
+    <div id="application-info" class="application"></div>
+    <p id="no-application" class="no-app" style="display: none;">You have not submitted any application yet.</p>
+    <div class="actions">
+      <button onclick="window.location.href='apply.html'">Apply Now</button>
+      <button id="logout-btn" style="background: #dc3545;">Logout</button>
+    </div>
+  </div>
+  <script type="module" src="dashboard.js"></script>
 </body>
 </html>
