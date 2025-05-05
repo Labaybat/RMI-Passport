@@ -1,10 +1,11 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>User Dashboard</title>
-  <style>
+<meta charset="utf-8"/>
+<title>User Dashboard</title>
+<style>
     body {
       font-family: Arial, sans-serif;
       background: #f4f4f4;
@@ -48,16 +49,16 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Welcome to Your Dashboard</h2>
-    <div id="user-info"></div>
-    <div id="application-info" class="application"></div>
-    <p id="no-application" class="no-app" style="display: none;">You have not submitted any application yet.</p>
-    <div class="actions">
-      <button onclick="window.location.href='apply.html'">Apply Now</button>
-      <button id="logout-btn" style="background: #dc3545;">Logout</button>
-    </div>
-  </div>
-  <script type="module" src="dashboard.js"></script>
+<div class="container">
+<h2>Welcome to Your Dashboard</h2>
+<div id="user-info"></div>
+<div class="application" id="application-info"></div>
+<p class="no-app" id="no-application" style="display: none;">You have not submitted any application yet.</p>
+<div class="actions">
+<button onclick="window.location.href='apply.html'">Apply Now</button>
+<button id="logout-btn" style="background: #dc3545;">Logout</button>
+</div>
+</div>
+<script src="dashboard.js" type="module"></script>
 </body>
 </html>
