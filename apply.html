@@ -161,57 +161,16 @@
 
 </main>
 
-  <script>
-    const SUPABASE_URL = "https://injquzndhzqcamtenbum.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDM2MzA4NzYsImV4cCI6MjAyOTEwNjg3Nn0.AkHgW3ylGnWk1WxHRX9ab-JCcePHhPSDCVxJkFHRPog";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  
 
-    let currentStep = 1;
-    function showStep(step) {
-      document.querySelectorAll('.form-step').forEach((stepDiv, index) => {
-        stepDiv.classList.remove('active');
-        if (index + 1 === step) {
-          stepDiv.classList.add('active');
-        }
-      });
-    }
-    function nextStep() {
-      saveProgress();
-      if (currentStep < 3) currentStep++;
-      showStep(currentStep);
-    }
-    function prevStep() {
-      if (currentStep > 1) currentStep--;
-      showStep(currentStep);
-    }
-    async function saveProgress() {
-      const form = document.getElementById('passportForm');
-      const formData = new FormData(form);
-      const data = {};
-      for (let [key, value] of formData.entries()) {
-        data[key] = value;
-      }
 
-      const { error } = await supabase
-        .from("passport_applications")
-        .upsert([data], { onConflict: ['email'] });
 
-      if (error) {
-        alert("Error saving progress: " + error.message);
-      } else } else if (currentStep === 3) {
-        document.getElementById('passportForm').style.display = 'none';
-        document.getElementById('confirmationScreen').style.display = 'block';
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 3000);
-      }
-    }
 
-    window.onload = () => showStep(currentStep);
-  </script>
+
+
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
   let currentStep = 0;
   const steps = document.querySelectorAll(".form-step");
   const nextBtn = document.getElementById("nextButton");
@@ -225,13 +184,15 @@ document.addEventListener("DOMContentLoaded", () => {
     updateProgress(index);
   }
 
-  function updateProgress(stepIndex) {
-    const percent = ((stepIndex + 1) / steps.length) * 100;
-    progressBar.style.width = percent + "%";
+  function updateProgress(index) {
+    const percent = ((index + 1) / steps.length) * 100;
+    if (progressBar) {
+      progressBar.style.width = percent + "%";
+    }
   }
 
   if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
+    nextBtn.addEventListener("click", function () {
       if (currentStep < steps.length - 1) {
         currentStep++;
         showStep(currentStep);
@@ -240,7 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (backBtn) {
-    backBtn.addEventListener("click", () => {
+    backBtn.addEventListener("click", function () {
       if (currentStep > 0) {
         currentStep--;
         showStep(currentStep);
@@ -248,51 +209,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Initialize
-  showStep(currentStep);
-});
-</script>
-
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  let currentStep = 0;
-  const steps = document.querySelectorAll(".form-step");
-  const nextBtn = document.getElementById("nextButton");
-  const backBtn = document.getElementById("backButton");
-  const progressBar = document.getElementById("progressBar");
-
-  function showStep(index) {
-    steps.forEach((step, i) => {
-      step.classList.toggle("active", i === index);
-    });
-    updateProgress(index);
-  }
-
-  function updateProgress(stepIndex) {
-    const percent = ((stepIndex + 1) / steps.length) * 100;
-    progressBar.style.width = percent + "%";
-  }
-
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      if (currentStep < steps.length - 1) {
-        currentStep++;
-        showStep(currentStep);
-      }
-    });
-  }
-
-  if (backBtn) {
-    backBtn.addEventListener("click", () => {
-      if (currentStep > 0) {
-        currentStep--;
-        showStep(currentStep);
-      }
-    });
-  }
-
-  // Start on step 0
   showStep(currentStep);
 });
 </script>
