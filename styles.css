@@ -16,6 +16,20 @@ body {
   width: 100px;
   margin-bottom: 20px;
 }
+input {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+}
+button {
+  padding: 10px 20px;
+  background: navy;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
 .btn {
   display: inline-block;
   margin-top: 20px;

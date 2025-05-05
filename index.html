@@ -3,18 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RMI Passport Application</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>RMI Passport Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f9ff;
+      height: 100vh;
+      overflow: hidden;
+      color: #333;
+    }
+    .landing-wrapper {
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      height: 100vh; padding: 2rem; text-align: center;
+    }
+    img.seal { max-width: 120px; margin-bottom: 1rem; }
+    h1 { font-size: 1.75rem; margin: 0.5rem 0; }
+    h2 { color: #1a4680; margin: 0.25rem 0; }
+    .highlights {
+      max-width: 700px; margin: 1rem auto;
+    }
+    .highlights p {
+      margin: 0.5rem 0; font-size: 0.95rem;
+    }
+    .actions { margin-top: 1.5rem; }
+    .btn {
+      display: inline-block; padding: 12px 25px;
+      background: #003c8f; color: #fff;
+      border-radius: 6px; text-decoration: none;
+      font-weight: bold;
+    }
+    .btn:hover { background: #002b6b; }
+    .link {
+      display: block; margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <img src="rmi_seal.png" alt="RMI Seal" class="seal">
+  <div class="landing-wrapper">
+    <img src="seal.png" alt="RMI Seal" class="seal" />
     <h1>Republic of the Marshall Islands</h1>
-    <h2>Online Passport Application</h2>
-    <p>Welcome to the official passport application portal. All Marshallese citizens can now apply for their passport online.</p>
-    <h3>About the Passport Act</h3>
-    <p>The Passport Act of the Republic of the Marshall Islands ensures secure, lawful issuance of travel documents to eligible citizens. You will be required to provide identity information and follow all applicable steps.</p>
-    <a href="register.html" class="btn">Start Application</a>
+    <h2>Official Passport Application Portal</h2>
+    <div class="highlights">
+      <p><strong>The Passport Act 2020</strong> governs the secure issuance of Regular, Official, and Diplomatic passports to lawful citizens of the Republic.</p>
+      <p>Only verified Marshallese citizens may apply. Applications are reviewed under the supervision of the Attorney General and a dedicated Passport Review Panel.</p>
+      <p>Forgery, bribery, or submission of false information is a criminal offense under national law, punishable by fines or imprisonment.</p>
+      <p>Regular passports are valid for <strong>10 years</strong>; Official and Diplomatic for <strong>5 years</strong>.</p>
+    </div>
+    <div class="actions">
+      <a class="btn" href="register.html">Start Application</a>
+      <a class="link" href="PL-2020-18-THE-PASSPORT-ACT2020.pdf" target="_blank">View Full Passport Act (PDF)</a>
+    </div>
   </div>
 </body>
 </html>
