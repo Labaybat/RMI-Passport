@@ -64,5 +64,24 @@
             });
         }
     </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://injquzndhzqcamtenbum.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluanF1em5kaHpxY2FtdGVuYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDM2MzA4NzYsImV4cCI6MjAyOTEwNjg3Nn0.AkHgW3ylGnWk1WxHRX9ab-JCcePHhPSDCVxJkFHRPog";
+
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function checkSession() {
+    const { data, error } = await supabase.auth.getSession();
+    if (!data.session) {
+      alert("Please log in to access the dashboard.");
+      window.location.href = "login.html";
+    }
+  }
+
+  checkSession();
+</script>
+
 </body>
 </html>
