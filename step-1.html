@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f0f4f8;
+    color: #222;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 600px;
+    margin: 60px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  h1, h2 {
+    color: #003366;
+    text-align: center;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  .form-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+  }
+  .form-nav button,
+  .form-nav a {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+  }
+  .btn-next {
+    background-color: #003c8f;
+    color: white;
+    border: none;
+  }
+  .btn-back {
+    background-color: #ccc;
+    color: black;
+  }
+  .btn-save {
+    background-color: #555;
+    color: white;
+    border: none;
+  }
+</style>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step 1 – Personal Information</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Passport Application – Step 1 of 5</h1>
+    <h2>Personal Information</h2>
+    <form action="step-2.html" method="get">
+      <input type="text" name="first_name" placeholder="First Name" required />
+      <input type="text" name="middle_name" placeholder="Middle Name" />
+      <input type="text" name="last_name" placeholder="Last Name" required />
+      <input type="date" name="dob" placeholder="Date of Birth" required />
+      <input type="text" name="place_of_birth" placeholder="Place of Birth" required />
+      <select name="gender" required>
+        <option value="">Select Gender</option>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
+      </select>
+      <select name="marital_status" required>
+        <option value="">Marital Status</option>
+        <option>Single</option>
+        <option>Married</option>
+        <option>Divorced</option>
+        <option>Widowed</option>
+      </select>
+      <input type="text" name="ssn" placeholder="Social Security Number" required />
+      <input type="text" name="nationality" placeholder="Nationality" required />
+      <select name="passport_type" required>
+        <option value="">Passport Type</option>
+        <option>Regular</option>
+        <option>Official</option>
+        <option>Diplomatic</option>
+      </select>
+      
+<div style='margin-top: 20px; display: flex; justify-content: space-between;'>
+  <a href='index.html' style='background: #ccc; padding: 10px 20px; border-radius: 5px; text-decoration: none;'>Back</a>
+  <button type='submit' style='background: #003c8f; color: white; padding: 10px 20px; border: none; border-radius: 5px;'>Next</button>
+  <button type='button' onclick='alert("Progress saved!")' style='background: #555; color: white; padding: 10px 20px; border: none; border-radius: 5px;'>Save</button>
+</div>
+
+    </form>
+  </div>
+</body>
+</html>
