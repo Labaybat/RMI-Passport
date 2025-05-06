@@ -23,7 +23,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { error: insertError } = await supabaseClient
       .from("passport_applications")
-      .insert([{
+      .insert([
+    // Explicit column mapping and parsing date to timestamp
+    {
+        first_name: document.getElementById("first_name").value,
+        last_name: document.getElementById("last_name").value,
+        dob: new Date(document.getElementById("dob").value).toISOString(),
+        passport_type: document.getElementById("passport_type").value,
+        ssn: document.getElementById("ssn").value,
+        email: document.getElementById("email").value,
+        occupation: document.getElementById("occupation").value,
+        signature: fileName,
+        sign_date: new Date().toISOString(),
+{
         first_name: document.getElementById("first_name").value,
         last_name: document.getElementById("last_name").value,
         dob: document.getElementById("dob").value,
