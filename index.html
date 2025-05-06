@@ -88,19 +88,20 @@
 <h2>Welcome to the Passport Portal</h2><br/>
 <p>Use the options below to continue.</p>
 
-
-<div class="main-content container section">
-<h2>Passport Act Highlights</h2>
-<ul style="text-align: left; max-width: 600px; margin: 0 auto; font-size: 1rem;">
-<li><strong>Types of Passports:</strong> Regular, Official, and Diplomatic.</li>
-<li><strong>Eligibility:</strong> Only lawful Marshallese citizens are eligible.</li>
-<li><strong>Application Review:</strong> Conducted by a designated Passport Review Panel.</li>
-<li><strong>Supervision:</strong> The Attorney General oversees all application processes.</li>
-<li><strong>Legal Consequences:</strong> Providing false information is a criminal offense.</li>
+<div class="container section">
+<h2>Before You Apply</h2>
+<p style="max-width: 800px; margin: 0 auto; font-size: 1rem;">
+    Please ensure you have read and understood the following key legal responsibilities before submitting your application:
+  </p>
+<ul style="text-align: left; max-width: 800px; margin: 1rem auto;">
+<li>You must be a lawful Marshallese citizen to apply for a passport.</li>
+<li>Providing false or misleading information is a criminal offense under the Passport Act 2020.</li>
+<li>All applications are reviewed by the Passport Review Panel under supervision of the Attorney General.</li>
+<li>You may be required to provide supporting documents verifying your identity and eligibility.</li>
 </ul>
-
 </div>
-<div class="button-row"><button class="action" onclick="window.location.href='step-1.html'">Start Application</button><button class="action" onclick="window.location.href='dashboard.html'">Go to Dashboard</button><button class="action" onclick="window.open('PL-2020-18-THE-PASSPORT-ACT2020.pdf', '_blank')">
+
+<div class="button-row"><button class="action" onclick="window.location.href='step-1.html'">Start Application</button><button class="action" onclick="window.location.href='dashboard.html'">My Dashboard</button><button class="action" onclick="window.open('PL-2020-18-THE-PASSPORT-ACT2020.pdf', '_blank')">
       View Full Passport Act (PDF)
     </button></div></div>
 <script type="module">
@@ -121,5 +122,15 @@
       }
     });
   </script>
+
+<script>
+  document.querySelector("button[onclick*='step-1.html']").onclick = function(e) {
+    e.preventDefault();
+    const confirmed = confirm("By continuing, you confirm that all information you provide will be true and correct under penalty of law. Do you wish to proceed?");
+    if (confirmed) {
+      window.location.href = 'step-1.html';
+    }
+  };
+</script>
 </body>
 </html>
