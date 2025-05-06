@@ -113,6 +113,28 @@
     .card h2, .card p {
       text-align: center;
     }
+    
+    html, body {
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      height: calc(100vh - 100px);
+    }
+
+    .card {
+      flex-shrink: 0;
+    }
+
+    .button-group {
+      flex-shrink: 0;
+    }
     </style>
 </head>
 <body>
