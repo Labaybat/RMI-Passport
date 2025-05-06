@@ -49,6 +49,6 @@ document.getElementById('login-form')?.addEventListener('submit', async (e) => {
   if (error) {
     alert("Login failed: " + error.message);
   } else {
-    window.location.href = 'dashboard.html';
+    window.location.href = 'index.html';
   }
 });
