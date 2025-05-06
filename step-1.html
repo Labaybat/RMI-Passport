@@ -106,6 +106,11 @@
 </div>
 
     </form>
+
+    <div id="autosave-msg" style="display:none; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-top: 10px; border-radius: 5px;">
+      ✅ Progress saved.
+    </div>
+    
   </div>
 
   <script>
@@ -139,6 +144,73 @@
         localStorage.setItem("passport_application_data", JSON.stringify(data));
         window.location.href = "step-2.html";
       });
+    });
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.querySelector("form");
+      const saved = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
+      const isFirst = true;
+      
+      if (isFirst && Object.keys(saved).length > 0) {
+        if (confirm("Resume previous application?")) {
+          if (saved["first_name"]) form["first_name"].value = saved["first_name"];
+      if (saved["middle_name"]) form["middle_name"].value = saved["middle_name"];
+      if (saved["last_name"]) form["last_name"].value = saved["last_name"];
+      if (saved["dob"]) form["dob"].value = saved["dob"];
+      if (saved["place_of_birth"]) form["place_of_birth"].value = saved["place_of_birth"];
+      if (saved["gender"]) form["gender"].value = saved["gender"];
+      if (saved["marital_status"]) form["marital_status"].value = saved["marital_status"];
+      if (saved["ssn"]) form["ssn"].value = saved["ssn"];
+      if (saved["nationality"]) form["nationality"].value = saved["nationality"];
+      if (saved["passport_type"]) form["passport_type"].value = saved["passport_type"];
+        } else {
+          localStorage.removeItem("passport_application_data");
+        }
+      }
+    
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const data = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
+        data["first_name"] = form["first_name"].value;
+        data["middle_name"] = form["middle_name"].value;
+        data["last_name"] = form["last_name"].value;
+        data["dob"] = form["dob"].value;
+        data["place_of_birth"] = form["place_of_birth"].value;
+        data["gender"] = form["gender"].value;
+        data["marital_status"] = form["marital_status"].value;
+        data["ssn"] = form["ssn"].value;
+        data["nationality"] = form["nationality"].value;
+        data["passport_type"] = form["passport_type"].value;
+        localStorage.setItem("passport_application_data", JSON.stringify(data));
+        window.location.href = "step-2.html";
+      });
+
+      // Save button logic
+      const saveBtn = document.querySelector(".btn-save");
+      if (saveBtn) {
+        saveBtn.addEventListener("click", () => {
+          const data = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
+          data["first_name"] = form["first_name"].value;
+        data["middle_name"] = form["middle_name"].value;
+        data["last_name"] = form["last_name"].value;
+        data["dob"] = form["dob"].value;
+        data["place_of_birth"] = form["place_of_birth"].value;
+        data["gender"] = form["gender"].value;
+        data["marital_status"] = form["marital_status"].value;
+        data["ssn"] = form["ssn"].value;
+        data["nationality"] = form["nationality"].value;
+        data["passport_type"] = form["passport_type"].value;
+          localStorage.setItem("passport_application_data", JSON.stringify(data));
+          const msg = document.getElementById("autosave-msg");
+          if (msg) {
+            msg.style.display = "block";
+            setTimeout(() => msg.style.display = "none", 3000);
+          }
+        });
+      }
     });
   </script>
 </body>

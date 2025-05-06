@@ -88,6 +88,11 @@
 </div>
 
     </form>
+
+    <div id="autosave-msg" style="display:none; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-top: 10px; border-radius: 5px;">
+      ✅ Progress saved.
+    </div>
+    
   </div>
 
   <script>
@@ -113,6 +118,53 @@
         localStorage.setItem("passport_application_data", JSON.stringify(data));
         window.location.href = "step-4.html";
       });
+    });
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.querySelector("form");
+      const saved = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
+      const isFirst = false;
+      if (saved["occupation"]) form["occupation"].value = saved["occupation"];
+      if (saved["employer_name"]) form["employer_name"].value = saved["employer_name"];
+      if (saved["employer_address"]) form["employer_address"].value = saved["employer_address"];
+      if (saved["height"]) form["height"].value = saved["height"];
+      if (saved["hair_color"]) form["hair_color"].value = saved["hair_color"];
+      if (saved["eye_color"]) form["eye_color"].value = saved["eye_color"];
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const data = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
+        data["occupation"] = form["occupation"].value;
+        data["employer_name"] = form["employer_name"].value;
+        data["employer_address"] = form["employer_address"].value;
+        data["height"] = form["height"].value;
+        data["hair_color"] = form["hair_color"].value;
+        data["eye_color"] = form["eye_color"].value;
+        localStorage.setItem("passport_application_data", JSON.stringify(data));
+        window.location.href = "step-4.html";
+      });
+
+      // Save button logic
+      const saveBtn = document.querySelector(".btn-save");
+      if (saveBtn) {
+        saveBtn.addEventListener("click", () => {
+          const data = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
+          data["occupation"] = form["occupation"].value;
+        data["employer_name"] = form["employer_name"].value;
+        data["employer_address"] = form["employer_address"].value;
+        data["height"] = form["height"].value;
+        data["hair_color"] = form["hair_color"].value;
+        data["eye_color"] = form["eye_color"].value;
+          localStorage.setItem("passport_application_data", JSON.stringify(data));
+          const msg = document.getElementById("autosave-msg");
+          if (msg) {
+            msg.style.display = "block";
+            setTimeout(() => msg.style.display = "none", 3000);
+          }
+        });
+      }
     });
   </script>
 </body>
