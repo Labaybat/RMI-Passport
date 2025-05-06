@@ -13,13 +13,5 @@
     <p>A confirmation email will be sent to you shortly with a copy of your application.</p>
     <a href="dashboard.html">Go to Dashboard</a>
   </div>
-
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'public-anon-key');
-const { data: { user } } = await supabase.auth.getUser();
-if (!user) window.location.href = 'index.html';
-</script>
-
 </body>
 </html>
