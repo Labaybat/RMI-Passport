@@ -77,5 +77,24 @@ a {
     <p>Already registered? <a href="login.html">Log in here</a></p>
   </div>
   <script type="module" src="auth.js"></script>
+
+<script type="module">
+  import { signUp } from './auth.js';
+
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const { user, error } = await signUp(email, password);
+    if (error) {
+      alert("Sign up failed: " + error.message);
+    } else {
+      alert("Account created!");
+      window.location.href = "dashboard.html";
+    }
+  });
+</script>
+
 </body>
 </html>
