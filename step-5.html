@@ -25,7 +25,8 @@
 
         if (!user) {
           alert("You must be logged in to submit.");
-          return;
+          // return (moved inside a function if needed)
+;
         }
 
         const formData = new FormData(form);
@@ -44,7 +45,8 @@
 
           if (uploadError) {
             alert('Failed to upload signature.');
-            return;
+            // return (moved inside a function if needed)
+;
           }
 
           const { data: publicUrl } = supabase.storage
@@ -76,24 +78,7 @@
         }
       });
     });
-  
-    const fileInput = document.getElementById('signature');
-    const file = fileInput.files[0];
-    if (file) {
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('signatures')
-        .upload(`passport-files/${file.name}`, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        console.error("Upload error:", uploadError.message);
-        alert("File upload failed: " + uploadError.message);
-        return;
-      }
-    }
-    </script>
+  </script>
 </head>
 <body>
   <h2>Final Step: Submit Your Application</h2>
