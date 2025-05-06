@@ -267,19 +267,47 @@
       border: none;
       cursor: pointer;
     }
+    
+    .header-flex {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background-color: #002e5b;
+      color: white;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-left img {
+      height: 60px;
+    }
+    .header-left h1 {
+      font-size: 1.4rem;
+      margin: 0;
+      white-space: nowrap;
+    }
+    #login-btn {
+      background: white;
+      color: #002e5b;
+      font-weight: bold;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
     </style>
 </head>
 <body>
 <header>
 <div class="header-flex">
-<div style="width: 33%"></div>
-<div class="header-center">
-<h1>Republic of the Marshall Islands – Passport Portal</h1>
+<div class="header-left">
 <img alt="Seal" src="seal.png"/>
+<h1>Republic of the Marshall Islands – Passport Portal</h1>
 </div>
-<div style="width: 33%; display: flex; justify-content: flex-end;">
 <button id="login-btn">Logout</button>
-</div>
 </div>
 </header>
 <main>
