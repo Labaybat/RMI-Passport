@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RMI Passport Portal</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RMI Passport Portal</title>
+<style>
     * {
       box-sizing: border-box;
     }
@@ -108,34 +109,35 @@
         min-width: unset;
       }
     }
-  </style>
+  
+    .card h2, .card p {
+      text-align: center;
+    }
+    </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Republic of the Marshall Islands – Passport Portal</h1>
-    <button id="login-btn">Logout</button>
-  </div>
-
-  <div class="main">
-    <div class="card">
-      <h2>Before You Apply</h2>
-      <p>Please review the following legal responsibilities before submitting your passport application:</p>
-      <ul>
-        <li>You must be a lawful Marshallese citizen to apply.</li>
-        <li>Providing false or misleading information is a criminal offense under the Passport Act 2020.</li>
-        <li>Applications are reviewed by a designated Passport Review Panel under the Attorney General’s supervision.</li>
-        <li>Supporting documents verifying your identity and eligibility are required.</li>
-      </ul>
-    </div>
-
-    <div class="button-group">
-      <button class="action" id="start-btn">Start Application</button>
-      <button class="action" onclick="window.location.href='dashboard.html'">My Dashboard</button>
-      <button class="action" onclick="window.open('PL-2020-18-THE-PASSPORT-ACT2020.pdf', '_blank')">View Full Passport Act (PDF)</button>
-    </div>
-  </div>
-
-  <script type="module">
+<div class="header" style="flex-direction: column; align-items: center; text-align: center; padding: 1.2rem 1rem;">
+<img alt="RMI Seal" src="seal.png" style="height: 70px; margin-bottom: 10px;"/><h1>Republic of the Marshall Islands – Passport Portal</h1>
+<button id="login-btn">Logout</button>
+</div>
+<div class="main" style="align-items: center; justify-content: center; padding: 1rem; gap: 1rem;">
+<div class="card">
+<h2>Before You Apply</h2>
+<p>Please review the following legal responsibilities before submitting your passport application:</p>
+<ul>
+<li>You must be a lawful Marshallese citizen to apply.</li>
+<li>Providing false or misleading information is a criminal offense under the Passport Act 2020.</li>
+<li>Applications are reviewed by a designated Passport Review Panel under the Attorney General’s supervision.</li>
+<li>Supporting documents verifying your identity and eligibility are required.</li>
+</ul>
+</div>
+<div class="button-group">
+<button class="action" id="start-btn">Start Application</button>
+<button class="action" onclick="window.location.href='dashboard.html'">My Dashboard</button>
+<button class="action" onclick="window.open('PL-2020-18-THE-PASSPORT-ACT2020.pdf', '_blank')">View Full Passport Act (PDF)</button>
+</div>
+</div>
+<script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
