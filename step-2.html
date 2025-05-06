@@ -88,5 +88,33 @@
 
     </form>
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.querySelector("form");
+      const saved = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
+      if (saved["address"]) form["address"].value = saved["address"];
+      if (saved["city"]) form["city"].value = saved["city"];
+      if (saved["state"]) form["state"].value = saved["state"];
+      if (saved["zip"]) form["zip"].value = saved["zip"];
+      if (saved["atoll"]) form["atoll"].value = saved["atoll"];
+      if (saved["phone"]) form["phone"].value = saved["phone"];
+      if (saved["email"]) form["email"].value = saved["email"];
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const data = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
+        data["address"] = form["address"].value;
+        data["city"] = form["city"].value;
+        data["state"] = form["state"].value;
+        data["zip"] = form["zip"].value;
+        data["atoll"] = form["atoll"].value;
+        data["phone"] = form["phone"].value;
+        data["email"] = form["email"].value;
+        localStorage.setItem("passport_application_data", JSON.stringify(data));
+        window.location.href = "step-3.html";
+      });
+    });
+  </script>
 </body>
 </html>

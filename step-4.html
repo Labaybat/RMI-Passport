@@ -85,5 +85,27 @@
 
     </form>
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.querySelector("form");
+      const saved = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
+      if (saved["emergency_name"]) form["emergency_name"].value = saved["emergency_name"];
+      if (saved["emergency_relationship"]) form["emergency_relationship"].value = saved["emergency_relationship"];
+      if (saved["emergency_phone"]) form["emergency_phone"].value = saved["emergency_phone"];
+      if (saved["emergency_address"]) form["emergency_address"].value = saved["emergency_address"];
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const data = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
+        data["emergency_name"] = form["emergency_name"].value;
+        data["emergency_relationship"] = form["emergency_relationship"].value;
+        data["emergency_phone"] = form["emergency_phone"].value;
+        data["emergency_address"] = form["emergency_address"].value;
+        localStorage.setItem("passport_application_data", JSON.stringify(data));
+        window.location.href = "step-5.html";
+      });
+    });
+  </script>
 </body>
 </html>
