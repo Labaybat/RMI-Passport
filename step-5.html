@@ -76,7 +76,24 @@
         }
       });
     });
-  </script>
+  
+    const fileInput = document.getElementById('signature');
+    const file = fileInput.files[0];
+    if (file) {
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('signatures')
+        .upload(`passport-files/${file.name}`, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError.message);
+        alert("File upload failed: " + uploadError.message);
+        return;
+      }
+    }
+    </script>
 </head>
 <body>
   <h2>Final Step: Submit Your Application</h2>
