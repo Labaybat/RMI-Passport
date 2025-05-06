@@ -1,243 +1,86 @@
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-  const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
-  supabase.auth.getSession().then(({
-    data: { session }
-  }) => {
-    if (!session) {
-      window.location.href = '/login.html';
-    }
-  });
-</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RMI Passport Application Portal</title>
+  <title>RMI Passport – Home</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    * {
-      box-sizing: border-box;
-    }
-    html, body {
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f7fc;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
-      color: #222;
-      height: 100vh;
-      overflow: hidden;
+      text-align: center;
     }
     .header {
       background-color: #002e5b;
       color: white;
-      padding: 15px 30px;
+      padding: 1rem;
       position: relative;
-      height: 60px;
     }
     .header h1 {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 1.4rem;
       margin: 0;
-      font-weight: normal;
     }
-    .header .btn {
+    #login-btn {
       position: absolute;
+      top: 15px;
       right: 30px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: white;
-      color: #002e5b;
-      padding: 10px 18px;
-      text-decoration: none;
+      padding: 10px 16px;
+      background-color: white;
+      border: none;
       border-radius: 4px;
+      cursor: pointer;
       font-weight: bold;
-      transition: background 0.3s ease;
     }
-    .header .btn:hover {
-      background: #f0f0f0;
+    .main-content {
+      padding: 3rem 1rem;
     }
-    .main {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: calc(100vh - 60px);
-      padding: 2rem;
-      text-align: center;
-    }
-    .main img {
-      width: 110px;
-      margin-bottom: 1rem;
-    }
-    .main h2 {
-      color: #002e5b;
-      font-size: 1.6rem;
-      margin-bottom: 1rem;
-    }
-    .highlights {
-      max-width: 750px;
-      font-size: 1rem;
-      line-height: 1.6;
-    }
-    .actions {
-      margin-top: 2rem;
-    }
-    .btn-primary {
-      display: inline-block;
-      margin: 0 10px;
-      padding: 12px 25px;
-      background: #003c8f;
+    button.action {
+      background-color: #003c8f;
       color: white;
+      padding: 12px 24px;
       border: none;
       border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
+      margin: 10px;
+      font-size: 1rem;
+      cursor: pointer;
     }
-    .btn-primary:hover {
-      background: #002a6c;
-    }
-    @media (max-width: 600px) {
-      .header {
-        flex-direction: column;
-        height: auto;
-        padding: 20px 15px;
-        text-align: center;
-      }
-      .header h1 {
-        position: static;
-        transform: none;
-        font-size: 1.2rem;
-        margin-bottom: 10px;
-      }
-      .header .btn {
-        position: static;
-        transform: none;
-        margin-top: 10px;
-      }
-      .main {
-        padding: 1.5rem 1rem;
-      }
-      .main .btn-primary {
-        width: 100%;
-        margin: 10px 0;
-      }
+    button.action:hover {
+      background-color: #002a6c;
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>Republic of the Marshall Islands – Passport Application System</h1>
-    <a class="btn" href="login.html">Login</a>
-  </div>
-  <div class="main">
-    <img src="seal.png" alt="RMI Government Seal" />
-    <h2>Secure Online Passport Application</h2>
-    <div class="highlights">
-      <p>
-        The <strong>Passport Act 2020</strong> governs the issuance of Regular, Official, and Diplomatic passports 
-        to lawful Marshallese citizens. Applications are reviewed by a designated Passport Review Panel under the 
-        supervision of the Attorney General. Providing false information is a criminal offense under this act.
-      </p>
-    </div>
-    <div class="actions">
-      <a class="btn-primary" href="#" onclick="showConsentModal()" id="start-application-btn">Start Application</a>
-      <a class="btn-primary" href="PL-2020-18-THE-PASSPORT-ACT2020.pdf" target="_blank">View Full Passport Act (PDF)</a>
-    </div>
+    <h1>Republic of the Marshall Islands – Passport Portal</h1>
+    <button id="login-btn">Login</button>
   </div>
 
-<!-- Consent Modal -->
-<div id="consentModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
-  <div style="background:white; padding:30px; border-radius:10px; max-width:500px; width:90%; text-align:center;">
-    <h2>Consent Required</h2>
-    <p>You are about to create an account with the Republic of the Marshall Islands.</p>
-    <p>By continuing, you confirm you are a lawful Marshallese citizen and all information provided will be true and accurate.</p>
-    <p>Submission of false information is a criminal offense under the Passport Act 2020.</p>
-    <div style="margin-top:20px;">
-      <button onclick="document.getElementById('consentModal').style.display='none'" style="margin-right:15px;">Cancel</button>
-      <button onclick="window.location.href='register.html'">I Agree & Continue</button>
-    </div>
+  <div class="main-content">
+    <h2>Welcome to the Passport Portal</h2>
+    <p>Use the options below to continue.</p>
+    <button class="action" onclick="window.location.href='step-1.html'">Start Application</button>
+    <button class="action" onclick="window.location.href='dashboard.html'">Go to Dashboard</button>
   </div>
-</div>
 
-<script>
-  function showConsentModal() {
-    document.getElementById('consentModal').style.display = 'flex';
-  }
-</script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
 
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-  const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
-  supabase.auth.getUser().then(({
-    data: { user }
-  }) => {
-    const btn = document.getElementById("start-application-btn");
-    if (!btn) return;
-    btn.onclick = () => {
-      window.location.href = user ? "step-1.html" : "register.html";
-    };
-  });
-</script>
-</body>
-
-</html>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-  const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
-  const loginBtn = document.getElementById('login-btn');
-  supabase.auth.getSession().then(({
-    data: { session }
-  }) => {
-    if (session) {
-      loginBtn.textContent = 'Logout';
-      loginBtn.onclick = async () => {
-        await supabase.auth.signOut();
-        window.location.href = '/login.html';
-      };
-    } else {
-      loginBtn.onclick = () => window.location.href = '/login.html';
-    }
-  });
-</script>
-
-<br/>
-<button onclick="window.location.href='/dashboard.html'">Go to Dashboard</button>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-  const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
-
-  const loginBtn = document.getElementById('login-btn');
-  if (loginBtn) {
+    const loginBtn = document.getElementById('login-btn');
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+      if (!session) {
+        window.location.href = '/login.html';
+      } else {
         loginBtn.textContent = 'Logout';
         loginBtn.onclick = async () => {
           await supabase.auth.signOut();
           window.location.href = '/login.html';
         };
-      } else {
-        loginBtn.onclick = () => window.location.href = '/login.html';
       }
     });
-  }
-
-  // Add "Go to Dashboard" button
-  const btn = document.createElement("button");
-  btn.textContent = "Go to Dashboard";
-  btn.onclick = () => window.location.href = "/dashboard.html";
-  btn.style.marginTop = "30px";
-  btn.style.padding = "12px 20px";
-  btn.style.fontWeight = "bold";
-  btn.style.display = "block";
-  btn.style.marginLeft = "auto";
-  btn.style.marginRight = "auto";
-  document.body.appendChild(btn);
-</script>
+  </script>
+</body>
+</html>
