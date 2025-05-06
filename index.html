@@ -118,13 +118,14 @@
   </style>
 </head>
 <body>
+<a id="auth-toggle" style="position:absolute;top:20px;right:20px;color:#003366;font-weight:bold;text-decoration:none;">Auth</a>
   <div class="header">
     <h1>Republic of the Marshall Islands – Passport Application System</h1>
     <a class="btn" href="login.html">Login</a>
   </div>
   <div class="main">
     <img src="seal.png" alt="RMI Government Seal" />
-    <h2><button id="logout-btn" class="btn-primary" style="float:right;margin-top:-40px;">Logout</button>Secure Online Passport Application</h2>
+    <h2>Secure Online Passport Application</h2>
     <div class="highlights">
       <p>
         The <strong>Passport Act 2020</strong> governs the issuance of Regular, Official, and Diplomatic passports 
@@ -190,6 +191,29 @@
     };
   }
 </script>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient(
+    'https://svkusntallxdxrsgdqzt.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ'
+  );
+  const authBtn = document.getElementById("auth-toggle");
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    if (user && authBtn) {
+      authBtn.textContent = "Logout";
+      authBtn.href = "#";
+      authBtn.onclick = async () => {
+        await supabase.auth.signOut();
+        window.location.href = "index.html";
+      };
+    } else if (authBtn) {
+      authBtn.textContent = "Login";
+      authBtn.href = "login.html";
+    }
+  });
+</script>
 </body>
+
 
 </html>
