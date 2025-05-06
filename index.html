@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RMI Passport Application Portal</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RMI Passport Application Portal</title>
+<style>
     * {
       box-sizing: border-box;
     }
@@ -110,35 +111,67 @@
         width: 100%;
       }
     }
-  </style>
+  
+    .header-flex {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background-color: #002e5b;
+      color: white;
+    }
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .header-title img {
+      height: 60px;
+    }
+    .header-title h1 {
+      font-size: 1.2rem;
+      margin: 0;
+      white-space: nowrap;
+    }
+    #login-btn {
+      background: white;
+      color: #002e5b;
+      border: none;
+      padding: 8px 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    </style>
 </head>
 <body>
-  <header>
-    <img src="seal.png" alt="RMI Seal" />
-    <h1>Republic of the Marshall Islands – Passport Portal</h1>
-    <button id="login-btn">Logout</button>
-  </header>
-
-  <main>
-    <div class="card">
-      <h2>Before You Apply</h2>
-      <p>Please review the following legal responsibilities before submitting your passport application:</p>
-      <ul>
-        <li>You must be a lawful Marshallese citizen to apply.</li>
-        <li>Providing false information is a criminal offense under the Passport Act 2020.</li>
-        <li>Applications are reviewed by a designated Passport Review Panel.</li>
-        <li>Supporting documents verifying your identity and eligibility are required.</li>
-      </ul>
-    </div>
-
-    <div class="actions">
-      <button class="action-btn" id="start-btn">Start Application</button>
-      <button class="action-btn" onclick="window.location.href='dashboard.html'">My Dashboard</button>
-      <button class="action-btn" onclick="window.open('PL-2020-18-THE-PASSPORT-ACT2020.pdf', '_blank')">View Passport Act (PDF)</button>
-    </div>
-  </main>
-
-  <script type="module">
+<header>
+<div class="header-flex">
+<div class="header-title">
+<img alt="RMI Seal" src="seal.png"/>
+<h1>Republic of the Marshall Islands – Passport Portal</h1>
+</div>
+<button id="login-btn">Logout</button>
+</div>
+</header>
+<main>
+<div class="card">
+<h2>Before You Apply</h2>
+<p>Please review the following legal responsibilities before submitting your passport application:</p>
+<ul>
+<li>You must be a lawful Marshallese citizen to apply.</li>
+<li>Providing false information is a criminal offense under the Passport Act 2020.</li>
+<li>Applications are reviewed by a designated Passport Review Panel.</li>
+<li>Supporting documents verifying your identity and eligibility are required.</li>
+</ul>
+</div>
+<div class="actions">
+<button class="action-btn" id="start-btn">Start Application</button>
+<button class="action-btn" onclick="window.location.href='dashboard.html'">My Dashboard</button>
+<button class="action-btn" onclick="window.open('PL-2020-18-THE-PASSPORT-ACT2020.pdf', '_blank')">View Passport Act (PDF)</button>
+</div>
+</main>
+<script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
