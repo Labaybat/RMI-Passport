@@ -68,10 +68,9 @@
   <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-<a id="auth-toggle" style="position:absolute;top:20px;right:20px;color:#003366;font-weight:bold;text-decoration:none;">Auth</a>
   <div class="container">
     <h1>Passport Application – Step 3 of 5</h1>
-    <h2>Citizenship Verification</h2>
+    <h2><button id="logout-btn" class="btn-primary" style="float:right;margin-top:-40px;">Logout</button>Citizenship Verification</h2>
     
     <div style="margin-top:20px;margin-bottom:20px;">
       <h2 style="color:#003366;">Step 3 of 5 – Employment & Physical Info</h2>
@@ -194,28 +193,5 @@
     };
   }
 </script>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-  const supabase = createClient(
-    'https://svkusntallxdxrsgdqzt.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ'
-  );
-  const authBtn = document.getElementById("auth-toggle");
-  supabase.auth.getUser().then(({ data: { user } }) => {
-    if (user && authBtn) {
-      authBtn.textContent = "Logout";
-      authBtn.href = "#";
-      authBtn.onclick = async () => {
-        await supabase.auth.signOut();
-        window.location.href = "index.html";
-      };
-    } else if (authBtn) {
-      authBtn.textContent = "Login";
-      authBtn.href = "login.html";
-    }
-  });
-</script>
 </body>
-
 </html>
