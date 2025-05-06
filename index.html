@@ -133,7 +133,7 @@
       </p>
     </div>
     <div class="actions">
-      <a class="btn-primary" href="#" onclick="showConsentModal()">Start Application</a>
+      <a class="btn-primary" href="#" onclick="showConsentModal()" id="start-application-btn">Start Application</a>
       <a class="btn-primary" href="PL-2020-18-THE-PASSPORT-ACT2020.pdf" target="_blank">View Full Passport Act (PDF)</a>
     </div>
   </div>
@@ -158,5 +158,20 @@
   }
 </script>
 
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
+  supabase.auth.getUser().then(({
+    data: { user }
+  }) => {
+    const btn = document.getElementById("start-application-btn");
+    if (!btn) return;
+    btn.onclick = () => {
+      window.location.href = user ? "step-1.html" : "register.html";
+    };
+  });
+</script>
 </body>
+
 </html>
