@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>Admin Dashboard – RMI Passport Portal</title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="styles.css" rel="stylesheet"/>
-<script src="auth.js" type="module"></script>
-<style>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard – RMI Passport Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="auth.js"></script>
+  <style>
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #f8fafc;
@@ -50,47 +49,86 @@
       color: #004085;
     }
   </style>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
 
+    document.addEventListener("DOMContentLoaded", async () => {
+      const { data: session } = await supabase.auth.getUser();
+      const user = session.user;
+
+      if (!user || user.email !== 'superadmin@example.com') {
+        alert('Access denied.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      loadApplications();
+
+      async function loadApplications() {
+        const { data, error } = await supabase
+          .from('passport_applications')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        const table = document.getElementById("admin-table");
+        if (error) {
+          table.innerHTML = `<tr><td colspan="6">Error loading data: {error.message}</td></tr>`;
+        } else {
+          table.innerHTML = data.map(row => `
+            <tr>
+              <td>{new Date(row.created_at).toLocaleDateString()}</td>
+              <td>{row.first_name} {row.last_name}</td>
+              <td>{row.email}</td>
+              <td>{row.passport_type}</td>
+              <td>
+                <select onchange="updateStatus('{row.id}', this.value)">
+                  <option value="Submitted" {row.status === 'Submitted' ? 'selected' : ''}>Submitted</option>
+                  <option value="Processing" {row.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                  <option value="Approved" {row.status === 'Approved' ? 'selected' : ''}>Approved</option>
+                  <option value="Rejected" {row.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+                </select>
+              </td>
+            </tr>`).join('');
+        }
+      }
+
+      window.updateStatus = async function(id, status) {
+        const { error } = await supabase
+          .from('passport_applications')
+          .update({ status })
+          .eq('id', id);
+
+        if (error) {
+          alert('Failed to update status: ' + error.message);
+        } else {
+          console.log('Status updated');
+        }
+      }
+    });
+  </script>
 </head>
-<body><a href="login.html" id="auth-button">Login</a>
-<div class="dashboard">
-<h1>Admin Dashboard</h1>
-<p style="text-align:center;">Only accessible to: <strong>superadmin@example.com</strong></p>
-<div class="filter-section">
-<!-- Filter UI (optional future) -->
-</div>
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Name</th>
-<th>Email</th>
-<th>Type</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody id="admin-table">
-<tr><td colspan="6">Loading applications...</td></tr>
-</tbody>
-</table>
-</div>
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'public-anon-key');
-const { data: { user } } = await supabase.auth.getUser();
-const btn = document.getElementById("auth-button");
-if (btn) {
-  if (user) {
-    btn.textContent = "Logout";
-    btn.href = "#";
-    btn.onclick = async () => {
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    };
-  } else {
-    btn.textContent = "Login";
-    btn.href = "login.html";
-  }
-}
-</script></body>
+<body>
+  <div class="dashboard">
+    <h1>Admin Dashboard</h1>
+    <p style="text-align:center;">Only accessible to: <strong>superadmin@example.com</strong></p>
+    <div class="filter-section">
+      <!-- Filter UI (optional future) -->
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="admin-table">
+        <tr><td colspan="6">Loading applications...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
 </html>

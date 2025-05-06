@@ -65,5 +65,16 @@ a {
     <p>Already registered? <a href="login.html">Log in here</a></p>
   </div>
   <script type="module" src="auth.js"></script>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'public-anon-key');
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    window.location.href = 'landing.html';
+  }
+});
+</script>
+
 </body>
 </html>

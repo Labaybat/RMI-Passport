@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <style>
@@ -62,59 +61,67 @@
     border: none;
   }
 </style>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Step 1 – Personal Information</title>
-<link href="../styles.css" rel="stylesheet"/>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step 1 – Personal Information</title>
+  <link rel="stylesheet" href="../styles.css">
 </head>
-<body><a href="login.html" id="auth-button">Login</a>
-<div class="container">
-<h1>Passport Application – Step 1 of 5</h1>
-<h2><button class="btn-primary" id="logout-btn" style="float:right;margin-top:-40px;">Logout</button>Personal Information</h2>
-<div style="margin-top:20px;margin-bottom:20px;">
-<h2 style="color:#003366;">Step 1 of 5 – Personal Information</h2>
-<div style="background:#e0e0e0;border-radius:4px;height:8px;overflow:hidden;">
-<div style="width:20%;background:#003366;height:8px;"></div>
-</div>
-</div>
+<body>
+  <div class="container">
+    <h1>Passport Application – Step 1 of 5</h1>
+    <h2><button id="logout-btn" class="btn-primary" style="float:right;margin-top:-40px;">Logout</button>Personal Information</h2>
+    
+    <div style="margin-top:20px;margin-bottom:20px;">
+      <h2 style="color:#003366;">Step 1 of 5 – Personal Information</h2>
+      <div style="background:#e0e0e0;border-radius:4px;height:8px;overflow:hidden;">
+        <div style="width:20%;background:#003366;height:8px;"></div>
+      </div>
+    </div>
+    
 <form action="step-2.html" method="get">
-<input name="first_name" placeholder="First Name" required="" type="text"/>
-<input name="middle_name" placeholder="Middle Name" type="text"/>
-<input name="last_name" placeholder="Last Name" required="" type="text"/>
-<input name="dob" placeholder="Date of Birth" required="" type="date"/>
-<input name="place_of_birth" placeholder="Place of Birth" required="" type="text"/>
-<select name="gender" required="">
-<option value="">Select Gender</option>
-<option>Male</option>
-<option>Female</option>
-<option>Other</option>
-</select>
-<select name="marital_status" required="">
-<option value="">Marital Status</option>
-<option>Single</option>
-<option>Married</option>
-<option>Divorced</option>
-<option>Widowed</option>
-</select>
-<input name="ssn" placeholder="Social Security Number" required="" type="text"/>
-<input name="nationality" placeholder="Nationality" required="" type="text"/>
-<select name="passport_type" required="">
-<option value="">Passport Type</option>
-<option>Regular</option>
-<option>Official</option>
-<option>Diplomatic</option>
-</select>
-<div style="margin-top: 20px; display: flex; justify-content: space-between;">
-<a href="index.html" style="background: #ccc; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Back</a>
-<button style="background: #003c8f; color: white; padding: 10px 20px; border: none; border-radius: 5px;" type="submit">Next</button>
-<button onclick='alert("Progress saved!")' style="background: #555; color: white; padding: 10px 20px; border: none; border-radius: 5px;" type="button">Save</button>
+      <input type="text" name="first_name" placeholder="First Name" required />
+      <input type="text" name="middle_name" placeholder="Middle Name" />
+      <input type="text" name="last_name" placeholder="Last Name" required />
+      <input type="date" name="dob" placeholder="Date of Birth" required />
+      <input type="text" name="place_of_birth" placeholder="Place of Birth" required />
+      <select name="gender" required>
+        <option value="">Select Gender</option>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
+      </select>
+      <select name="marital_status" required>
+        <option value="">Marital Status</option>
+        <option>Single</option>
+        <option>Married</option>
+        <option>Divorced</option>
+        <option>Widowed</option>
+      </select>
+      <input type="text" name="ssn" placeholder="Social Security Number" required />
+      <input type="text" name="nationality" placeholder="Nationality" required />
+      <select name="passport_type" required>
+        <option value="">Passport Type</option>
+        <option>Regular</option>
+        <option>Official</option>
+        <option>Diplomatic</option>
+      </select>
+      
+<div style='margin-top: 20px; display: flex; justify-content: space-between;'>
+  <a href='index.html' style='background: #ccc; padding: 10px 20px; border-radius: 5px; text-decoration: none;'>Back</a>
+  <button type='submit' style='background: #003c8f; color: white; padding: 10px 20px; border: none; border-radius: 5px;'>Next</button>
+  <button type='button' onclick='alert("Progress saved!")' style='background: #555; color: white; padding: 10px 20px; border: none; border-radius: 5px;'>Save</button>
 </div>
-</form>
-<div id="autosave-msg" style="display:none; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-top: 10px; border-radius: 5px;">
+
+    </form>
+
+    <div id="autosave-msg" style="display:none; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-top: 10px; border-radius: 5px;">
       ✅ Progress saved.
     </div>
-</div>
-<script>
+    
+  </div>
+
+  <script>
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.querySelector("form");
       const saved = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
@@ -147,7 +154,8 @@
       });
     });
   </script>
-<script>
+
+  <script>
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.querySelector("form");
       const saved = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
@@ -215,22 +223,21 @@
   </script>
 
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'public-anon-key');
-const { data: { user } } = await supabase.auth.getUser();
-const btn = document.getElementById("auth-button");
-if (btn) {
-  if (user) {
-    btn.textContent = "Logout";
-    btn.href = "#";
-    btn.onclick = async () => {
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient(
+    'https://svkusntallxdxrsgdqzt.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ'
+  );
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    if (!user) window.location.href = "login.html";
+  });
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.onclick = async () => {
       await supabase.auth.signOut();
-      window.location.href = "login.html";
+      window.location.href = "index.html";
     };
-  } else {
-    btn.textContent = "Login";
-    btn.href = "login.html";
   }
-}
-</script></body>
+</script>
+</body>
 </html>
