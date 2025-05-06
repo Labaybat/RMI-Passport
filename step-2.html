@@ -70,8 +70,16 @@
 <body>
   <div class="container">
     <h1>Passport Application – Step 2 of 5</h1>
-    <h2>Contact Details</h2>
-    <form action="step-3.html" method="get">
+    <h2><button id="logout-btn" class="btn-primary" style="float:right;margin-top:-40px;">Logout</button>Contact Details</h2>
+    
+    <div style="margin-top:20px;margin-bottom:20px;">
+      <h2 style="color:#003366;">Step 2 of 5 – Contact & Residency</h2>
+      <div style="background:#e0e0e0;border-radius:4px;height:8px;overflow:hidden;">
+        <div style="width:40%;background:#003366;height:8px;"></div>
+      </div>
+    </div>
+    
+<form action="step-3.html" method="get">
       <input type="text" name="address" placeholder="Mailing Address" required />
       <input type="text" name="city" placeholder="City" required />
       <input type="text" name="state" placeholder="State/Province" required />
@@ -171,5 +179,23 @@
       }
     });
   </script>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient(
+    'https://svkusntallxdxrsgdqzt.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ'
+  );
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    if (!user) window.location.href = "login.html";
+  });
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+      await supabase.auth.signOut();
+      window.location.href = "index.html";
+    };
+  }
+</script>
 </body>
 </html>
