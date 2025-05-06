@@ -1,165 +1,144 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>RMI Passport Portal</title>
-<style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RMI Passport Application Portal</title>
+  <style>
     * {
       box-sizing: border-box;
     }
 
-    html, body {
+    body, html {
       margin: 0;
       padding: 0;
       font-family: 'Segoe UI', sans-serif;
-      height: 100%;
-      background: #f4f8fb;
-      color: #002e5b;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #eef3f8;
     }
 
-    .header {
+    header {
       background-color: #002e5b;
       color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      text-align: center;
+      padding: 1rem 1rem 0.5rem;
     }
 
-    .header h1 {
-      margin: 0;
-      font-size: 1.5rem;
+    header img {
+      height: 70px;
+      margin-bottom: 10px;
+    }
+
+    header h1 {
+      margin: 0.3rem 0;
+      font-size: 1.4rem;
     }
 
     #login-btn {
       background: white;
       color: #002e5b;
       border: none;
-      padding: 10px 20px;
       font-weight: bold;
-      border-radius: 5px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      margin-top: 0.5rem;
       cursor: pointer;
     }
 
-    .main {
+    main {
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: space-between;
-      height: calc(100vh - 80px);
-      padding: 2rem 1rem;
-    }
-
-    .main h2 {
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .main p {
-      margin-top: 0;
-      margin-bottom: 2rem;
-      color: #333;
+      align-items: center;
+      height: calc(100vh - 130px);
+      padding: 1rem;
     }
 
     .card {
-      background: white;
+      background-color: white;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+      padding: 2rem;
       border-radius: 10px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      max-width: 600px;
+      max-width: 700px;
       width: 100%;
-      margin-bottom: 2rem;
+      text-align: center;
     }
 
-    .button-group {
+    .card h2 {
+      margin-top: 0;
+      color: #003c8f;
+    }
+
+    .card ul {
+      text-align: left;
+      margin: 1rem auto;
+      max-width: 600px;
+    }
+
+    .card ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .actions {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
       justify-content: center;
     }
 
-    .action {
-      background-color: #003c8f;
-      color: white;
+    .action-btn {
       padding: 12px 24px;
       border: none;
-      border-radius: 6px;
+      background-color: #003c8f;
+      color: white;
       font-weight: bold;
+      border-radius: 6px;
       cursor: pointer;
       min-width: 180px;
     }
 
-    .action:hover {
+    .action-btn:hover {
       background-color: #002a6c;
     }
 
-    ul {
-      text-align: left;
-      margin-top: 1rem;
-    }
-
     @media (max-width: 600px) {
-      .main h2 {
-        font-size: 1.3rem;
+      .card {
+        padding: 1.2rem;
       }
-      .action {
+      .action-btn {
         width: 100%;
-        min-width: unset;
       }
     }
-  
-    .card h2, .card p {
-      text-align: center;
-    }
-    
-    html, body {
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-around;
-      height: calc(100vh - 100px);
-    }
-
-    .card {
-      flex-shrink: 0;
-    }
-
-    .button-group {
-      flex-shrink: 0;
-    }
-    </style>
+  </style>
 </head>
 <body>
-<div class="header" style="flex-direction: column; align-items: center; text-align: center; padding: 1.2rem 1rem;">
-<img alt="RMI Seal" src="seal.png" style="height: 70px; margin-bottom: 10px;"/><h1>Republic of the Marshall Islands – Passport Portal</h1>
-<button id="login-btn">Logout</button>
-</div>
-<div class="main" style="align-items: center; justify-content: center; padding: 1rem; gap: 1rem;">
-<div class="card">
-<h2>Before You Apply</h2>
-<p>Please review the following legal responsibilities before submitting your passport application:</p>
-<ul>
-<li>You must be a lawful Marshallese citizen to apply.</li>
-<li>Providing false or misleading information is a criminal offense under the Passport Act 2020.</li>
-<li>Applications are reviewed by a designated Passport Review Panel under the Attorney General’s supervision.</li>
-<li>Supporting documents verifying your identity and eligibility are required.</li>
-</ul>
-</div>
-<div class="button-group">
-<button class="action" id="start-btn">Start Application</button>
-<button class="action" onclick="window.location.href='dashboard.html'">My Dashboard</button>
-<button class="action" onclick="window.open('PL-2020-18-THE-PASSPORT-ACT2020.pdf', '_blank')">View Full Passport Act (PDF)</button>
-</div>
-</div>
-<script type="module">
+  <header>
+    <img src="seal.png" alt="RMI Seal" />
+    <h1>Republic of the Marshall Islands – Passport Portal</h1>
+    <button id="login-btn">Logout</button>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Before You Apply</h2>
+      <p>Please review the following legal responsibilities before submitting your passport application:</p>
+      <ul>
+        <li>You must be a lawful Marshallese citizen to apply.</li>
+        <li>Providing false information is a criminal offense under the Passport Act 2020.</li>
+        <li>Applications are reviewed by a designated Passport Review Panel.</li>
+        <li>Supporting documents verifying your identity and eligibility are required.</li>
+      </ul>
+    </div>
+
+    <div class="actions">
+      <button class="action-btn" id="start-btn">Start Application</button>
+      <button class="action-btn" onclick="window.location.href='dashboard.html'">My Dashboard</button>
+      <button class="action-btn" onclick="window.open('PL-2020-18-THE-PASSPORT-ACT2020.pdf', '_blank')">View Passport Act (PDF)</button>
+    </div>
+  </main>
+
+  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
