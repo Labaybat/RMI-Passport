@@ -1,141 +1,88 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>RMI Passport – Home</title>
-<link href="styles.css" rel="stylesheet"/>
-<style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f2f7fc;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RMI Passport Portal</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
       margin: 0;
       padding: 0;
-      text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100%;
+      background: #f4f8fb;
+      color: #002e5b;
     }
+
     .header {
       background-color: #002e5b;
       color: white;
-      padding: 1rem;
-      position: relative;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
+
     .header h1 {
       margin: 0;
+      font-size: 1.5rem;
     }
+
     #login-btn {
-      position: absolute;
-      top: 15px;
-      right: 30px;
-      padding: 10px 16px;
-      background-color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .main-content {
-      padding: 3rem 1rem;
-    }
-    button.action {
-      background-color: #003c8f;
-      color: white;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 6px;
-      margin: 10px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    button.action:hover {
-      background-color: #002a6c;
-    }
-  
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-    .section {
-      margin-bottom: 3rem;
-    }
-    .button-row {
-      display: flex;
-      justify-content: center;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-      margin-top: 2rem;
-    }
-    .action {
-      min-width: 200px;
-    }
-    h2 {
+      background: white;
       color: #002e5b;
-    }
-    ul {
-      list-style-type: disc;
-      padding-left: 20px;
-      text-align: left;
-    }
-    
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f8fb;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
     }
 
-    .full-wrapper {
+    .main {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      height: 100vh;
-      padding: 0;
-      margin: 0;
-    }
-
-    .container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
       align-items: center;
-      padding: 1rem;
+      justify-content: space-between;
+      height: calc(100vh - 80px);
+      padding: 2rem 1rem;
+    }
+
+    .main h2 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .main p {
+      margin-top: 0;
+      margin-bottom: 2rem;
+      color: #333;
     }
 
     .card {
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      padding: 2rem;
-      max-width: 700px;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      max-width: 600px;
       width: 100%;
       margin-bottom: 2rem;
     }
 
-    h1, h2 {
-      color: #002e5b;
-    }
-
-    ul {
-      list-style-type: disc;
-      padding-left: 1.5rem;
-      text-align: left;
-    }
-
-    .button-row {
+    .button-group {
       display: flex;
-      justify-content: center;
-      gap: 1rem;
       flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
     }
 
     .action {
-      padding: 12px 24px;
       background-color: #003c8f;
       color: white;
+      padding: 12px 24px;
       border: none;
       border-radius: 6px;
       font-weight: bold;
@@ -147,56 +94,48 @@
       background-color: #002a6c;
     }
 
+    ul {
+      text-align: left;
+      margin-top: 1rem;
+    }
+
     @media (max-width: 600px) {
-      .card {
-        padding: 1.5rem;
+      .main h2 {
+        font-size: 1.3rem;
       }
-
-      h1 {
-        font-size: 1.5rem;
-      }
-
-      h2 {
-        font-size: 1.2rem;
-      }
-
       .action {
         width: 100%;
         min-width: unset;
       }
-
-      .button-row {
-        flex-direction: column;
-      }
     }
-    </style>
+  </style>
 </head>
 <body>
+  <div class="header">
+    <h1>Republic of the Marshall Islands – Passport Portal</h1>
+    <button id="login-btn">Logout</button>
+  </div>
 
+  <div class="main">
+    <div class="card">
+      <h2>Before You Apply</h2>
+      <p>Please review the following legal responsibilities before submitting your passport application:</p>
+      <ul>
+        <li>You must be a lawful Marshallese citizen to apply.</li>
+        <li>Providing false or misleading information is a criminal offense under the Passport Act 2020.</li>
+        <li>Applications are reviewed by a designated Passport Review Panel under the Attorney General’s supervision.</li>
+        <li>Supporting documents verifying your identity and eligibility are required.</li>
+      </ul>
+    </div>
 
+    <div class="button-group">
+      <button class="action" id="start-btn">Start Application</button>
+      <button class="action" onclick="window.location.href='dashboard.html'">My Dashboard</button>
+      <button class="action" onclick="window.open('PL-2020-18-THE-PASSPORT-ACT2020.pdf', '_blank')">View Full Passport Act (PDF)</button>
+    </div>
+  </div>
 
-
-<div class="full-wrapper"><div class="header">
-<h1>Republic of the Marshall Islands – Passport Portal</h1>
-<button id="login-btn">Login</button>
-</div><div class="main-content container section">
-<h2>Welcome to the Passport Portal</h2><br/>
-<p>Use the options below to continue.</p>
-<div class="container section">
-<h2>Before You Apply</h2>
-<p style="max-width: 800px; margin: 0 auto; font-size: 1rem;">
-    Please ensure you have read and understood the following key legal responsibilities before submitting your application:
-  </p>
-<ul style="text-align: left; max-width: 800px; margin: 1rem auto;">
-<li>You must be a lawful Marshallese citizen to apply for a passport.</li>
-<li>Providing false or misleading information is a criminal offense under the Passport Act 2020.</li>
-<li>All applications are reviewed by the Passport Review Panel under supervision of the Attorney General.</li>
-<li>You may be required to provide supporting documents verifying your identity and eligibility.</li>
-</ul>
-</div>
-<div class="button-row"><button class="action" onclick="window.location.href='step-1.html'">Start Application</button><button class="action" onclick="window.location.href='dashboard.html'">My Dashboard</button><button class="action" onclick="window.open('PL-2020-18-THE-PASSPORT-ACT2020.pdf', '_blank')">
-      View Full Passport Act (PDF)
-    </button></div></div><script type="module">
+  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
@@ -206,20 +145,20 @@
       if (!session) {
         window.location.href = '/login.html';
       } else {
-        loginBtn.textContent = 'Logout';
         loginBtn.onclick = async () => {
           await supabase.auth.signOut();
           window.location.href = '/login.html';
         };
       }
     });
-  </script><script>
-  document.querySelector("button[onclick*='step-1.html']").onclick = function(e) {
-    e.preventDefault();
-    const confirmed = confirm("By continuing, you confirm that all information you provide will be true and correct under penalty of law. Do you wish to proceed?");
-    if (confirmed) {
-      window.location.href = 'step-1.html';
-    }
-  };
-</script></div></body>
+
+    document.getElementById("start-btn").onclick = function(e) {
+      e.preventDefault();
+      const confirmed = confirm("By continuing, you confirm that all information you provide will be true and correct under penalty of law. Do you wish to proceed?");
+      if (confirmed) {
+        window.location.href = 'step-1.html';
+      }
+    };
+  </script>
+</body>
 </html>
