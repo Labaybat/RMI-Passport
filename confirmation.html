@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Application Submitted</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Thank You</h1>
+    <p>Your application has been successfully submitted.</p>
+    <p>A confirmation email will be sent to you shortly with a copy of your application.</p>
+    <a href="dashboard.html">Go to Dashboard</a>
+  </div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'public-anon-key');
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) window.location.href = 'index.html';
+</script>
+
+</body>
+</html>

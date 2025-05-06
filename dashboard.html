@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Dashboard – Passport Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="auth.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 20px;
+    }
+    .dashboard {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #003366;
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #003366;
+      color: white;
+    }
+    .status {
+      font-weight: bold;
+      color: #003366;
+    }
+  </style>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const { data: session } = await supabase.auth.getUser();
+      const user = session.user;
+
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      document.getElementById("user-email").textContent = user.email;
+
+      const { data, error } = await supabase
+        .from('passport_applications')
+        .select('created_at, status, passport_type, sign_date')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      const table = document.getElementById("app-table");
+
+      if (error) {
+        table.innerHTML = `<tr><td colspan="4">Error loading applications: ${error.message}</td></tr>`;
+      } else if (data.length === 0) {
+        table.innerHTML = `<tr><td colspan="4">No applications found.</td></tr>`;
+      } else {
+        table.innerHTML = data.map(app => `
+          <tr>
+            <td>${new Date(app.created_at).toLocaleDateString()}</td>
+            <td>${app.passport_type}</td>
+            <td>${app.sign_date || '—'}</td>
+            <td class="status">${app.status}</td>
+          </tr>`).join('');
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="dashboard">
+    <h1>User Dashboard</h1>
+    <p>Welcome, <strong id="user-email">loading...</strong></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Date Submitted</th>
+          <th>Passport Type</th>
+          <th>Signed On</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="app-table">
+        <tr><td colspan="4">Loading applications...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient(
+    'https://svkusntallxdxrsgdqzt.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ'
+  );
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    if (!user) window.location.href = "login.html";
+  });
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+      await supabase.auth.signOut();
+      window.location.href = "index.html";
+    };
+  }
+</script>
+</body>
+</html>

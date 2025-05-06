@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Account – RMI Passport Portal</title>
+  <style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f5f9ff;
+  color: #222;
+}
+h1, h2 {
+  color: #002e5b;
+}
+.container {
+  max-width: 450px;
+  margin: 80px auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  text-align: center;
+}
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+button {
+  width: 100%;
+  padding: 12px;
+  background: #003c8f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:hover {
+  background: #002a6c;
+}
+a {
+  color: #003c8f;
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>RMI Passport Portal</h1>
+    <h2>Create an Account</h2>
+    <form id="register-form">
+      <input type="text" name="full_name" placeholder="Full Name" required />
+      <input type="date" name="dob" placeholder="Date of Birth" required />
+      <input type="tel" name="phone" placeholder="Phone Number" required />
+      <input type="email" name="email" placeholder="Email Address" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <input type="password" name="confirm_password" placeholder="Confirm Password" required />
+      <div style="margin: 20px 0;">[CAPTCHA placeholder]</div>
+      <button type="submit">Create Account</button>
+    </form>
+    <p>Already registered? <a href="login.html">Log in here</a></p>
+  </div>
+  <script type="module" src="auth.js"></script>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'public-anon-key');
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    window.location.href = 'landing.html';
+  }
+});
+</script>
+
+</body>
+</html>
