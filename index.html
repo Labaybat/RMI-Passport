@@ -77,17 +77,111 @@
       padding-left: 20px;
       text-align: left;
     }
+    
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f8fb;
+    }
+
+    .full-wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100vh;
+      padding: 0;
+      margin: 0;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 2rem;
+      max-width: 700px;
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+
+    h1, h2 {
+      color: #002e5b;
+    }
+
+    ul {
+      list-style-type: disc;
+      padding-left: 1.5rem;
+      text-align: left;
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .action {
+      padding: 12px 24px;
+      background-color: #003c8f;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      min-width: 180px;
+    }
+
+    .action:hover {
+      background-color: #002a6c;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 1.5rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+      }
+
+      .action {
+        width: 100%;
+        min-width: unset;
+      }
+
+      .button-row {
+        flex-direction: column;
+      }
+    }
     </style>
 </head>
 <body>
-<div class="header">
+
+
+
+
+<div class="full-wrapper"><div class="header">
 <h1>Republic of the Marshall Islands – Passport Portal</h1>
 <button id="login-btn">Login</button>
-</div>
-<div class="main-content container section">
+</div><div class="main-content container section">
 <h2>Welcome to the Passport Portal</h2><br/>
 <p>Use the options below to continue.</p>
-
 <div class="container section">
 <h2>Before You Apply</h2>
 <p style="max-width: 800px; margin: 0 auto; font-size: 1rem;">
@@ -100,11 +194,9 @@
 <li>You may be required to provide supporting documents verifying your identity and eligibility.</li>
 </ul>
 </div>
-
 <div class="button-row"><button class="action" onclick="window.location.href='step-1.html'">Start Application</button><button class="action" onclick="window.location.href='dashboard.html'">My Dashboard</button><button class="action" onclick="window.open('PL-2020-18-THE-PASSPORT-ACT2020.pdf', '_blank')">
       View Full Passport Act (PDF)
-    </button></div></div>
-<script type="module">
+    </button></div></div><script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
@@ -121,9 +213,7 @@
         };
       }
     });
-  </script>
-
-<script>
+  </script><script>
   document.querySelector("button[onclick*='step-1.html']").onclick = function(e) {
     e.preventDefault();
     const confirmed = confirm("By continuing, you confirm that all information you provide will be true and correct under penalty of law. Do you wish to proceed?");
@@ -131,6 +221,5 @@
       window.location.href = 'step-1.html';
     }
   };
-</script>
-</body>
+</script></div></body>
 </html>
