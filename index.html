@@ -1,3 +1,15 @@
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
+  supabase.auth.getSession().then(({
+    data: { session }
+  }) => {
+    if (!session) {
+      window.location.href = '/login.html';
+    }
+  });
+</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -175,3 +187,25 @@
 </body>
 
 </html>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
+  const loginBtn = document.getElementById('login-btn');
+  supabase.auth.getSession().then(({
+    data: { session }
+  }) => {
+    if (session) {
+      loginBtn.textContent = 'Logout';
+      loginBtn.onclick = async () => {
+        await supabase.auth.signOut();
+        window.location.href = '/login.html';
+      };
+    } else {
+      loginBtn.onclick = () => window.location.href = '/login.html';
+    }
+  });
+</script>
+
+<br/>
+<button onclick="window.location.href='/dashboard.html'">Go to Dashboard</button>
