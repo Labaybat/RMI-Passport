@@ -1,115 +1,82 @@
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-  const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
-  supabase.auth.getSession().then(({
-    data: { session }
-  }) => {
-    if (!session) {
-      window.location.href = '/login.html';
-    }
-  });
-</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>User Dashboard – Passport Portal</title>
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="stylesheet" href="styles.css">
-  <script type="module" src="auth.js"></script>
+  <title>User Dashboard</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
-      margin: 0;
-      padding: 20px;
-    }
-    .dashboard {
-      max-width: 900px;
-      margin: 0 auto;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-      color: #003366;
-      text-align: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    th {
-      background-color: #003366;
-      color: white;
-    }
-    .status {
-      font-weight: bold;
-      color: #003366;
-    }
+    body { font-family: Arial, sans-serif; background: #f0f4fa; padding: 2em; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 2em; border-radius: 8px; }
+    h2 { text-align: center; color: #002b5c; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { padding: 0.75em; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background-color: #002b5c; color: white; }
   </style>
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
+
+    const supabase = createClient(
+      'https://svkusntallxdxrsgdqzt.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ'
+    );
 
     document.addEventListener("DOMContentLoaded", async () => {
-      const { data: session } = await supabase.auth.getUser();
-      const user = session.user;
+      const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
-        window.location.href = 'login.html';
+        window.location.href = "/login.html";
         return;
       }
 
-      document.getElementById("user-email").textContent = user.email;
+      document.getElementById("userEmail").textContent = user.email;
 
       const { data, error } = await supabase
-        .from('passport_applications')
-        .select('created_at, status, passport_type, sign_date')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      const table = document.getElementById("app-table");
+        .from("passport_applications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
       if (error) {
-        table.innerHTML = `<tr><td colspan="4">Error loading applications: ${error.message}</td></tr>`;
-      } else if (data.length === 0) {
-        table.innerHTML = `<tr><td colspan="4">No applications found.</td></tr>`;
+        console.error("Error fetching applications:", error);
+        return;
+      }
+
+      const tbody = document.querySelector("tbody");
+      if (data.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='5'>No applications found.</td></tr>";
       } else {
-        table.innerHTML = data.map(app => `
-          <tr>
+        tbody.innerHTML = "";
+        data.forEach(app => {
+          const row = `<tr>
             <td>${new Date(app.created_at).toLocaleDateString()}</td>
             <td>${app.passport_type}</td>
-            <td>${app.sign_date || '—'}</td>
-            <td class="status">${app.status}</td>
-          </tr>`).join('');
+            <td>${app.email || '-'}</td>
+            <td>${app.status || 'Pending'}</td>
+            <td>${app.signature ? `<a href="${app.signature}" target="_blank">View</a>` : '-'}</td>
+          </tr>`;
+          tbody.insertAdjacentHTML("beforeend", row);
+        });
       }
     });
   </script>
 </head>
 <body>
-  <div class="dashboard">
-    <h1>User Dashboard</h1>
-    <p>Welcome, <strong id="user-email">loading...</strong></p>
+  <div class="container">
+    <h2>User Dashboard</h2>
+    <p>Welcome, <strong id="userEmail"></strong></p>
     <table>
       <thead>
         <tr>
           <th>Date Submitted</th>
           <th>Passport Type</th>
-          <th>Signed On</th>
+          <th>Email</th>
           <th>Status</th>
+          <th>Signature</th>
         </tr>
       </thead>
-      <tbody id="app-table">
-        <tr><td colspan="4">Loading applications...</td></tr>
+      <tbody>
+        <tr><td colspan="5">Loading...</td></tr>
       </tbody>
     </table>
   </div>

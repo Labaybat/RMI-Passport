@@ -1,110 +1,96 @@
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-  const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
-  supabase.auth.getSession().then(({
-    data: { session }
-  }) => {
-    if (!session) {
-      window.location.href = '/login.html';
-    }
-  });
-</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f0f4f8;
-    color: #222;
-    margin: 0;
-    padding: 0;
-  }
-  .container {
-    max-width: 600px;
-    margin: 60px auto;
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-  h1, h2 {
-    color: #003366;
-    text-align: center;
-  }
-  input, select, textarea {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-  label {
-    display: block;
-    margin-top: 15px;
-    font-weight: bold;
-  }
-  .form-nav {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 25px;
-  }
-  .form-nav button,
-  .form-nav a {
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    text-decoration: none;
-    text-align: center;
-  }
-  .btn-next {
-    background-color: #003c8f;
-    color: white;
-    border: none;
-  }
-  .btn-back {
-    background-color: #ccc;
-    color: black;
-  }
-  .btn-save {
-    background-color: #555;
-    color: white;
-    border: none;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Passport Application - Step 5</title>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Step 5 – Declaration</title>
-  <link rel="stylesheet" href="../styles.css">
+    const supabase = createClient(
+      'https://svkusntallxdxrsgdqzt.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ'
+    );
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const form = document.getElementById('finalForm');
+
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (!user) {
+          alert("You must be logged in to submit.");
+          return;
+        }
+
+        const formData = new FormData(form);
+        const signatureFile = formData.get("signature");
+
+        let signatureUrl = null;
+
+        if (signatureFile && signatureFile.name) {
+          const fileExt = signatureFile.name.split('.').pop();
+          const fileName = `${Date.now()}.${fileExt}`;
+          const filePath = `signatures/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('passport-files')
+            .upload(filePath, signatureFile);
+
+          if (uploadError) {
+            alert('Failed to upload signature.');
+            return;
+          }
+
+          const { data: publicUrl } = supabase.storage
+            .from('passport-files')
+            .getPublicUrl(filePath);
+
+          signatureUrl = publicUrl.publicUrl;
+        }
+
+        const { error } = await supabase.from('passport_applications').insert([{
+          user_id: user.id,
+          first_name: formData.get("first_name"),
+          last_name: formData.get("last_name"),
+          dob: formData.get("dob"),
+          passport_type: formData.get("passport_type"),
+          phone: formData.get("phone"),
+          email: formData.get("email"),
+          occupation: formData.get("occupation"),
+          signature: signatureUrl,
+          created_at: new Date().toISOString()
+        }]);
+
+        if (error) {
+          alert("Submission failed.");
+          console.error(error);
+        } else {
+          alert("Application submitted successfully.");
+          window.location.href = "/dashboard.html";
+        }
+      });
+    });
+  </script>
 </head>
 <body>
-  <div class="container">
-    <h1>Passport Application – Step 5 of 5</h1>
-    <h2>Declaration & Signature</h2>
-    <form action="confirmation.html" method="get">
-      <p style="text-align:left;">
-        I hereby declare that the information provided is true and correct to the best of my knowledge. 
-        I understand that providing false information is a criminal offense under the Passport Act 2020. 
-        I authorize the Government of the Republic of the Marshall Islands to verify my information.
-      </p>
-      <label for="signature">Full Name (as Signature)</label>
-      <input type="text" name="signature" id="signature" placeholder="Full Name" required />
-      <label for="sign_date">Date</label>
-      <input type="date" name="sign_date" id="sign_date" required />
-      <div style="text-align:left; margin-top: 15px;">
-        <input type="checkbox" name="consent" id="consent" required />
-        <label for="consent">I agree to the terms and conditions above</label>
-      </div>
-      
-<div style='margin-top: 20px; display: flex; justify-content: space-between;'>
-  <a href='step-4.html' style='background: #ccc; padding: 10px 20px; border-radius: 5px; text-decoration: none;'>Back</a>
-  <button type='submit' style='background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px;'>Submit</button>
-  <button type='button' onclick='alert("Progress saved!")' style='background: #555; color: white; padding: 10px 20px; border: none; border-radius: 5px;'>Save</button>
-</div>
-
-    </form>
-  </div>
+  <h2>Final Step: Submit Your Application</h2>
+  <form id="finalForm">
+    <input type="text" name="first_name" placeholder="First Name" required /><br/>
+    <input type="text" name="last_name" placeholder="Last Name" required /><br/>
+    <input type="date" name="dob" placeholder="Date of Birth" required /><br/>
+    <input type="text" name="passport_type" placeholder="Passport Type" required /><br/>
+    <input type="text" name="phone" placeholder="Phone" /><br/>
+    <input type="email" name="email" placeholder="Email" /><br/>
+    <input type="text" name="occupation" placeholder="Occupation" /><br/>
+    <label>Upload Signature:</label>
+    <input type="file" name="signature" accept="image/*" /><br/><br/>
+    <button type="submit">Submit Application</button>
+  </form>
 </body>
 </html>
