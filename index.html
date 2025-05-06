@@ -209,3 +209,35 @@
 
 <br/>
 <button onclick="window.location.href='/dashboard.html'">Go to Dashboard</button>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
+
+  const loginBtn = document.getElementById('login-btn');
+  if (loginBtn) {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        loginBtn.textContent = 'Logout';
+        loginBtn.onclick = async () => {
+          await supabase.auth.signOut();
+          window.location.href = '/login.html';
+        };
+      } else {
+        loginBtn.onclick = () => window.location.href = '/login.html';
+      }
+    });
+  }
+
+  // Add "Go to Dashboard" button
+  const btn = document.createElement("button");
+  btn.textContent = "Go to Dashboard";
+  btn.onclick = () => window.location.href = "/dashboard.html";
+  btn.style.marginTop = "30px";
+  btn.style.padding = "12px 20px";
+  btn.style.fontWeight = "bold";
+  btn.style.display = "block";
+  btn.style.marginLeft = "auto";
+  btn.style.marginRight = "auto";
+  document.body.appendChild(btn);
+</script>
