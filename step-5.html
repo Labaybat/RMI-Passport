@@ -4,32 +4,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Final Step: Submit Your Application</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <title>Passport Application - Step 5</title>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://svkusntallxdxrsgdqzt.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ'
+    );
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const form = document.getElementById('finalForm');
+
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (!user) {
+          alert("You must be logged in to submit.");
+          return;
+        }
+
+        const formData = new FormData(form);
+        const signatureFile = formData.get("signature");
+
+        let signatureUrl = null;
+
+        if (signatureFile && signatureFile.name) {
+          const fileExt = signatureFile.name.split('.').pop();
+          const fileName = `${Date.now()}.${fileExt}`;
+          const filePath = `signatures/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('passport-files')
+            .upload(filePath, signatureFile);
+
+          if (uploadError) {
+            alert('Failed to upload signature.');
+            return;
+          }
+
+          const { data: publicUrl } = supabase.storage
+            .from('passport-files')
+            .getPublicUrl(filePath);
+
+          signatureUrl = publicUrl.publicUrl;
+        }
+
+        const { error } = await supabase.from('passport_applications').insert([{
+          user_id: user.id,
+          first_name: formData.get("first_name"),
+          last_name: formData.get("last_name"),
+          dob: formData.get("dob"),
+          passport_type: formData.get("passport_type"),
+          phone: formData.get("phone"),
+          email: formData.get("email"),
+          occupation: formData.get("occupation"),
+          signature: signatureUrl,
+          created_at: new Date().toISOString()
+        }]);
+
+        if (error) {
+          alert("Submission failed.");
+          console.error(error);
+        } else {
+          alert("Application submitted successfully.");
+          window.location.href = "/dashboard.html";
+        }
+      });
+    });
+  </script>
 </head>
 <body>
-  <div class="container">
-    <h1>Final Step: Submit Your Application</h1>
-    <form id="finalForm">
-      <input type="text" name="first_name" placeholder="First Name" required />
-      <input type="text" name="last_name" placeholder="Last Name" required />
-      <input type="date" name="dob" required />
-      <select name="passport_type" required>
-        <option value="Regular">Regular</option>
-        <option value="Official">Official</option>
-        <option value="Diplomatic">Diplomatic</option>
-      </select>
-      <input type="text" name="ssn" placeholder="SSN" required />
-      <input type="email" name="email" placeholder="Email" required />
-      <input type="text" name="occupation" placeholder="Occupation" required />
-      <label>Upload Signature:
-        <input type="file" name="signature" accept="image/*" required />
-      </label>
-      <button type="submit">Submit Application</button>
-    </form>
-    <div id="status"></div>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="step5.js"></script>
+  <h2>Final Step: Submit Your Application</h2>
+  <form id="finalForm">
+    <input type="text" name="first_name" placeholder="First Name" required /><br/>
+    <input type="text" name="last_name" placeholder="Last Name" required /><br/>
+    <input type="date" name="dob" placeholder="Date of Birth" required /><br/>
+    <input type="text" name="passport_type" placeholder="Passport Type" required /><br/>
+    <input type="text" name="phone" placeholder="Phone" /><br/>
+    <input type="email" name="email" placeholder="Email" /><br/>
+    <input type="text" name="occupation" placeholder="Occupation" /><br/>
+    <label>Upload Signature:</label>
+    <input type="file" name="signature" accept="image/*" /><br/><br/>
+    <button type="submit">Submit Application</button>
+  </form>
 </body>
 </html>
