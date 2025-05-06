@@ -6,22 +6,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Application Submitted</title>
 <link href="../styles.css" rel="stylesheet"/>
-<script type="module"><script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-const supabase = createClient('https://svkusntalldxrsagdqzt.supabase.co', 'public-anon-key')
-const user = (await supabase.auth.getUser()).data.user;
-const navBtn = document.getElementById('auth-button');
-if (navBtn) {
-    navBtn.textContent = user ? 'Logout' : 'Login';
-    navBtn.href = user ? '#' : 'login.html';
-    if (user) {
-        navBtn.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            window.location.href = 'login.html';
-        });
-    }
-}
-</script></script></head>
+</head>
 <body><a href="login.html" id="auth-button">Login</a>
 <div class="container">
 <h1>Thank You</h1>
@@ -29,5 +14,23 @@ if (navBtn) {
 <p>A confirmation email will be sent to you shortly with a copy of your application.</p>
 <a href="dashboard.html">Go to Dashboard</a>
 </div>
-</body>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'public-anon-key');
+const { data: { user } } = await supabase.auth.getUser();
+const btn = document.getElementById("auth-button");
+if (btn) {
+  if (user) {
+    btn.textContent = "Logout";
+    btn.href = "#";
+    btn.onclick = async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    };
+  } else {
+    btn.textContent = "Login";
+    btn.href = "login.html";
+  }
+}
+</script></body>
 </html>

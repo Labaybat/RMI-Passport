@@ -45,60 +45,8 @@
       color: #003366;
     }
   </style>
-<script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      const { data: session } = await supabase.auth.getUser();
-      const user = session.user;
-
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      document.getElementById("user-email").textContent = user.email;
-
-      const { data, error } = await supabase
-        .from('passport_applications')
-        .select('created_at, status, passport_type, sign_date')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      const table = document.getElementById("app-table");
-
-      if (error) {
-        table.innerHTML = `<tr><td colspan="4">Error loading applications: ${error.message}</td></tr>`;
-      } else if (data.length === 0) {
-        table.innerHTML = `<tr><td colspan="4">No applications found.</td></tr>`;
-      } else {
-        table.innerHTML = data.map(app => `
-          <tr>
-            <td>${new Date(app.created_at).toLocaleDateString()}</td>
-            <td>${app.passport_type}</td>
-            <td>${app.sign_date || '—'}</td>
-            <td class="status">${app.status}</td>
-          </tr>`).join('');
-      }
-    });
-  </script>
-<script type="module"><script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-const supabase = createClient('https://svkusntalldxrsagdqzt.supabase.co', 'public-anon-key')
-const user = (await supabase.auth.getUser()).data.user;
-const navBtn = document.getElementById('auth-button');
-if (navBtn) {
-    navBtn.textContent = user ? 'Logout' : 'Login';
-    navBtn.href = user ? '#' : 'login.html';
-    if (user) {
-        navBtn.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            window.location.href = 'login.html';
-        });
-    }
-}
-</script></script></head>
+</head>
 <body><a href="login.html" id="auth-button">Login</a>
 <div class="dashboard">
 <h1>User Dashboard</h1>
@@ -117,22 +65,24 @@ if (navBtn) {
 </tbody>
 </table>
 </div>
+
 <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-  const supabase = createClient(
-    'https://svkusntallxdxrsgdqzt.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ'
-  );
-  supabase.auth.getUser().then(({ data: { user } }) => {
-    if (!user) window.location.href = "login.html";
-  });
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) {
-    logoutBtn.onclick = async () => {
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'public-anon-key');
+const { data: { user } } = await supabase.auth.getUser();
+const btn = document.getElementById("auth-button");
+if (btn) {
+  if (user) {
+    btn.textContent = "Logout";
+    btn.href = "#";
+    btn.onclick = async () => {
       await supabase.auth.signOut();
-      window.location.href = "index.html";
+      window.location.href = "login.html";
     };
+  } else {
+    btn.textContent = "Login";
+    btn.href = "login.html";
   }
-</script>
-</body>
+}
+</script></body>
 </html>
