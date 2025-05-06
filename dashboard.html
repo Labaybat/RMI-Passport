@@ -84,6 +84,30 @@
   </script>
 </head>
 <body>
+<button id="login-logout-btn" style="position: absolute; top: 20px; right: 20px;">Loading...</button>
+
+<script>
+  const supabase = supabase || window.supabase;
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    const loginLogoutBtn = document.getElementById("login-logout-btn");
+    if (loginLogoutBtn) {
+      if (user) {
+        loginLogoutBtn.innerText = "Logout";
+        loginLogoutBtn.onclick = () => {
+          supabase.auth.signOut().then(() => {
+            window.location.href = 'login.html';
+          });
+        };
+      } else {
+        loginLogoutBtn.innerText = "Login";
+        loginLogoutBtn.onclick = () => {
+          window.location.href = 'login.html';
+        };
+      }
+    }
+  });
+</script>
+
   <div class="dashboard">
     <h1>User Dashboard</h1>
     <p>Welcome, <strong id="user-email">loading...</strong></p>
