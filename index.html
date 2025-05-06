@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RMI Passport Application Portal</title>
-  <link rel="stylesheet" href="styles.css" />
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RMI Passport Application Portal</title>
+<link href="styles.css" rel="stylesheet"/>
+<style>
     * {
       box-sizing: border-box;
     }
@@ -116,49 +117,60 @@
       }
     }
   </style>
-</head>
-<body>
-  <div class="header">
-    <h1>Republic of the Marshall Islands – Passport Application System</h1>
-    <a class="btn" href="login.html">Login</a>
-  </div>
-  <div class="main">
-    <img src="seal.png" alt="RMI Government Seal" />
-    <h2><button id="logout-btn" class="btn-primary" style="float:right;margin-top:-40px;">Logout</button>Secure Online Passport Application</h2>
-    <div class="highlights">
-      <p>
+<script type="module"><script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabase = createClient('https://svkusntalldxrsagdqzt.supabase.co', 'public-anon-key')
+const user = (await supabase.auth.getUser()).data.user;
+const navBtn = document.getElementById('auth-button');
+if (navBtn) {
+    navBtn.textContent = user ? 'Logout' : 'Login';
+    navBtn.href = user ? '#' : 'login.html';
+    if (user) {
+        navBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+        });
+    }
+}
+</script></script></head>
+<body><a href="login.html" id="auth-button">Login</a>
+<div class="header">
+<h1>Republic of the Marshall Islands – Passport Application System</h1>
+<a class="btn" href="login.html">Login</a>
+</div>
+<div class="main">
+<img alt="RMI Government Seal" src="seal.png"/>
+<h2><button class="btn-primary" id="logout-btn" style="float:right;margin-top:-40px;">Logout</button>Secure Online Passport Application</h2>
+<div class="highlights">
+<p>
         The <strong>Passport Act 2020</strong> governs the issuance of Regular, Official, and Diplomatic passports 
         to lawful Marshallese citizens. Applications are reviewed by a designated Passport Review Panel under the 
         supervision of the Attorney General. Providing false information is a criminal offense under this act.
       </p>
-    </div>
-    <div class="actions">
-      <a class="btn-primary" href="#" onclick="showConsentModal()" id="start-application-btn">Start Application</a>
-      <a class="btn-primary" href="PL-2020-18-THE-PASSPORT-ACT2020.pdf" target="_blank">View Full Passport Act (PDF)</a>
-    </div>
-  </div>
-
+</div>
+<div class="actions">
+<a class="btn-primary" href="#" id="start-application-btn" onclick="showConsentModal()">Start Application</a>
+<a class="btn-primary" href="PL-2020-18-THE-PASSPORT-ACT2020.pdf" target="_blank">View Full Passport Act (PDF)</a>
+</div>
+</div>
 <!-- Consent Modal -->
 <div id="consentModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
-  <div style="background:white; padding:30px; border-radius:10px; max-width:500px; width:90%; text-align:center;">
-    <h2>Consent Required</h2>
-    <p>You are about to create an account with the Republic of the Marshall Islands.</p>
-    <p>By continuing, you confirm you are a lawful Marshallese citizen and all information provided will be true and accurate.</p>
-    <p>Submission of false information is a criminal offense under the Passport Act 2020.</p>
-    <div style="margin-top:20px;">
-      <button onclick="document.getElementById('consentModal').style.display='none'" style="margin-right:15px;">Cancel</button>
-      <button onclick="window.location.href='register.html'">I Agree & Continue</button>
-    </div>
-  </div>
+<div style="background:white; padding:30px; border-radius:10px; max-width:500px; width:90%; text-align:center;">
+<h2>Consent Required</h2>
+<p>You are about to create an account with the Republic of the Marshall Islands.</p>
+<p>By continuing, you confirm you are a lawful Marshallese citizen and all information provided will be true and accurate.</p>
+<p>Submission of false information is a criminal offense under the Passport Act 2020.</p>
+<div style="margin-top:20px;">
+<button onclick="document.getElementById('consentModal').style.display='none'" style="margin-right:15px;">Cancel</button>
+<button onclick="window.location.href='register.html'">I Agree &amp; Continue</button>
 </div>
-
+</div>
+</div>
 <script>
   function showConsentModal() {
     document.getElementById('consentModal').style.display = 'flex';
   }
 </script>
-
-
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
   const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
@@ -172,7 +184,6 @@
     };
   });
 </script>
-
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
   const supabase = createClient(
@@ -191,5 +202,4 @@
   }
 </script>
 </body>
-
 </html>

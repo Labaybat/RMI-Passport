@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <style>
@@ -61,45 +62,52 @@
     border: none;
   }
 </style>
-
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Step 4 – Emergency Contact</title>
-  <link rel="stylesheet" href="../styles.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Passport Application – Step 4 of 5</h1>
-    <h2><button id="logout-btn" class="btn-primary" style="float:right;margin-top:-40px;">Logout</button>Emergency Contact</h2>
-    
-    <div style="margin-top:20px;margin-bottom:20px;">
-      <h2 style="color:#003366;">Step 4 of 5 – Emergency Contact</h2>
-      <div style="background:#e0e0e0;border-radius:4px;height:8px;overflow:hidden;">
-        <div style="width:80%;background:#003366;height:8px;"></div>
-      </div>
-    </div>
-    
-<form action="step-5.html" method="get">
-      <input type="text" name="emergency_name" placeholder="Full Name" required />
-      <input type="text" name="relationship" placeholder="Relationship" required />
-      <input type="tel" name="emergency_phone" placeholder="Phone Number" required />
-      <input type="text" name="emergency_address" placeholder="Address" required />
-      
-<div style='margin-top: 20px; display: flex; justify-content: space-between;'>
-  <a href='step-3.html' style='background: #ccc; padding: 10px 20px; border-radius: 5px; text-decoration: none;'>Back</a>
-  <button type='submit' style='background: #003c8f; color: white; padding: 10px 20px; border: none; border-radius: 5px;'>Next</button>
-  <button type='button' onclick='alert("Progress saved!")' style='background: #555; color: white; padding: 10px 20px; border: none; border-radius: 5px;'>Save</button>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Step 4 – Emergency Contact</title>
+<link href="../styles.css" rel="stylesheet"/>
+<script type="module"><script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabase = createClient('https://svkusntalldxrsagdqzt.supabase.co', 'public-anon-key')
+const user = (await supabase.auth.getUser()).data.user;
+const navBtn = document.getElementById('auth-button');
+if (navBtn) {
+    navBtn.textContent = user ? 'Logout' : 'Login';
+    navBtn.href = user ? '#' : 'login.html';
+    if (user) {
+        navBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+        });
+    }
+}
+</script></script></head>
+<body><a href="login.html" id="auth-button">Login</a>
+<div class="container">
+<h1>Passport Application – Step 4 of 5</h1>
+<h2><button class="btn-primary" id="logout-btn" style="float:right;margin-top:-40px;">Logout</button>Emergency Contact</h2>
+<div style="margin-top:20px;margin-bottom:20px;">
+<h2 style="color:#003366;">Step 4 of 5 – Emergency Contact</h2>
+<div style="background:#e0e0e0;border-radius:4px;height:8px;overflow:hidden;">
+<div style="width:80%;background:#003366;height:8px;"></div>
 </div>
-
-    </form>
-
-    <div id="autosave-msg" style="display:none; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-top: 10px; border-radius: 5px;">
+</div>
+<form action="step-5.html" method="get">
+<input name="emergency_name" placeholder="Full Name" required="" type="text"/>
+<input name="relationship" placeholder="Relationship" required="" type="text"/>
+<input name="emergency_phone" placeholder="Phone Number" required="" type="tel"/>
+<input name="emergency_address" placeholder="Address" required="" type="text"/>
+<div style="margin-top: 20px; display: flex; justify-content: space-between;">
+<a href="step-3.html" style="background: #ccc; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Back</a>
+<button style="background: #003c8f; color: white; padding: 10px 20px; border: none; border-radius: 5px;" type="submit">Next</button>
+<button onclick='alert("Progress saved!")' style="background: #555; color: white; padding: 10px 20px; border: none; border-radius: 5px;" type="button">Save</button>
+</div>
+</form>
+<div id="autosave-msg" style="display:none; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-top: 10px; border-radius: 5px;">
       ✅ Progress saved.
     </div>
-    
-  </div>
-
-  <script>
+</div>
+<script>
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.querySelector("form");
       const saved = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
@@ -120,8 +128,7 @@
       });
     });
   </script>
-
-  <script>
+<script>
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.querySelector("form");
       const saved = JSON.parse(localStorage.getItem("passport_application_data") || "{}");
@@ -161,7 +168,6 @@
       }
     });
   </script>
-
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
   const supabase = createClient(

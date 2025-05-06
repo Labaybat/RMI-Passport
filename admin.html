@@ -1,12 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin Dashboard – RMI Passport Portal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="stylesheet" href="styles.css">
-  <script type="module" src="auth.js"></script>
-  <style>
+<meta charset="utf-8"/>
+<title>Admin Dashboard – RMI Passport Portal</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="styles.css" rel="stylesheet"/>
+<script src="auth.js" type="module"></script>
+<style>
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #f8fafc;
@@ -49,7 +50,7 @@
       color: #004085;
     }
   </style>
-  <script type="module">
+<script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient('https://svkusntallxdxrsgdqzt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ');
 
@@ -107,28 +108,43 @@
       }
     });
   </script>
-</head>
-<body>
-  <div class="dashboard">
-    <h1>Admin Dashboard</h1>
-    <p style="text-align:center;">Only accessible to: <strong>superadmin@example.com</strong></p>
-    <div class="filter-section">
-      <!-- Filter UI (optional future) -->
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Type</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="admin-table">
-        <tr><td colspan="6">Loading applications...</td></tr>
-      </tbody>
-    </table>
-  </div>
+<script type="module"><script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabase = createClient('https://svkusntalldxrsagdqzt.supabase.co', 'public-anon-key')
+const user = (await supabase.auth.getUser()).data.user;
+const navBtn = document.getElementById('auth-button');
+if (navBtn) {
+    navBtn.textContent = user ? 'Logout' : 'Login';
+    navBtn.href = user ? '#' : 'login.html';
+    if (user) {
+        navBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+        });
+    }
+}
+</script></script></head>
+<body><a href="login.html" id="auth-button">Login</a>
+<div class="dashboard">
+<h1>Admin Dashboard</h1>
+<p style="text-align:center;">Only accessible to: <strong>superadmin@example.com</strong></p>
+<div class="filter-section">
+<!-- Filter UI (optional future) -->
+</div>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Name</th>
+<th>Email</th>
+<th>Type</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="admin-table">
+<tr><td colspan="6">Loading applications...</td></tr>
+</tbody>
+</table>
+</div>
 </body>
 </html>
