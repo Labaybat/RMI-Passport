@@ -1,3 +1,4 @@
+document.addEventListener('DOMContentLoaded', function () {
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
@@ -52,4 +53,6 @@ document.getElementById('final-form').addEventListener('submit', async function 
     alert("Application submitted successfully.");
     window.location.href = 'confirmation.html';
   }
+});
+
 });
