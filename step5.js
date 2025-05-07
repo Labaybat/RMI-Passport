@@ -1,3 +1,10 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+  'https://svkusntallxdxrsgdqzt.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0aXFmIiwiaWF0IjoxNzE1MDIzNDY4LCJleHAiOjE3NDY1ODk0Njh9.4xMLbfCUHNjcGvAeU4m4ASZgWk3MKrcYlIvQauzj8Rg'
+)
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("final-step-form");
