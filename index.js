@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient.js';
 
-document.getElementById('index-form').addEventListener('submit', (e) => {
+const el = document.getElementById('index-form');
+if (el) el.addEventListener('submit', (e) => {
   e.preventDefault();
   alert('index.html submitted (logic not implemented yet).');
 });
