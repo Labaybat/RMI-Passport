@@ -1,61 +1,63 @@
+import { supabase } from './supabaseClient.js';
 
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("final-step-form");
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+document.getElementById('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-    const supabase = createClient(
-      "https://svkusntallxdrsgdqzt.supabase.co",
-      "eyJh...<REDACTED>...NDUw" // Replace with a safe key in production
-    );
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user) {
+    alert('User not authenticated.');
+    return;
+  }
+  const userId = authData.user.id;
 
-    const user = await supabase.auth.getUser();
-    if (!user || !user.data || !user.data.user) {
-      alert("User not authenticated.");
-      return;
-    }
+  const form = e.target;
+  const formData = new FormData(form);
 
-    const user_id = user.data.user.id;
-    const formData = new FormData(form);
-    const payload = {
-      user_id,
-      first_name: formData.get("first_name"),
-      middle_name: formData.get("middle_name"),
-      last_name: formData.get("last_name"),
-      dob: formData.get("dob"),
-      place_of_birth: formData.get("place_of_birth"),
-      gender: formData.get("gender"),
-      marital_status: formData.get("marital_status"),
-      ssn: formData.get("ssn"),
-      nationality: formData.get("nationality"),
-      passport_type: formData.get("passport_type"),
-      address: formData.get("address"),
-      city: formData.get("city"),
-      state: formData.get("state"),
-      zip: formData.get("zip"),
-      atoll: formData.get("atoll"),
-      phone: formData.get("phone"),
-      email: formData.get("email"),
-      occupation: formData.get("occupation"),
-      employer_name: formData.get("employer_name"),
-      employer_address: formData.get("employer_address"),
-      height: formData.get("height"),
-      hair_color: formData.get("hair_color"),
-      eye_color: formData.get("eye_color"),
-      emergency_name: formData.get("emergency_name"),
-      emergency_relation: formData.get("emergency_relation"),
-      emergency_phone: formData.get("emergency_phone"),
-      signature: formData.get("signature"),
-      sign_date: formData.get("sign_date"),
-      status: "submitted"
-    };
+  const signatureFile = formData.get('signature');
+  const fileExt = signatureFile.name.split('.').pop();
+  const filePath = `${userId}/signature.${fileExt}`;
 
-    const { error } = await supabase.from("passport_applications").insert([payload]);
-    if (error) {
-      alert("Submission error: " + error.message);
-    } else {
-      alert("Application submitted successfully!");
-      window.location.href = "confirmation.html";
-    }
-  });
+  const { error: uploadError } = await supabase
+    .storage
+    .from('signatures')
+    .upload(filePath, signatureFile, {
+      cacheControl: '3600',
+      upsert: true
+    });
+
+  if (uploadError) {
+    console.error('File upload error:', uploadError);
+    alert('Failed to upload signature. Try again.');
+    return;
+  }
+
+  const { data: publicUrlData } = supabase
+    .storage
+    .from('signatures')
+    .getPublicUrl(filePath);
+  const signatureUrl = publicUrlData.publicUrl;
+
+  const record = {
+    user_id: userId,
+    first_name: formData.get('first_name'),
+    last_name: formData.get('last_name'),
+    dob: formData.get('dob'),
+    passport_type: formData.get('passport_type'),
+    passport_number: formData.get('passport_number'),
+    email: formData.get('email'),
+    department: formData.get('department'),
+    signature_url: signatureUrl
+  };
+
+  const { error: insertError } = await supabase
+    .from('passport_applications')
+    .insert([record]);
+
+  if (insertError) {
+    console.error('Insert error:', insertError);
+    alert('Application submission failed.');
+  } else {
+    alert('Application submitted successfully!');
+    form.reset();
+  }
 });
