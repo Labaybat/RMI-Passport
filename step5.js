@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const fileInput = document.getElementById("signature");
     const file = fileInput.files[0];
-    const fileName = `${Date.now()}_${file.name}`;
+    const fileName = `${userData.user.id}/${Date.now()}_${file.name}`;
 
     const { error: uploadError } = await supabaseClient.storage
       .from("signatures")
