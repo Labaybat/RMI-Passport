@@ -20,6 +20,16 @@
     <input type="file" name="signature" accept="image/*" /><br/><br/>
     <button type="submit">Submit Application</button>
   </form>
+
+<script type="module">
+  import { supabase } from './supabaseClient.js';
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    alert("Please log in to access this page.");
+    window.location.href = "login.html";
+  }
+</script>
 </body>
+
 </html>
 <script type="module" src="step5.js"></script>
