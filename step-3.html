@@ -83,7 +83,7 @@
   <div class="container">
     <h1>Passport Application – Step 3 of 5</h1>
     <h2>Citizenship Verification</h2>
-    <form action="step-4.html" method="get" enctype="multipart/form-data">
+    <form method="get" enctype="multipart/form-data" id="step3-form">
       <input type="text" name="passport_number" placeholder="Previous Passport Number (if any)" />
       <input type="text" name="nid" placeholder="National ID Number" />
       <label>Upload Birth Certificate:</label>
@@ -149,5 +149,6 @@
       }
     });
   </script>
+<script type="module" src="step-3.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient.js';
 
-document.getElementById('form').addEventListener('submit', async (e) => {
+document.getElementById('final-step-form').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const { data: authData, error: authError } = await supabase.auth.getUser();
