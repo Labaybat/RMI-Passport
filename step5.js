@@ -22,10 +22,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { error: uploadError } = await supabaseClient.storage
       .from("signatures")
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type
+      });
 
     if (uploadError) {
       alert("Upload error: " + uploadError.message);
+      return;
+    }
+
+    const dobInput = document.getElementById("dob").value;
+    let normalizedDOB = null;
+    try {
+      normalizedDOB = new Date(dobInput).toISOString();
+    } catch (_) {
+      alert("Invalid date format for DOB.");
       return;
     }
 
@@ -34,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .insert([{
         first_name: document.getElementById("first_name").value,
         last_name: document.getElementById("last_name").value,
-        dob: document.getElementById("dob").value,
+        dob: normalizedDOB,
         passport_type: document.getElementById("passport_type").value,
         ssn: document.getElementById("ssn").value,
         email: document.getElementById("email").value,
