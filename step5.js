@@ -1,53 +1,55 @@
-import { supabase } from './supabaseClient.js';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("final-step-form");
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+const supabase = createClient(
+  'https://svkusntallxdxrsgdqzt.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInN1YiI6ImFub24iLCJpYXQiOjE2OTg3NzEwNTcsImV4cCI6MjAxNDM0NzA1N30.s8oPZtBvvV4Eh3nG3T3MjRkmUozsmVfSyCrB7B1z_yo'
+);
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData?.user) {
-      alert("User not authenticated.");
+document.getElementById('final-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const user = await supabase.auth.getUser();
+  if (!user.data.user) {
+    alert("User not authenticated.");
+    return;
+  }
+
+  const formData = new FormData(e.target);
+  const signatureFile = formData.get('signature');
+
+  let signaturePath = '';
+  if (signatureFile && signatureFile.name) {
+    const filePath = `${user.data.user.id}/${Date.now()}_${signatureFile.name}`;
+    const { error: uploadError } = await supabase.storage
+      .from('signatures')
+      .upload(filePath, signatureFile, { cacheControl: '3600', upsert: true });
+    if (uploadError) {
+      alert("Upload error: " + uploadError.message);
       return;
     }
+    signaturePath = filePath;
+  }
 
-    const user_id = userData.user.id;
-    const formData = new FormData(form);
-    const signatureFile = formData.get("signature");
-
-    let signaturePath = "";
-    if (signatureFile && signatureFile.name) {
-      const fileExt = signatureFile.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${user_id}/${fileName}`;
-      const { error: uploadError } = await supabase.storage.from("signatures").upload(filePath, signatureFile);
-      if (uploadError) {
-        alert("Signature upload failed: " + uploadError.message);
-        return;
-      }
-      signaturePath = filePath;
-    }
-
-    const payload = {
-      user_id,
-      first_name: formData.get("first_name"),
-      last_name: formData.get("last_name"),
-      dob: formData.get("dob"),
-      passport_type: formData.get("passport_type"),
-      phone: formData.get("phone"),
-      email: formData.get("email"),
-      occupation: formData.get("occupation"),
+  const { error } = await supabase.from('passport_applications').insert([
+    {
+      user_id: user.data.user.id,
+      first_name: formData.get('first_name'),
+      last_name: formData.get('last_name'),
+      dob: formData.get('dob'),
+      passport_type: formData.get('passport_type'),
+      ssn: formData.get('ssn'),
+      email: formData.get('email'),
+      occupation: formData.get('occupation'),
       signature: signaturePath,
       sign_date: new Date().toISOString(),
-      status: "submitted"
-    };
-
-    const { error } = await supabase.from("passport_applications").insert([payload]);
-    if (error) {
-      alert("Submission error: " + error.message);
-    } else {
-      alert("Application submitted successfully!");
-      window.location.href = "confirmation.html";
+      status: 'submitted'
     }
-  });
+  ]);
+
+  if (error) {
+    alert("Submission failed: " + error.message);
+  } else {
+    alert("Application submitted successfully.");
+    window.location.href = 'confirmation.html';
+  }
 });
