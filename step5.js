@@ -1,17 +1,25 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener("DOMContentLoaded", () => {
-  const { createClient } = supabase;
-  const supabaseUrl = "https://svkusntallxdxrsgdqzt.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2a3VzbnRhbGx4ZHhyc2dkcXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0OTE3NjMsImV4cCI6MjA2MjA2Nzc2M30.-vsOMTTOo8cX5ejbIjwoEGskFx_FZ-yYqVX4EbSDPGQ";
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
   const form = document.getElementById("final-form");
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !userData?.user) {
+      alert("You must be logged in.");
+      window.location.href = "login.html";
+      return;
+    }
+
     const fileInput = document.getElementById("signature");
     const file = fileInput.files[0];
-
     const fileName = `${Date.now()}_${file.name}`;
+
     const { error: uploadError } = await supabaseClient.storage
       .from("signatures")
       .upload(fileName, file);
