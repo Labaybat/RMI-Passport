@@ -19,11 +19,11 @@ async function getUser() {
     // Try to fetch existing draft
     const { data: existing, error: fetchError } = await supabase
       .from('passport_applications')
-      .select('id', { head: false })
+      .select('id')
       .eq('user_id', userId)
       .eq('status', 'draft')
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       applicationId = existing.id;
@@ -62,7 +62,7 @@ async function saveStep() {
   if (!applicationId) {
     const { data, error } = await supabase
       .from('passport_applications')
-      .insert([{ user_id: userId, status: 'draft', application_type: stepData.application_type, ...stepData }]).select()
+      .insert([{ user_id: userId, status: 'draft', application_type: stepData.application_type, ...stepData }])
       .select()
       .single();
     if (data) {
