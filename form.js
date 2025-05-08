@@ -23,7 +23,7 @@ async function getUser() {
       .eq('user_id', userId)
       .eq('status', 'draft')
       .limit(1)
-      .maybeSingle();
+      .single();
 
     if (existing) {
       applicationId = existing.id;

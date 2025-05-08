@@ -1,93 +1,18 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>RMI Passport Portal - Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f5f8fc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .login-card {
-      background: #ffffff;
-      padding: 40px 36px;
-      border-radius: 12px;
-      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.1);
-      max-width: 380px;
-      width: 100%;
-      text-align: center;
-    }
-
-    .login-card h1 {
-      font-size: 22px;
-      font-family: Georgia, 'Times New Roman', serif;
-      margin-bottom: 24px;
-      color: #002b5c;
-    }
-
-    .login-card input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 18px;
-      font-size: 15px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-
-    .login-card button {
-      width: 100%;
-      padding: 12px;
-      background-color: #002b5c;
-      color: white;
-      font-size: 15px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .login-card button:hover {
-      background-color: #004a99;
-    }
-
-    .login-footer {
-      margin-top: 18px;
-      font-size: 13px;
-      color: #333;
-    }
-
-    .login-footer a {
-      color: #002b5c;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .login-footer a:hover {
-      text-decoration: underline;
-    }
-  </style>
 </head>
 <body>
-  <div class="login-card">
-    <h1>RMI Passport Portal</h1>
+  <h1>RMI Passport Portal</h1>
+  <form id="login-form">
     <input type="email" id="email" placeholder="Email" required />
     <input type="password" id="password" placeholder="Password" required />
-    <button onclick="login()">Sign In</button>
-    <div class="login-footer">
-      Don't have an account? <a href="#" onclick="goToSignup()">Sign Up</a>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.6/dist/umd/supabase.min.js"></script>
-<script src="auth.js"></script>
+    <button type="submit">Login</button>
+    <p><a href="#" id="signup-link">Don't have an account? Sign up</a></p>
+  </form>
+  <script type="module" src="auth.js"></script>
 </body>
 </html>
