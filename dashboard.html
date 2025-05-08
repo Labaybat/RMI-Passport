@@ -1,35 +1,20 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard</title>
   <link rel="stylesheet" href="style.css" />
-  <script defer src="auth.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Applicant Dashboard</h1>
-    <p>Manage your application status and information.</p>
-  </header>
-
-  <main class="container">
-    <div class="card">
-      <h2>Welcome back!</h2>
-      <p>Your application status:</p>
-      <ul>
-        <li>Status: <strong>Pending Review</strong></li>
-        <li>Submitted: <strong>April 12, 2025</strong></li>
-        <li>Reference #: <strong>RMI-2025-00023</strong></li>
-      </ul>
-
-      <button onclick="logout()">Logout</button>
-    </div>
-  </main>
-
-  <footer>
-    <p>&copy; 2025 RMI Government. All rights reserved.</p>
-  </footer>
+  <div class="dashboard-section">
+  <h1>Welcome to your Passport Dashboard</h1>
+  <nav>
+    <a href="apply.html">Start Application</a>
+    <a href="status.html">Application Status</a>
+    <a href="passport_act.pdf" target="_blank">View Passport Act</a>
+    <button id="logout">Logout</button>
+  </nav>
+  <script type="module" src="auth.js"></script>
+</div>
 </body>
 </html>

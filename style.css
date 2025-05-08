@@ -1,88 +1,69 @@
 
-/* Import Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-
-/* CSS Variables */
-:root {
-  --color-primary: #1e88e5;
-  --color-accent: #43a047;
-  --color-bg: #f5f7fa;
-  --color-text: #333;
-  --color-muted: #777;
-  --font-family: 'Inter', sans-serif;
-  --border-radius: 8px;
-  --transition: all 0.2s ease-in-out;
-}
-
-/* Reset & Base Styles */
-* {
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f9;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  color: #333;
 }
-body {
-  font-family: var(--font-family);
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  line-height: 1.6;
-  padding: 1rem;
-}
-a {
-  color: var(--color-primary);
-  text-decoration: none;
-}
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-.card {
-  background: #fff;
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-}
-button,
-input[type="submit"] {
-  background-color: var(--color-primary);
-  color: #fff;
-  padding: 0.75rem 1.25rem;
-  border: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-weight: 600;
-  transition: var(--transition);
-}
-button:hover,
-input[type="submit"]:hover {
-  background-color: #1565c0;
-}
-input, select, textarea {
-  width: 100%;
-  padding: 0.75rem;
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: var(--border-radius);
-}
-header, footer {
+
+h1, h2 {
   text-align: center;
-  padding: 1rem 0;
-  color: var(--color-muted);
+  color: #003366;
 }
-.flex {
+
+.container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+form {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 15px;
 }
-.flex-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+
+input, select, textarea {
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 100%;
 }
-@media (max-width: 600px) {
-  .container {
-    padding: 0.5rem;
-  }
+
+button {
+  background-color: #003366;
+  color: white;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0055a5;
+}
+
+a {
+  color: #003366;
+  text-decoration: none;
+  text-align: center;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.dashboard-section {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
