@@ -37,6 +37,7 @@ async function getUser() {
 function nextStep() {
   document.getElementById(`step-${currentStep}`).style.display = 'none';
   currentStep++;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   const next = document.getElementById(`step-${currentStep}`);
   if (next) next.style.display = 'block';
   saveStep();
@@ -45,6 +46,7 @@ function nextStep() {
 function prevStep() {
   document.getElementById(`step-${currentStep}`).style.display = 'none';
   currentStep--;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   document.getElementById(`step-${currentStep}`).style.display = 'block';
 }
 
@@ -133,3 +135,12 @@ document.querySelectorAll('.prev-btn').forEach(btn => {
 });
 
 getUser();
+
+// Confirmation message display
+function showSubmissionMessage(msg) {
+  const container = document.createElement('div');
+  container.className = 'submission-message';
+  container.textContent = msg;
+  document.body.prepend(container);
+  setTimeout(() => container.remove(), 5000);
+}
