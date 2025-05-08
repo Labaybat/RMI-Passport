@@ -159,19 +159,19 @@
     function toggleFields() {
       const type = appTypeSelect.value;
       if (type === "renewal") {
-        oldPassportGroup.style.display = "block";
-        birthCertGroup.style.display = "none";
+        if (oldPassportGroup) oldPassportGroup.style.display = "block";
+        if (birthCertGroup) birthCertGroup.style.display = "none";
       } else if (type === "new") {
-        oldPassportGroup.style.display = "none";
-        birthCertGroup.style.display = "block";
+        if (oldPassportGroup) oldPassportGroup.style.display = "none";
+        if (birthCertGroup) birthCertGroup.style.display = "block";
       } else {
-        oldPassportGroup.style.display = "none";
-        birthCertGroup.style.display = "none";
+        if (oldPassportGroup) oldPassportGroup.style.display = "none";
+        if (birthCertGroup) birthCertGroup.style.display = "none";
       }
     }
 
     appTypeSelect.addEventListener("change", toggleFields);
-    toggleFields(); // initial
+    toggleFields();
   });
 </script>
 
