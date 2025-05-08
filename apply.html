@@ -31,7 +31,7 @@
       <input type="number" name="height_feet" placeholder="Height (Feet)" required />
       <input type="number" name="height_inches" placeholder="Height (Inches)" required />
       <input type="text" name="eye_color" placeholder="Eye Color" required />
-      <button type="button" onclick="nextStep()">Next</button>
+      <button type="button" class="next-btn">Next</button>
     </div>
 
     <!-- Step 2: Contact Info -->
@@ -43,8 +43,8 @@
       <input type="text" name="city" placeholder="City or Town" required />
       <input type="text" name="state" placeholder="State" required />
       <input type="text" name="postal_code" placeholder="Postal Code" required />
-      <button type="button" onclick="prevStep()">Back</button>
-      <button type="button" onclick="nextStep()">Next</button>
+      <button type="button" class="prev-btn">Back</button>
+      <button type="button" class="next-btn">Next</button>
     </div>
 
     <!-- Step 3: Emergency Contact -->
@@ -57,8 +57,8 @@
       <input type="text" name="emergency_city" placeholder="City or Town" required />
       <input type="text" name="emergency_state" placeholder="State" required />
       <input type="text" name="emergency_postal_code" placeholder="Postal Code" required />
-      <button type="button" onclick="prevStep()">Back</button>
-      <button type="button" onclick="nextStep()">Next</button>
+      <button type="button" class="prev-btn">Back</button>
+      <button type="button" class="next-btn">Next</button>
     </div>
 
     <!-- Step 4: Parent Info -->
@@ -78,8 +78,8 @@
       <input type="text" name="mother_birth_city" placeholder="City or Town" required />
       <input type="text" name="mother_birth_state" placeholder="State" />
       <input type="text" name="mother_birth_country" placeholder="Country" required />
-      <button type="button" onclick="prevStep()">Back</button>
-      <button type="button" onclick="nextStep()">Next</button>
+      <button type="button" class="prev-btn">Back</button>
+      <button type="button" class="next-btn">Next</button>
     </div>
 
     <!-- Step 5: Uploads -->
@@ -91,15 +91,15 @@
       <input type="file" name="old_passport_copy" accept=".pdf,.jpg,.jpeg,.png" />
       <input type="file" name="signature" accept=".png,.jpg,.jpeg" />
       <input type="file" name="photo_id" accept=".jpg,.jpeg,.png" />
-      <button type="button" onclick="prevStep()">Back</button>
-      <button type="button" onclick="nextStep()">Next</button>
+      <button type="button" class="prev-btn">Back</button>
+      <button type="button" class="next-btn">Next</button>
     </div>
 
     <!-- Step 6: Review & Submit -->
     <div class="step" id="step-6" style="display:none;">
       <h2>Review & Submit</h2>
       <p>Please review your details before submitting.</p>
-      <button type="button" onclick="prevStep()">Back</button>
+      <button type="button" class="prev-btn">Back</button>
       <button type="submit">Submit</button>
     </div>
   </form>
