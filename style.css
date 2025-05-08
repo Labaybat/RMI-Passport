@@ -121,3 +121,59 @@ h2.section-title {
     padding: 20px;
   }
 }
+
+
+.dashboard-section {
+  max-width: 600px;
+  margin: 60px auto;
+  padding: 40px 30px;
+  background: linear-gradient(to bottom, #ffffff, #f4f6f9);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.dashboard-section h1 {
+  font-size: 26px;
+  margin-bottom: 10px;
+  color: #002855;
+}
+
+.dashboard-section p {
+  margin-bottom: 30px;
+  font-size: 15px;
+  color: #555;
+}
+
+.dashboard-section a {
+  display: block;
+  padding: 15px;
+  margin: 12px 0;
+  background: #e6f0ff;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #003366;
+  transition: all 0.2s ease-in-out;
+}
+
+.dashboard-section a:hover {
+  background: #cce0ff;
+}
+
+.logout-btn {
+  display: inline-block;
+  background-color: #003366;
+  color: white;
+  padding: 12px 24px;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 30px;
+  transition: background 0.2s ease-in-out;
+}
+
+.logout-btn:hover {
+  background-color: #0055a5;
+}

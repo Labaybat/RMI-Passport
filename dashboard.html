@@ -1,22 +1,21 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Dashboard - RMI Passport</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="dashboard-section">
     <h1>Welcome to Your Passport Dashboard</h1>
-    <p style="text-align:center;">Use the options below to manage your application.</p>
-  <h1>Welcome to your Passport Dashboard</h1>
-  <nav>
-    <a href="apply.html">Start Application</a>
-    <a href="status.html">Application Status</a>
-    <a href="passport_act.pdf" target="_blank">View Passport Act</a>
-    <button id="logout">Logout</button>
-  </nav>
-  <script type="module" src="auth.js"></script>
-</div>
+    <p>Use the options below to manage your application.</p>
+    <a href="apply.html">📝 Start Application</a>
+    <a href="status.html">📊 Application Status</a>
+    <a href="passport-act.html">📄 View Passport Act</a>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <script src="auth.js"></script>
 </body>
 </html>
