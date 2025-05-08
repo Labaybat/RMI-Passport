@@ -1,18 +1,34 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>RMI Passport Portal - Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RMI Passport Portal</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>RMI Passport Portal</h1>
-  <form id="login-form">
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button type="submit">Login</button>
-    <p><a href="#" id="signup-link">Don't have an account? Sign up</a></p>
-  </form>
-  <script type="module" src="auth.js"></script>
+  <header>
+    <h1>RMI Passport Application Portal</h1>
+    <p>Welcome! Apply for your passport securely and easily.</p>
+  </header>
+
+  <main class="container">
+    <div class="card flex-center" style="flex-direction: column;">
+      <h2>Get Started</h2>
+      <p>Already have an account?</p>
+      <a href="dashboard.html">
+        <button>Go to Dashboard</button>
+      </a>
+      <p>New user? Apply now:</p>
+      <a href="apply.html">
+        <button>Start Application</button>
+      </a>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 RMI Government. All rights reserved.</p>
+  </footer>
 </body>
 </html>
