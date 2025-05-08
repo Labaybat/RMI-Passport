@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,79 +25,75 @@
       <input type="number" name="height_feet" placeholder="Height (Feet)" required />
       <input type="number" name="height_inches" placeholder="Height (Inches)" required />
       <input type="text" name="eye_color" placeholder="Eye Color" required />
-      <button type="button" onclick="nextStep()">Next</button>
+      <button type="button" id="next-btn">Next</button>
     </div>
-
-    <!-- Step 2: Contact Info -->
-    <div class="step" id="step-2">
-      <h2>Contact and Delivery</h2>
-      <input type="text" name="address_unit" placeholder="Unit and/or House Number" required />
-      <input type="text" name="street_name" placeholder="Street Name" required />
-      <input type="text" name="phone_number" placeholder="Phone Number" required />
-      <input type="text" name="city" placeholder="City or Town" required />
-      <input type="text" name="state" placeholder="State" required />
-      <input type="text" name="postal_code" placeholder="Postal Code" required />
-      <button type="button" onclick="prevStep()">Back</button>
-      <button type="button" onclick="nextStep()">Next</button>
-    </div>
-
-    <!-- Step 3: Emergency Contact -->
-    <div class="step" id="step-3">
-      <h2>Emergency Contact</h2>
-      <input type="text" name="emergency_full_name" placeholder="Full Name" required />
-      <input type="text" name="emergency_phone_number" placeholder="Phone Number" required />
-      <input type="text" name="emergency_address_unit" placeholder="Unit and/or House Number" required />
-      <input type="text" name="emergency_street_name" placeholder="Street Name" required />
-      <input type="text" name="emergency_city" placeholder="City or Town" required />
-      <input type="text" name="emergency_state" placeholder="State" required />
-      <input type="text" name="emergency_postal_code" placeholder="Postal Code" required />
-      <button type="button" onclick="prevStep()">Back</button>
-      <button type="button" onclick="nextStep()">Next</button>
-    </div>
-
-    <!-- Step 4: Parent Info -->
-    <div class="step" id="step-4">
-      <h2>Parent Details</h2>
-      <h3>Father</h3>
-      <input type="text" name="father_full_name" placeholder="Father's Full Name" required />
-      <input type="date" name="father_dob" required />
-      <input type="text" name="father_nationality" placeholder="Nationality" required />
-      <input type="text" name="father_birth_city" placeholder="City or Town" required />
-      <input type="text" name="father_birth_state" placeholder="State" />
-      <input type="text" name="father_birth_country" placeholder="Country" required />
-      <h3>Mother</h3>
-      <input type="text" name="mother_full_name" placeholder="Mother's Full Name" required />
-      <input type="date" name="mother_dob" required />
-      <input type="text" name="mother_nationality" placeholder="Nationality" required />
-      <input type="text" name="mother_birth_city" placeholder="City or Town" required />
-      <input type="text" name="mother_birth_state" placeholder="State" />
-      <input type="text" name="mother_birth_country" placeholder="Country" required />
-      <button type="button" onclick="prevStep()">Back</button>
-      <button type="button" onclick="nextStep()">Next</button>
-    </div>
-
-    <!-- Step 5: Uploads -->
-    <div class="step" id="step-5">
-      <h2>Document Uploads</h2>
-      <input type="file" name="birth_certificate" accept=".pdf,.jpg,.jpeg,.png" />
-      <input type="file" name="consent_form" accept=".pdf,.jpg,.jpeg,.png" />
-      <input type="file" name="marriage_or_divorce_certificate" accept=".pdf,.jpg,.jpeg,.png" />
-      <input type="file" name="old_passport_copy" accept=".pdf,.jpg,.jpeg,.png" />
-      <input type="file" name="signature" accept=".png,.jpg,.jpeg" />
-      <input type="file" name="photo_id" accept=".jpg,.jpeg,.png" />
-      <button type="button" onclick="prevStep()">Back</button>
-      <button type="button" onclick="nextStep()">Next</button>
-    </div>
-
-    <!-- Step 6: Review & Submit -->
-    <div class="step" id="step-6">
-      <h2>Review & Submit</h2>
-      <p>Please confirm all details before submitting your application.</p>
-      <button type="button" onclick="prevStep()">Back</button>
-      <button type="submit">Submit</button>
-    </div>
+    <!-- Other steps hidden initially -->
   </form>
-  
-<script type="module" src="form.js"></script>
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js';
+
+    const supabase = createClient(
+      'https://eiuviyizjnfmswfrdigo.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpdXZpeWl6am5mbXN3ZnJkaWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2Nzc1MDIsImV4cCI6MjA2MjI1MzUwMn0.M1E6xOKAc8fsiVkXAxorr1QCRqRedcDv-GNa9CuAE4M'
+    );
+
+    let currentStep = 1;
+    let userId = null;
+    let applicationId = null;
+
+    async function getUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (data?.user?.id) {
+        userId = data.user.id;
+        console.log("User ID:", userId);
+      } else {
+        alert("Failed to fetch user session.");
+      }
+    }
+
+    async function saveStep() {
+      const form = document.getElementById('application-form');
+      const formData = new FormData(form);
+      const stepData = {};
+      formData.forEach((value, key) => {
+        if (!(value instanceof File)) stepData[key] = value;
+      });
+
+      if (!userId) await getUser();
+      if (!userId) return;
+
+      if (!applicationId) {
+        const { data, error } = await supabase
+          .from('passport_applications')
+          .insert([{ user_id: userId, status: 'draft', ...stepData }])
+          .select()
+          .single();
+        if (data) {
+          applicationId = data.id;
+          console.log("Created application ID:", applicationId);
+        } else if (error) {
+          console.error("Insert error:", error);
+        }
+      } else {
+        const { error } = await supabase
+          .from('passport_applications')
+          .update({ ...stepData, updated_at: new Date().toISOString() })
+          .eq('id', applicationId);
+        if (error) console.error("Update error:", error);
+      }
+    }
+
+    function nextStep() {
+      document.getElementById(`step-${currentStep}`).style.display = 'none';
+      currentStep++;
+      const next = document.getElementById(`step-${currentStep}`);
+      if (next) next.style.display = 'block';
+      saveStep();
+    }
+
+    document.getElementById("next-btn").addEventListener("click", nextStep);
+
+    getUser();
+  </script>
 </body>
 </html>
