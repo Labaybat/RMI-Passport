@@ -1,21 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>RMI Passport Portal - Login</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;">
-    <h1 style="margin-bottom:20px;">RMI Passport Portal</h1>
-    <div style="background:#fff;padding:40px 30px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);min-width:320px;">
-  <h1>RMI Passport Portal</h1>
-  <form id="login-form">
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button type="submit">Login</button>
-    <p><a href="#" id="signup-link">Don't have an account? Sign up</a></p>
-  </form></div></div>
-  <script type="module" src="auth.js"></script>
+
+<body style="margin:0;font-family:'Segoe UI', sans-serif;background:#f4f6f8;">
+  <header style="background:#1b365d;color:white;padding:14px 32px;display:flex;align-items:center;">
+    <img src="seal.png" alt="RMI Seal" style="height:40px;margin-right:14px;">
+    <h1 style="margin:0;font-size:18px;">Republic of the Marshall Islands – Passport Portal</h1>
+  </header>
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 80px);">
+
+  <header>
+    <h1>Republic of the Marshall Islands – Passport Portal</h1>
+  </header>
+  <div class="container">
+    <h2>Sign in to your account</h2>
+    <form id="login-form">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="Email" required />
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form></div></div>
+    <p style="margin-top:10px;">Don't have an account? <a href="#" onclick="document.getElementById('login-form').style.display='none';document.getElementById('signup-form').style.display='block';">Sign up</a></p>
+    <form id="signup-form" style="display:none;">
+      <label>Email</label>
+      <input type="email" id="signup-email" placeholder="Email" required />
+      <label>Password</label>
+      <input type="password" id="signup-password" placeholder="Password" required />
+      <button type="submit">Sign Up</button>
+    </form></div></div>
+  </div>
+  <footer>
+    An official service of the Republic of the Marshall Islands
+  </footer>
 </body>
-</html>
