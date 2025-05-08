@@ -1,59 +1,62 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #fff;
+  background-color: #f4f6f8;
   margin: 0;
   padding: 0;
   color: #1c1c1c;
 }
 
 header {
-  padding: 20px 24px;
-  text-align: center;
-  font-size: 20px;
+  background-color: #1b365d;
+  color: white;
+  padding: 20px 32px;
+  font-size: 18px;
   font-weight: bold;
-  color: #1c1c1c;
 }
 
 main {
-  max-width: 440px;
+  max-width: 800px;
   margin: 40px auto;
-  padding: 40px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-  text-align: center;
+  background: white;
+  padding: 40px 50px;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 
 form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  width: 100%;
 }
 
-input[type="email"],
-input[type="password"],
+h1, h2, h3 {
+  color: #1b365d;
+  margin-bottom: 12px;
+}
+
 input[type="text"],
 input[type="number"],
+input[type="email"],
+input[type="password"],
 input[type="date"],
+input[type="file"],
 select {
   width: 100%;
   padding: 12px;
-  font-size: 16px;
+  margin: 10px 0 20px;
   border-radius: 8px;
   border: 1px solid #ccc;
+  font-size: 15px;
 }
 
 button {
-  padding: 12px;
-  border: none;
+  padding: 12px 20px;
   background-color: #1b365d;
   color: white;
-  font-weight: bold;
-  font-size: 16px;
+  border: none;
   border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s ease;
 }
 
 button:hover {
@@ -70,31 +73,36 @@ a:hover {
   text-decoration: underline;
 }
 
-.card-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 24px;
+.step {
+  display: none;
+}
+.step:first-of-type {
+  display: block;
 }
 
-.card-button {
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 16px;
-  font-size: 14px;
-  background-color: #fff;
-  cursor: pointer;
-  transition: all 0.2s ease;
+label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
 }
 
-.card-button:hover {
-  background-color: #f0f0f0;
-  border-color: #999;
+.navbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 20px;
+  background-color: #1b365d;
+}
+
+.navbar a {
+  color: white;
+  margin-left: 24px;
+  text-decoration: none;
+  font-weight: 500;
 }
 
 footer {
   text-align: center;
-  margin-top: 40px;
-  color: #aaa;
   font-size: 13px;
+  color: #888;
+  margin-top: 40px;
 }
