@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="dashboard-section" style="max-width: 500px; margin: 100px auto; padding: 40px; background: white; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); text-align: center;">
+  <div class="dashboard-section">
     <h1>Welcome to Your Passport Dashboard</h1>
     <div class="dashboard-buttons">
     <p>Use the options below to manage your application.</p>
@@ -30,24 +30,6 @@
   </script>
 
 
-
-
-<script type="module">
-  import { supabase } from './supabase.js';
-
-  // Protect access
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (!session) {
-      window.location.href = 'index.html';
-    }
-  });
-
-  // Logout
-  document.querySelector('.logout-btn')?.addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    window.location.href = 'index.html';
-  });
-</script>
 
 </body>
 </html>
