@@ -19,7 +19,7 @@ async function getUser() {
     // Try to fetch existing draft
     const { data: existing, error: fetchError } = await supabase
       .from('passport_applications')
-      .select('id')
+      .select('id', { head: false })
       .eq('user_id', userId)
       .eq('status', 'draft')
       .limit(1)
