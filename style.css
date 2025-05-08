@@ -227,3 +227,26 @@ form input[type="password"] {
   padding: 10px 20px;
   min-width: 100px;
 }
+
+
+/* Ensure the page content stretches full height */
+html, body {
+  height: 100%;
+}
+
+/* Form wrapper for vertical layout */
+form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 80vh;
+}
+
+/* Adjust navigation buttons to be centered at bottom */
+.navigation-buttons {
+  margin-top: auto;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
