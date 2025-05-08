@@ -15,6 +15,20 @@ async function getUser() {
   if (data?.user?.id) {
     userId = data.user.id;
     console.log("User ID:", userId);
+
+    // Try to fetch existing draft
+    const { data: existing, error: fetchError } = await supabase
+      .from('passport_applications')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('status', 'draft')
+      .limit(1)
+      .single();
+
+    if (existing) {
+      applicationId = existing.id;
+      console.log("Loaded draft application ID:", applicationId);
+    }
   } else {
     alert("Failed to fetch user session.");
   }
