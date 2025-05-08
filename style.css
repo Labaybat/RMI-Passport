@@ -67,3 +67,57 @@ a:hover {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+
+
+/* Center everything vertically and horizontally */
+body, html {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container, .dashboard-section {
+  width: 100%;
+  max-width: 600px;
+  margin: 40px auto;
+}
+
+h2.section-title {
+  font-size: 20px;
+  color: #003366;
+  margin-top: 20px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 5px;
+}
+
+/* Application step indicators */
+.step-title {
+  font-weight: bold;
+  color: #003366;
+  margin-bottom: 10px;
+}
+
+/* Dashboard improvements */
+.dashboard-section a {
+  display: block;
+  padding: 15px;
+  margin: 10px 0;
+  background: #e6f0ff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s ease-in-out;
+}
+
+.dashboard-section a:hover {
+  background: #cce0ff;
+}
+
+/* Responsive for mobile */
+@media (max-width: 600px) {
+  .container, .dashboard-section {
+    margin: 20px;
+    padding: 20px;
+  }
+}
