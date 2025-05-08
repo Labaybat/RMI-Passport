@@ -6,13 +6,16 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;">
+    <h1 style="margin-bottom:20px;">RMI Passport Portal</h1>
+    <div style="background:#fff;padding:40px 30px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);min-width:320px;">
   <h1>RMI Passport Portal</h1>
   <form id="login-form">
     <input type="email" id="email" placeholder="Email" required />
     <input type="password" id="password" placeholder="Password" required />
     <button type="submit">Login</button>
     <p><a href="#" id="signup-link">Don't have an account? Sign up</a></p>
-  </form>
+  </form></div></div>
   <script type="module" src="auth.js"></script>
 </body>
 </html>
