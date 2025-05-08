@@ -1,108 +1,77 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f4f6f8;
+  background-color: #f0f4f8;
   margin: 0;
   padding: 0;
-  color: #1c1c1c;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  align-items: flex-start;
+  color: #2c3e50;
 }
 
 header {
-  background-color: #1b365d;
-  color: white;
-  padding: 20px 32px;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-main {
-  max-width: 800px;
-  margin: 40px auto;
-  background: white;
-  padding: 40px 50px;
-  border-radius: 14px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-}
-
-form {
   width: 100%;
+  background-color: #003366;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 h1, h2, h3 {
-  color: #1b365d;
-  margin-bottom: 12px;
+  text-align: center;
+  color: #003366;
+}
+
+form {
+  background: #ffffff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 700px;
+  width: 100%;
+  margin-top: 60px;
 }
 
 input[type="text"],
 input[type="number"],
-input[type="email"],
-input[type="password"],
 input[type="date"],
 input[type="file"],
-select {
+input[type="email"],
+input[type="password"],
+select,
+textarea {
   width: 100%;
-  padding: 12px;
-  margin: 10px 0 20px;
-  border-radius: 8px;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
   border: 1px solid #ccc;
-  font-size: 15px;
+  border-radius: 8px;
+  font-size: 16px;
 }
 
-button {
-  padding: 12px 20px;
-  background-color: #1b365d;
+button, input[type="submit"] {
+  background-color: #003366;
   color: white;
+  padding: 12px 24px;
   border: none;
   border-radius: 8px;
-  font-size: 15px;
-  font-weight: bold;
+  font-size: 16px;
   cursor: pointer;
 }
 
-button:hover {
-  background-color: #142b4c;
-}
-
-a {
-  color: #1b365d;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-.step {
-  display: none;
-}
-.step:first-of-type {
-  display: block;
-}
-
-label {
-  font-weight: 600;
-  display: block;
-  margin-bottom: 6px;
-}
-
-.navbar {
-  display: flex;
-  justify-content: flex-end;
-  padding: 10px 20px;
-  background-color: #1b365d;
-}
-
-.navbar a {
-  color: white;
-  margin-left: 24px;
-  text-decoration: none;
-  font-weight: 500;
+button:hover, input[type="submit"]:hover {
+  background-color: #0055a5;
 }
 
 footer {
-  text-align: center;
-  font-size: 13px;
-  color: #888;
   margin-top: 40px;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
 }
