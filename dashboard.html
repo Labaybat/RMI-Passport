@@ -17,5 +17,14 @@
   </div>
 
   <script type="module" src="auth.js"></script>
+
+  <script type="module">
+    import { supabase } from './supabaseClient.js';
+
+    window.logout = async function () {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    };
+  </script>
 </body>
 </html>
