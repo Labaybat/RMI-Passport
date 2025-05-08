@@ -1,5 +1,5 @@
 
-const supabase = window.supabase.createClient(
+const supabase = supabase.createClient(
   "https://injquzndhzqcamtenbum.supabase.co",
   "YOUR_PUBLIC_ANON_KEY"
 );
