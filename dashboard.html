@@ -9,14 +9,41 @@
 <body>
   <div class="dashboard-section">
     <h1>Welcome to Your Passport Dashboard</h1>
+    <div class="dashboard-buttons">
     <p>Use the options below to manage your application.</p>
     <a href="apply.html">📝 Start Application</a>
     <a href="status.html">📊 Application Status</a>
     <a href="passport-act.html">📄 View Passport Act</a>
+    </div>
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 
   <script type="module" src="auth.js"></script>
 
-  </body>
+  <script type="module">
+    import { supabase } from './supabase.js';
+
+    window.logout = async function () {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    };
+  </script>
+</body>
 </html>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js';
+  const supabase = createClient('https://eiuviyizjnfmswfrdigo.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpdXZpeWl6am5mbXN3ZnJkaWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2Nzc1MDIsImV4cCI6MjA2MjI1MzUwMn0.M1E6xOKAc8fsiVkXAxorr1QCRqRedcDv-GNa9CuAE4M');
+
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (!session) {
+      window.location.href = "index.html";
+    }
+  });
+
+  document.querySelector('.logout-btn')?.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'index.html';
+  });
+</script>

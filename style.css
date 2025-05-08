@@ -212,3 +212,19 @@ form input[type="password"] {
 .button-row button {
   min-width: 100px;
 }
+
+
+.dashboard-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  background-color: #003366;
+  color: white;
+  text-decoration: none;
+}
