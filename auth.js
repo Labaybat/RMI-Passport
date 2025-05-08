@@ -1,9 +1,8 @@
 
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = "https://injquzndhzqcamtenbum.supabase.co";
-const supabaseKey = "YOUR_PUBLIC_ANON_KEY";
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = window.supabase.createClient(
+  "https://injquzndhzqcamtenbum.supabase.co",
+  "YOUR_PUBLIC_ANON_KEY"
+);
 
 async function login() {
   const email = document.getElementById("email").value;
