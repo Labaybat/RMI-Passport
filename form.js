@@ -6,3 +6,8 @@ function nextStep() {
   const next = document.getElementById(`step-${currentStep}`);
   if (next) next.style.display = 'block';
 }
+
+
+// Make functions globally accessible
+window.nextStep = nextStep;
+window.prevStep = prevStep;
