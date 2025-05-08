@@ -228,3 +228,16 @@ form input[type="password"] {
   color: white;
   text-decoration: none;
 }
+
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #003366;
+}
