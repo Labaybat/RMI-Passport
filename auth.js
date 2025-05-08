@@ -1,3 +1,12 @@
+
+(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const protectedPages = ['dashboard.html', 'apply.html'];
+  if (protectedPages.includes(location.pathname.split('/').pop()) && !session) {
+    window.location.href = 'index.html';
+  }
+})();
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
 const supabase = createClient('https://eiuviyizjnfmswfrdigo.supabase.co',
