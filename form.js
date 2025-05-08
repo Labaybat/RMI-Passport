@@ -39,7 +39,7 @@ async function saveStep() {
   const formData = new FormData(form);
   const stepData = {};
   formData.forEach((value, key) => {
-    if (!(value instanceof File)) stepData[key] = value;
+    if (!(value instanceof File)) stepData[key] = value === '' ? null : value;
   });
 
   if (!userId) await getUser();
