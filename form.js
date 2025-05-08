@@ -62,7 +62,7 @@ async function saveStep() {
   if (!applicationId) {
     const { data, error } = await supabase
       .from('passport_applications')
-      .insert([{ user_id: userId, status: 'draft', application_type: stepData.application_type, ...stepData }])
+      .insert([{ user_id: userId, status: 'draft', application_type: stepData.application_type, ...stepData }]).select()
       .select()
       .single();
     if (data) {
