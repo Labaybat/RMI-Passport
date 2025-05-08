@@ -9,6 +9,12 @@
 <body>
   <h1>Passport Application</h1>
   <form id="application-form">
+      <label>Application Type</label>
+      <select name="application_type" required>
+        <option value="">Select</option>
+        <option value="new">New Passport</option>
+        <option value="renewal">Passport Renewal</option>
+      </select>
     <!-- Step 1: Personal Info -->
     <div class="step" id="step-1">
       <h2>Personal Information</h2>
