@@ -1,49 +1,43 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f7f9fc;
+  background-color: #f4f6f9;
   margin: 0;
   padding: 0;
   color: #2c3e50;
 }
 
 header {
+  width: 100%;
   background-color: #002b5c;
   color: white;
-  padding: 18px 0;
+  padding: 16px 0;
   text-align: center;
-  font-size: 22px;
-  font-family: 'Georgia', serif;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  font-size: 20px;
+  font-weight: bold;
+  font-family: Georgia, 'Times New Roman', serif;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 main {
   display: flex;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 40px 16px;
 }
 
 .container {
   background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.1);
+  padding: 32px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   max-width: 800px;
   width: 100%;
 }
 
 h1, h2, h3 {
-  color: #002b5c;
   text-align: center;
-  font-family: 'Georgia', serif;
-  margin-bottom: 24px;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
+  color: #002b5c;
+  font-family: Georgia, 'Times New Roman', serif;
 }
 
 input[type="text"],
@@ -56,28 +50,21 @@ select,
 textarea {
   width: 100%;
   padding: 12px;
-  margin-bottom: 20px;
-  border: 1px solid #d0d7de;
+  margin: 10px 0 20px 0;
+  border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 15px;
   box-sizing: border-box;
-  transition: border-color 0.2s;
-}
-
-input:focus, select:focus, textarea:focus {
-  border-color: #0055a5;
-  outline: none;
 }
 
 button, input[type="submit"] {
   background-color: #002b5c;
   color: white;
-  padding: 14px 28px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 15px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 button:hover, input[type="submit"]:hover {
@@ -85,30 +72,8 @@ button:hover, input[type="submit"]:hover {
 }
 
 footer {
+  text-align: center;
   margin-top: 60px;
-  text-align: center;
-  color: #888;
   font-size: 13px;
-}
-
-.login-card {
-  background: #fff;
-  padding: 32px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  max-width: 400px;
-  margin: 60px auto;
-  text-align: center;
-}
-
-.login-card input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 16px;
-  font-size: 14px;
-}
-
-.login-card button {
-  width: 100%;
-  padding: 12px;
+  color: #777;
 }
