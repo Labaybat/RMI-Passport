@@ -34,7 +34,7 @@
 <div class="form-group"><input name="height_feet" placeholder="Height (Feet)" required="" type="number"/></div>
 <div class="form-group"><input name="height_inches" placeholder="Height (Inches)" required="" type="number"/></div>
 <div class="form-group"><input name="eye_color" placeholder="Eye Color" required="" type="text"/></div>
-<button class="next-btn" type="button">Next</button>
+<div class="button-group"><button class="next-btn" type="button">Next</button></div>
 </div>
 <!-- Step 2: Contact Info -->
 <div class="step" id="step-2" style="display:none;">
@@ -45,8 +45,7 @@
 <div class="form-group"><input name="city" placeholder="City or Town" required="" type="text"/></div>
 <div class="form-group"><input name="state" placeholder="State" required="" type="text"/></div>
 <div class="form-group"><input name="postal_code" placeholder="Postal Code" required="" type="text"/></div>
-<button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<div class="button-group"><button class="prev-btn" type="button">Back</button><button class="next-btn" type="button">Next</button></div>
 </div>
 <!-- Step 3: Emergency Contact -->
 <div class="step" id="step-3" style="display:none;">
@@ -58,8 +57,7 @@
 <div class="form-group"><input name="emergency_city" placeholder="City or Town" required="" type="text"/></div>
 <div class="form-group"><input name="emergency_state" placeholder="State" required="" type="text"/></div>
 <div class="form-group"><input name="emergency_postal_code" placeholder="Postal Code" required="" type="text"/></div>
-<button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<div class="button-group"><button class="prev-btn" type="button">Back</button><button class="next-btn" type="button">Next</button></div>
 </div>
 <!-- Step 4: Parent Info -->
 <div class="step" id="step-4" style="display:none;">
@@ -78,8 +76,7 @@
 <div class="form-group"><input name="mother_birth_city" placeholder="City or Town" required="" type="text"/></div>
 <div class="form-group"><input name="mother_birth_state" placeholder="State" type="text"/></div>
 <div class="form-group"><input name="mother_birth_country" placeholder="Country" required="" type="text"/></div>
-<button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<div class="button-group"><button class="prev-btn" type="button">Back</button><button class="next-btn" type="button">Next</button></div>
 </div>
 <!-- Step 5: Uploads -->
 <div class="step" id="step-5" style="display:none;">
@@ -90,15 +87,13 @@
 <div class="form-group"><input accept=".pdf,.jpg,.jpeg,.png" name="old_passport_copy" type="file"/></div>
 <div class="form-group"><input accept=".png,.jpg,.jpeg" name="signature" type="file"/></div>
 <div class="form-group"><input accept=".jpg,.jpeg,.png" name="photo_id" type="file"/></div>
-<button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<div class="button-group"><button class="prev-btn" type="button">Back</button><button class="next-btn" type="button">Next</button></div>
 </div>
 <!-- Step 6: Review & Submit -->
 <div class="step" id="step-6" style="display:none;">
 <h2>Review &amp; Submit</h2>
 <p>Please review your details before submitting.</p>
-<button class="prev-btn" type="button">Back</button>
-<button type="submit">Submit</button>
+<div class="button-group"><button id="reviewBtn" type="button">Review</button><button type="submit">Submit</button></div>
 </div>
 </form>
 </div>
@@ -113,6 +108,31 @@
       window.location.href = 'index.html';
     }
   });
+</script>
+
+<!-- Review Modal -->
+<div class="modal-overlay" id="reviewModal" style="display: none;">
+<div class="modal-content">
+<h2>Review Your Application</h2>
+<pre class="review-box" id="reviewData"></pre>
+<button onclick="closeReviewModal()">Close</button>
+</div>
+</div>
+
+<script>
+function closeReviewModal() {
+  document.getElementById("reviewModal").style.display = "none";
+}
+
+document.getElementById("reviewBtn").addEventListener("click", function () {
+  const formData = new FormData(document.getElementById("application-form"));
+  let output = "";
+  for (let [key, value] of formData.entries()) {
+    output += `${key}: ${value}\n`;
+  }
+  document.getElementById("reviewData").textContent = output;
+  document.getElementById("reviewModal").style.display = "flex";
+});
 </script>
 </body>
 </html>

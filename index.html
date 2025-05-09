@@ -18,5 +18,19 @@
 </form><p style="text-align:center;margin-top:15px;">Don't have an account? <a href="signup.html">Sign up</a></p>
 </div>
 <script src="auth.js" type="module"></script>
+
+<!-- Consent Modal -->
+<div id="consentModal" style="position:fixed;top:0;left:0;width:100%;height:100%;
+background-color:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;">
+  <div style="background:#fff;padding:20px 30px;border-radius:8px;max-width:500px;text-align:center;box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+    <h2>Consent Required</h2>
+    <p>By using this platform, you agree to provide true and accurate information in accordance with the RMI Passport Act 2020.</p>
+    <button onclick="document.getElementById('consentModal').style.display='none'" 
+            style="margin-top:15px;padding:10px 20px;border:none;border-radius:5px;background-color:#003366;color:white;cursor:pointer;">
+      I Agree
+    </button>
+  </div>
+</div>
+
 </body>
 </html>
