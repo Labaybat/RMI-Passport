@@ -1,39 +1,6 @@
 const loader = document.getElementById("loader");
 const submitButton = document.getElementById("submit-button");
 
-submitButton.addEventListener("click", async () => {
-  loader.style.display = "block";
-  submitButton.disabled = true;
-
-  try {
-    const form = document.getElementById("application-form");
-    const formData = new FormData(form);
-    const applicationData = {};
-    formData.forEach((value, key) => {
-      applicationData[key] = value === "" ? null : value;
-    });
-
-    const { data, error } = await supabase.from("passport_applications").insert([
-      { ...applicationData, status: "submitted" },
-    ]);
-
-    if (error) {
-      console.error("Submission error:", error.message);
-      alert("Failed to submit application.");
-    } else {
-      alert("Application submitted successfully!");
-      window.location.href = "dashboard.html";
-    }
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    alert("Something went wrong.");
-  } finally {
-    loader.style.display = "none";
-    submitButton.disabled = false;
-  }
-});
-
-
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
@@ -84,16 +51,11 @@ function prevStep() {
   document.getElementById(`step-${currentStep}`).style.display = 'block';
 }
 
-function saveStep() {
-  const form = document.getElementById("application-form");
+async function saveStep() {
+  const form = document.getElementById('application-form');
   const formData = new FormData(form);
-  const applicationData = {};
-  const form = document.getElementById("application-form");  const formData = new FormData(form);  const applicationData = {};  formData.forEach((value, key) => {    applicationData[key] = value === "" ? null : value;  });  console.log('Saved draft step:', applicationData);  formData.forEach((value, key) => {
-    applicationData[key] = value === "" ? null : value;
-  });
-  console.log('Draft saved:', applicationData);
-}
-  const form = document.getElementById("application-form");  const formData = new FormData(form);  formData.forEach((value, key) => {
+  const stepData = {};
+  formData.forEach((value, key) => {
     if (!(value instanceof File)) stepData[key] = value === '' ? null : value;
   });
 
@@ -143,6 +105,8 @@ document.getElementById('application-form')?.addEventListener('submit', async (e
   if (!userId) await getUser();
   if (!userId) return;
 
+  const form = e.target;
+  const formData = new FormData(form);
 
   for (const [key, value] of formData.entries()) {
     if (value instanceof File && value.size > 0) {
