@@ -292,3 +292,49 @@ document.querySelectorAll('.prev-btn').forEach(btn => {
 });
 
 getUser();
+
+
+
+submitButton.addEventListener("click", async () => {
+  loader.style.display = "block";
+  submitButton.disabled = true;
+
+  try {
+    const form = document.getElementById("application-form");
+    const formData = new FormData(form);
+    const applicationData = {};
+
+    formData.forEach((value, key) => {
+      applicationData[key] = value === "" ? null : value;
+    });
+
+    if (!userId) await getUser();
+    if (!userId) {
+      alert("User not logged in.");
+      return;
+    }
+
+    const { data, error } = await supabase.from("passport_applications").insert([
+      {
+        ...applicationData,
+        user_id: userId,
+        status: "submitted",
+      },
+    ]);
+
+    if (error) {
+      console.error("Submission error:", error.message);
+      alert("Failed to submit application.");
+    } else {
+      alert("Application submitted successfully!");
+      window.location.href = "dashboard.html";
+    }
+
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    alert("Something went wrong.");
+  } finally {
+    loader.style.display = "none";
+    submitButton.disabled = false;
+  }
+});
