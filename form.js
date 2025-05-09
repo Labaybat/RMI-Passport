@@ -84,9 +84,16 @@ function prevStep() {
   document.getElementById(`step-${currentStep}`).style.display = 'block';
 }
 
-async function saveStep() {
-  const stepData = {};
-  formData.forEach((value, key) => {
+function saveStep() {
+  const form = document.getElementById("application-form");
+  const formData = new FormData(form);
+  const applicationData = {};
+  const form = document.getElementById("application-form");  const formData = new FormData(form);  const applicationData = {};  formData.forEach((value, key) => {    applicationData[key] = value === "" ? null : value;  });  console.log('Saved draft step:', applicationData);  formData.forEach((value, key) => {
+    applicationData[key] = value === "" ? null : value;
+  });
+  console.log('Draft saved:', applicationData);
+}
+  const form = document.getElementById("application-form");  const formData = new FormData(form);  formData.forEach((value, key) => {
     if (!(value instanceof File)) stepData[key] = value === '' ? null : value;
   });
 
