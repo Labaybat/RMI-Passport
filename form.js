@@ -1,5 +1,10 @@
 
-import { supabase } from './supabase.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+
+const supabase = createClient(
+  'https://eiuviyizjnfmswfrdigo.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpdXZpeWl6am5mbXN3ZnJkaWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2Nzc1MDIsImV4cCI6MjA2MjI1MzUwMn0.M1E6xOKAc8fsiVkXAxorr1QCRqRedcDv-GNa9CuAE4M'
+);
 
 let currentStep = 1;
 let userId = null;
@@ -10,15 +15,23 @@ async function getUser() {
   if (data?.user?.id) {
     userId = data.user.id;
     console.log("User ID:", userId);
+
+    // Try to fetch existing draft
+    const { data: existing, error: fetchError } = await supabase
+      .from('passport_applications')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('status', 'draft')
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) {
+      applicationId = existing.id;
+      console.log("Loaded draft application ID:", applicationId);
+    }
   } else {
     alert("Failed to fetch user session.");
   }
-}
-
-function showStep(step) {
-  document.querySelectorAll(".step").forEach((el) => el.style.display = "none");
-  const current = document.getElementById(`step-${step}`);
-  if (current) current.style.display = "block";
 }
 
 function nextStep() {
@@ -49,12 +62,12 @@ async function saveStep() {
   if (!applicationId) {
     const { data, error } = await supabase
       .from('passport_applications')
-      .insert([{ user_id: userId, status: 'draft', ...stepData }])
+      .insert([{ user_id: userId, status: 'draft', application_type: stepData.application_type, ...stepData }])
       .select()
       .single();
     if (data) {
       applicationId = data.id;
-      console.log("Created new application ID:", applicationId);
+      console.log("Created application ID:", applicationId);
     } else if (error) {
       console.error("Insert error:", error);
     }
@@ -67,48 +80,56 @@ async function saveStep() {
   }
 }
 
-async function submitApplication() {
-  const form = document.getElementById('application-form');
-  const formData = new FormData(form);
-  const allData = {};
-  formData.forEach((value, key) => {
-    if (!(value instanceof File)) allData[key] = value === '' ? null : value;
-  });
-
-  const submitButton = document.getElementById('submit-btn');
-  submitButton.disabled = true;
-  submitButton.innerText = 'Submitting...';
-
-  if (!userId) await getUser();
-  if (!userId || !applicationId) return;
-
-  const { error } = await supabase
-    .from('passport_applications')
-    .update({ ...allData, status: 'submitted', submitted_at: new Date().toISOString() })
-    .eq('id', applicationId);
-
-  submitButton.disabled = false;
-  submitButton.innerText = 'Submit';
-
+async function uploadFile(fieldName, file) {
+  if (!userId || !applicationId || !file || file.size === 0) return;
+  const filePath = `${userId}/${fieldName}-${Date.now()}-${file.name}`;
+  const { data, error } = await supabase.storage
+    .from('passport-documents')
+    .upload(filePath, file, { upsert: true });
   if (!error) {
-    alert('✅ Your application has been submitted successfully!');
-    setTimeout(() => window.location.href = 'dashboard.html', 500);
+    const publicUrl = data.path;
+    await supabase
+      .from('passport_applications')
+      .update({ [fieldName]: publicUrl })
+      .eq('id', applicationId);
   } else {
-    alert('❌ Submission failed: ' + error.message);
-    console.error(error);
+    console.error(`Upload error for ${fieldName}:`, error);
   }
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-  await getUser();
-  showStep(currentStep);
+document.getElementById('application-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!userId) await getUser();
+  if (!userId) return;
 
-  document.querySelectorAll(".next-btn").forEach((btn) =>
-    btn.addEventListener("click", nextStep)
-  );
-  document.querySelectorAll(".prev-btn").forEach((btn) =>
-    btn.addEventListener("click", prevStep)
-  );
+  const form = e.target;
+  const formData = new FormData(form);
 
-  document.getElementById("submit-btn")?.addEventListener("click", submitApplication);
+  for (const [key, value] of formData.entries()) {
+    if (value instanceof File && value.size > 0) {
+      await uploadFile(key, value);
+    }
+  }
+
+  const { error } = await supabase
+    .from('passport_applications')
+    .update({ status: 'submitted', submitted_at: new Date().toISOString() })
+    .eq('id', applicationId);
+
+  if (error) {
+    alert("Error submitting application.");
+    console.error("Submission error:", error);
+  } else {
+    alert('Application submitted successfully!');
+    window.location.href = 'dashboard.html';
+  }
 });
+
+document.querySelectorAll('.next-btn').forEach(btn => {
+  btn.addEventListener('click', nextStep);
+});
+document.querySelectorAll('.prev-btn').forEach(btn => {
+  btn.addEventListener('click', prevStep);
+});
+
+getUser();
