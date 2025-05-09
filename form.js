@@ -108,3 +108,51 @@ document.addEventListener("DOMContentLoaded", async () => {
     btn.addEventListener("click", prevStep)
   );
 });
+
+
+// Final submission (called only on last step)
+async function submitApplication() {
+  const form = document.getElementById('application-form');
+  const formData = new FormData(form);
+  const allData = {};
+  formData.forEach((value, key) => {
+    if (!(value instanceof File)) allData[key] = value === '' ? null : value;
+  });
+
+  const submitButton = document.getElementById('submit-btn');
+  submitButton.disabled = true;
+  submitButton.innerText = 'Submitting...';
+
+  if (!userId) await getUser();
+  if (!userId || !applicationId) return;
+
+  const { error } = await supabase
+    .from('passport_applications')
+    .update({ ...allData, status: 'submitted', submitted_at: new Date().toISOString() })
+    .eq('id', applicationId);
+
+  submitButton.disabled = false;
+  submitButton.innerText = 'Submit';
+
+  if (!error) {
+    alert('✅ Your application has been submitted successfully!');
+    window.location.href = 'dashboard.html'; // or reload the form
+  } else {
+    alert('❌ Submission failed: ' + error.message);
+    console.error(error);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await getUser();
+  showStep(currentStep);
+
+  document.querySelectorAll(".next-btn").forEach((btn) =>
+    btn.addEventListener("click", nextStep)
+  );
+  document.querySelectorAll(".prev-btn").forEach((btn) =>
+    btn.addEventListener("click", prevStep)
+  );
+
+  document.getElementById("submit-btn")?.addEventListener("click", submitApplication);
+});
