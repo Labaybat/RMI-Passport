@@ -1,113 +1,108 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Passport Application</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="utf-8"/>
+<title>Passport Application</title>
+<link href="style.css" rel="stylesheet"/>
 </head>
 <body>
-  <div class="container">
-  <h1>Passport Application</h1>
-  <form id="application-form">
-    <h2 class="section-title">Personal Information</h2>
-    <!-- Step 1: Personal Info -->
-    <div class="step" id="step-1">
-      <h2>Personal Information</h2>
-      <label>Application Type</label>
-      <select name="application_type" required>
-        <option value="">Select</option>
-        <option value="new">New Passport</option>
-        <option value="renewal">Passport Renewal</option>
-      </select>
-      <input type="text" name="surname" placeholder="Surname or Family Name" required />
-      <input type="text" name="first_middle_names" placeholder="First and Middle Names" required />
-      <input type="text" name="social_security_number" placeholder="Social Security Number" required />
-      <input type="text" name="place_of_birth_city" placeholder="City or Town of Birth" required />
-      <input type="text" name="place_of_birth_state" placeholder="State (if in U.S.)" />
-      <input type="text" name="country_of_birth" placeholder="Country of Birth" required />
-      <input type="date" name="date_of_birth" required />
-      <input type="text" name="gender" placeholder="Gender" required />
-      <input type="text" name="hair_color" placeholder="Hair Color" required />
-      <input type="text" name="marital_status" placeholder="Marital Status" required />
-      <input type="number" name="height_feet" placeholder="Height (Feet)" required />
-      <input type="number" name="height_inches" placeholder="Height (Inches)" required />
-      <input type="text" name="eye_color" placeholder="Eye Color" required />
-      <button type="button" class="next-btn">Next</button>
-    </div>
-
-    <!-- Step 2: Contact Info -->
-    <div class="step" id="step-2" style="display:none;">
-      <h2>Contact and Delivery</h2>
-      <input type="text" name="address_unit" placeholder="Unit and/or House Number" required />
-      <input type="text" name="street_name" placeholder="Street Name" required />
-      <input type="text" name="phone_number" placeholder="Phone Number" required />
-      <input type="text" name="city" placeholder="City or Town" required />
-      <input type="text" name="state" placeholder="State" required />
-      <input type="text" name="postal_code" placeholder="Postal Code" required />
-      <button type="button" class="prev-btn">Back</button>
-      <button type="button" class="next-btn">Next</button>
-    </div>
-
-    <!-- Step 3: Emergency Contact -->
-    <div class="step" id="step-3" style="display:none;">
-      <h2>Emergency Contact</h2>
-      <input type="text" name="emergency_full_name" placeholder="Full Name" required />
-      <input type="text" name="emergency_phone_number" placeholder="Phone Number" required />
-      <input type="text" name="emergency_address_unit" placeholder="Unit and/or House Number" required />
-      <input type="text" name="emergency_street_name" placeholder="Street Name" required />
-      <input type="text" name="emergency_city" placeholder="City or Town" required />
-      <input type="text" name="emergency_state" placeholder="State" required />
-      <input type="text" name="emergency_postal_code" placeholder="Postal Code" required />
-      <button type="button" class="prev-btn">Back</button>
-      <button type="button" class="next-btn">Next</button>
-    </div>
-
-    <!-- Step 4: Parent Info -->
-    <div class="step" id="step-4" style="display:none;">
-      <h2>Parent Details</h2>
-      <h3>Father</h3>
-      <input type="text" name="father_full_name" placeholder="Father's Full Name" required />
-      <input type="date" name="father_dob" required />
-      <input type="text" name="father_nationality" placeholder="Nationality" required />
-      <input type="text" name="father_birth_city" placeholder="City or Town" required />
-      <input type="text" name="father_birth_state" placeholder="State" />
-      <input type="text" name="father_birth_country" placeholder="Country" required />
-      <h3>Mother</h3>
-      <input type="text" name="mother_full_name" placeholder="Mother's Full Name" required />
-      <input type="date" name="mother_dob" required />
-      <input type="text" name="mother_nationality" placeholder="Nationality" required />
-      <input type="text" name="mother_birth_city" placeholder="City or Town" required />
-      <input type="text" name="mother_birth_state" placeholder="State" />
-      <input type="text" name="mother_birth_country" placeholder="Country" required />
-      <button type="button" class="prev-btn">Back</button>
-      <button type="button" class="next-btn">Next</button>
-    </div>
-
-    <!-- Step 5: Uploads -->
-    <div class="step" id="step-5" style="display:none;">
-      <h2>Document Uploads</h2>
-      <input type="file" name="birth_certificate" accept=".pdf,.jpg,.jpeg,.png" />
-      <input type="file" name="consent_form" accept=".pdf,.jpg,.jpeg,.png" />
-      <input type="file" name="marriage_or_divorce_certificate" accept=".pdf,.jpg,.jpeg,.png" />
-      <input type="file" name="old_passport_copy" accept=".pdf,.jpg,.jpeg,.png" />
-      <input type="file" name="signature" accept=".png,.jpg,.jpeg" />
-      <input type="file" name="photo_id" accept=".jpg,.jpeg,.png" />
-      <button type="button" class="prev-btn">Back</button>
-      <button type="button" class="next-btn">Next</button>
-    </div>
-
-    <!-- Step 6: Review & Submit -->
-    <div class="step" id="step-6" style="display:none;">
-      <h2>Review & Submit</h2>
-      <p>Please review your details before submitting.</p>
-      <button type="button" class="prev-btn">Back</button>
-      <button type="submit">Submit</button>
-    </div>
-  </form>
-  </div>
-  <script type="module" src="form.js"></script>
-
+<div class="container">
+<h1>Passport Application</h1>
+<form id="application-form">
+<h2 class="section-title">Personal Information</h2>
+<!-- Step 1: Personal Info -->
+<div class="step" id="step-1">
+<h2>Personal Information</h2>
+<label>Application Type</label>
+<div class="form-group"><select name="application_type" required="">
+<option value="">Select</option>
+<option value="new">New Passport</option>
+<option value="renewal">Passport Renewal</option>
+</select></div>
+<div class="form-group"><input name="surname" placeholder="Surname or Family Name" required="" type="text"/></div>
+<div class="form-group"><input name="first_middle_names" placeholder="First and Middle Names" required="" type="text"/></div>
+<div class="form-group"><input name="social_security_number" placeholder="Social Security Number" required="" type="text"/></div>
+<div class="form-group"><input name="place_of_birth_city" placeholder="City or Town of Birth" required="" type="text"/></div>
+<div class="form-group"><input name="place_of_birth_state" placeholder="State (if in U.S.)" type="text"/></div>
+<div class="form-group"><input name="country_of_birth" placeholder="Country of Birth" required="" type="text"/></div>
+<div class="form-group"><input name="date_of_birth" required="" type="date"/></div>
+<div class="form-group"><input name="gender" placeholder="Gender" required="" type="text"/></div>
+<div class="form-group"><input name="hair_color" placeholder="Hair Color" required="" type="text"/></div>
+<div class="form-group"><input name="marital_status" placeholder="Marital Status" required="" type="text"/></div>
+<div class="form-group"><input name="height_feet" placeholder="Height (Feet)" required="" type="number"/></div>
+<div class="form-group"><input name="height_inches" placeholder="Height (Inches)" required="" type="number"/></div>
+<div class="form-group"><input name="eye_color" placeholder="Eye Color" required="" type="text"/></div>
+<button class="next-btn" type="button">Next</button>
+</div>
+<!-- Step 2: Contact Info -->
+<div class="step" id="step-2" style="display:none;">
+<h2>Contact and Delivery</h2>
+<div class="form-group"><input name="address_unit" placeholder="Unit and/or House Number" required="" type="text"/></div>
+<div class="form-group"><input name="street_name" placeholder="Street Name" required="" type="text"/></div>
+<div class="form-group"><input name="phone_number" placeholder="Phone Number" required="" type="text"/></div>
+<div class="form-group"><input name="city" placeholder="City or Town" required="" type="text"/></div>
+<div class="form-group"><input name="state" placeholder="State" required="" type="text"/></div>
+<div class="form-group"><input name="postal_code" placeholder="Postal Code" required="" type="text"/></div>
+<button class="prev-btn" type="button">Back</button>
+<button class="next-btn" type="button">Next</button>
+</div>
+<!-- Step 3: Emergency Contact -->
+<div class="step" id="step-3" style="display:none;">
+<h2>Emergency Contact</h2>
+<div class="form-group"><input name="emergency_full_name" placeholder="Full Name" required="" type="text"/></div>
+<div class="form-group"><input name="emergency_phone_number" placeholder="Phone Number" required="" type="text"/></div>
+<div class="form-group"><input name="emergency_address_unit" placeholder="Unit and/or House Number" required="" type="text"/></div>
+<div class="form-group"><input name="emergency_street_name" placeholder="Street Name" required="" type="text"/></div>
+<div class="form-group"><input name="emergency_city" placeholder="City or Town" required="" type="text"/></div>
+<div class="form-group"><input name="emergency_state" placeholder="State" required="" type="text"/></div>
+<div class="form-group"><input name="emergency_postal_code" placeholder="Postal Code" required="" type="text"/></div>
+<button class="prev-btn" type="button">Back</button>
+<button class="next-btn" type="button">Next</button>
+</div>
+<!-- Step 4: Parent Info -->
+<div class="step" id="step-4" style="display:none;">
+<h2>Parent Details</h2>
+<h3>Father</h3>
+<div class="form-group"><input name="father_full_name" placeholder="Father's Full Name" required="" type="text"/></div>
+<div class="form-group"><input name="father_dob" required="" type="date"/></div>
+<div class="form-group"><input name="father_nationality" placeholder="Nationality" required="" type="text"/></div>
+<div class="form-group"><input name="father_birth_city" placeholder="City or Town" required="" type="text"/></div>
+<div class="form-group"><input name="father_birth_state" placeholder="State" type="text"/></div>
+<div class="form-group"><input name="father_birth_country" placeholder="Country" required="" type="text"/></div>
+<h3>Mother</h3>
+<div class="form-group"><input name="mother_full_name" placeholder="Mother's Full Name" required="" type="text"/></div>
+<div class="form-group"><input name="mother_dob" required="" type="date"/></div>
+<div class="form-group"><input name="mother_nationality" placeholder="Nationality" required="" type="text"/></div>
+<div class="form-group"><input name="mother_birth_city" placeholder="City or Town" required="" type="text"/></div>
+<div class="form-group"><input name="mother_birth_state" placeholder="State" type="text"/></div>
+<div class="form-group"><input name="mother_birth_country" placeholder="Country" required="" type="text"/></div>
+<button class="prev-btn" type="button">Back</button>
+<button class="next-btn" type="button">Next</button>
+</div>
+<!-- Step 5: Uploads -->
+<div class="step" id="step-5" style="display:none;">
+<h2>Document Uploads</h2>
+<div class="form-group"><input accept=".pdf,.jpg,.jpeg,.png" name="birth_certificate" type="file"/></div>
+<div class="form-group"><input accept=".pdf,.jpg,.jpeg,.png" name="consent_form" type="file"/></div>
+<div class="form-group"><input accept=".pdf,.jpg,.jpeg,.png" name="marriage_or_divorce_certificate" type="file"/></div>
+<div class="form-group"><input accept=".pdf,.jpg,.jpeg,.png" name="old_passport_copy" type="file"/></div>
+<div class="form-group"><input accept=".png,.jpg,.jpeg" name="signature" type="file"/></div>
+<div class="form-group"><input accept=".jpg,.jpeg,.png" name="photo_id" type="file"/></div>
+<button class="prev-btn" type="button">Back</button>
+<button class="next-btn" type="button">Next</button>
+</div>
+<!-- Step 6: Review & Submit -->
+<div class="step" id="step-6" style="display:none;">
+<h2>Review &amp; Submit</h2>
+<p>Please review your details before submitting.</p>
+<button class="prev-btn" type="button">Back</button>
+<button type="submit">Submit</button>
+</div>
+</form>
+</div>
+<script src="form.js" type="module"></script>
 <script type="module">
   import { supabase } from './supabase.js';
 
@@ -119,6 +114,5 @@
     }
   });
 </script>
-
 </body>
 </html>
