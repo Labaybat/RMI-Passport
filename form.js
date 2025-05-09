@@ -1,3 +1,6 @@
+const loader = document.getElementById("loader");
+const submitButton = document.getElementById("submit-button");
+
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
@@ -128,7 +131,7 @@ document.getElementById('application-form')?.addEventListener('submit', async (e
     
   if (loader) loader.style.display = "none";
   if (submitButton) submitButton.disabled = false;
-  window.location.href = 'dashboard.html';
+  window.location.href = 'thankyou.html';
 
   }
 });
