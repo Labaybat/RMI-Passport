@@ -92,7 +92,7 @@ async function submitApplication() {
 
   if (!error) {
     alert('✅ Your application has been submitted successfully!');
-    window.location.href = 'dashboard.html';
+    setTimeout(() => window.location.href = 'dashboard.html', 500);
   } else {
     alert('❌ Submission failed: ' + error.message);
     console.error(error);
