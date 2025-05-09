@@ -125,7 +125,11 @@ document.getElementById('application-form')?.addEventListener('submit', async (e
     if (loader) loader.style.display = "none";
     if (submitButton) submitButton.disabled = false;
 
-    window.location.href = 'dashboard.html';
+    
+  if (loader) loader.style.display = "none";
+  if (submitButton) submitButton.disabled = false;
+  window.location.href = 'dashboard.html';
+
   }
 });
 
