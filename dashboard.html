@@ -27,6 +27,11 @@
     };
   </script>
 
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
+<script src="supabase.js"></script>
 <script>
   supabase.auth.getUser().then(({ data, error }) => {
     if (!data?.user) {
