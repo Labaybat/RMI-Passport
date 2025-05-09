@@ -59,7 +59,7 @@
     <div id="applications-list">Loading...</div>
   </div>
 
-  <script src="supabase.js"></script>
+  
   <script>
     async function loadApplications() {
       const { data: sessionData, error: sessionError } = await supabase.auth.getUser();
