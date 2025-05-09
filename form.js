@@ -10,19 +10,6 @@ async function getUser() {
   if (data?.user?.id) {
     userId = data.user.id;
     console.log("User ID:", userId);
-
-    const { data: existing, error: fetchError } = await supabase
-      .from('passport_applications')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('status', 'draft')
-      .limit(1)
-      .maybeSingle();
-
-    if (existing) {
-      applicationId = existing.id;
-      console.log("Loaded draft application ID:", applicationId);
-    }
   } else {
     alert("Failed to fetch user session.");
   }
@@ -67,7 +54,7 @@ async function saveStep() {
       .single();
     if (data) {
       applicationId = data.id;
-      console.log("Created application ID:", applicationId);
+      console.log("Created new application ID:", applicationId);
     } else if (error) {
       console.error("Insert error:", error);
     }
@@ -80,37 +67,6 @@ async function saveStep() {
   }
 }
 
-async function uploadFile(fieldName, file) {
-  if (!userId || !applicationId || !file || file.size === 0) return;
-  const filePath = `${userId}/${fieldName}-${Date.now()}-${file.name}`;
-  const { data, error } = await supabase.storage
-    .from('passport-documents')
-    .upload(filePath, file, { upsert: true });
-  if (!error) {
-    const publicUrl = data.path;
-    await supabase
-      .from('passport_applications')
-      .update({ [fieldName]: publicUrl })
-      .eq('id', applicationId);
-  } else {
-    console.error('Upload error:', error.message);
-  }
-}
-
-document.addEventListener("DOMContentLoaded", async () => {
-  await getUser();
-  showStep(currentStep);
-
-  document.querySelectorAll(".next-btn").forEach((btn) =>
-    btn.addEventListener("click", nextStep)
-  );
-  document.querySelectorAll(".prev-btn").forEach((btn) =>
-    btn.addEventListener("click", prevStep)
-  );
-});
-
-
-// Final submission (called only on last step)
 async function submitApplication() {
   const form = document.getElementById('application-form');
   const formData = new FormData(form);
@@ -136,7 +92,7 @@ async function submitApplication() {
 
   if (!error) {
     alert('✅ Your application has been submitted successfully!');
-    window.location.href = 'dashboard.html'; // or reload the form
+    window.location.href = 'dashboard.html';
   } else {
     alert('❌ Submission failed: ' + error.message);
     console.error(error);
