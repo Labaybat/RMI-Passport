@@ -1,34 +1,26 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('auth-form');
-  const toggleLink = document.getElementById('toggle-link');
-  const formTitle = document.getElementById('form-title');
-  const authButton = document.getElementById('auth-button');
+const supabase = createClient('https://eiuviyizjnfmswfrdigo.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpdXZpeWl6am5mbXN3ZnJkaWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2Nzc1MDIsImV4cCI6MjA2MjI1MzUwMn0.M1E6xOKAc8fsiVkXAxorr1QCRqRedcDv-GNa9CuAE4M');
 
-  let isLogin = true;
+document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (!error) window.location.href = 'dashboard.html';
+  else alert('Login failed');
+});
 
-  toggleLink.addEventListener('click', () => {
-    isLogin = !isLogin;
-    formTitle.innerText = isLogin ? 'Login' : 'Sign Up';
-    authButton.innerText = isLogin ? 'Login' : 'Sign Up';
-    toggleLink.innerText = isLogin
-      ? 'Don\'t have an account? Sign Up'
-      : 'Already have an account? Login';
-  });
+document.getElementById('signup-link')?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  const email = prompt("Email:");
+  const password = prompt("Password:");
+  const { error } = await supabase.auth.signUp({ email, password });
+  if (!error) alert("Check your email to confirm.");
+});
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
-
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return alert('Login failed: ' + error.message);
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) return alert('Sign up failed: ' + error.message);
-    }
-
-    window.location.href = 'dashboard.html';
-  });
+document.getElementById('logout')?.addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  window.location.href = 'index.html';
 });

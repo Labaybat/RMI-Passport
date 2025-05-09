@@ -1,107 +1,135 @@
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+
+const supabase = createClient(
+  'https://eiuviyizjnfmswfrdigo.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpdXZpeWl6am5mbXN3ZnJkaWdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2Nzc1MDIsImV4cCI6MjA2MjI1MzUwMn0.M1E6xOKAc8fsiVkXAxorr1QCRqRedcDv-GNa9CuAE4M'
+);
+
 let currentStep = 1;
-const loader = document.getElementById("loader");
-const steps = document.querySelectorAll(".step");
-const form = document.getElementById("application-form");
 let userId = null;
 let applicationId = null;
 
-// Step navigation
-function showStep(step) {
-  steps.forEach((s, i) => s.classList.toggle("active", i === step - 1));
-  currentStep = step;
-}
-
-// Step buttons
-document.getElementById("next-1").onclick = () => { showStep(2); saveStep(); };
-document.getElementById("back-2").onclick = () => showStep(1);
-document.getElementById("next-2").onclick = () => { showStep(3); saveStep(); };
-document.getElementById("back-3").onclick = () => showStep(2);
-
-// Initialize user session
 async function getUser() {
   const { data, error } = await supabase.auth.getUser();
-  if (error || !data?.user) {
-    alert("Please log in.");
-    window.location.href = "index.html";
-    return;
+  if (data?.user?.id) {
+    userId = data.user.id;
+    console.log("User ID:", userId);
+
+    // Try to fetch existing draft
+    const { data: existing, error: fetchError } = await supabase
+      .from('passport_applications')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('status', 'draft')
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) {
+      applicationId = existing.id;
+      console.log("Loaded draft application ID:", applicationId);
+    }
+  } else {
+    alert("Failed to fetch user session.");
   }
-  userId = data.user.id;
 }
 
-// Save current step to Supabase
+function nextStep() {
+  document.getElementById(`step-${currentStep}`).style.display = 'none';
+  currentStep++;
+  const next = document.getElementById(`step-${currentStep}`);
+  if (next) next.style.display = 'block';
+  saveStep();
+}
+
+function prevStep() {
+  document.getElementById(`step-${currentStep}`).style.display = 'none';
+  currentStep--;
+  document.getElementById(`step-${currentStep}`).style.display = 'block';
+}
+
 async function saveStep() {
-  const formData = {
-    application_type: document.getElementById("application_type")?.value,
-    surname: document.getElementById("surname")?.value,
-    first_middle_names: document.getElementById("first_middle_names")?.value,
-    social_security_number: document.getElementById("social_security_number")?.value,
-    phone_number: document.getElementById("phone_number")?.value,
-    city: document.getElementById("city")?.value,
-    postal_code: document.getElementById("postal_code")?.value,
-    emergency_contact_name: document.getElementById("emergency_contact_name")?.value,
-    emergency_contact_phone: document.getElementById("emergency_contact_phone")?.value,
-  };
+  const form = document.getElementById('application-form');
+  const formData = new FormData(form);
+  const stepData = {};
+  formData.forEach((value, key) => {
+    if (!(value instanceof File)) stepData[key] = value === '' ? null : value;
+  });
 
   if (!userId) await getUser();
   if (!userId) return;
 
   if (!applicationId) {
     const { data, error } = await supabase
-      .from("passport_applications")
-      .insert([{ user_id: userId, status: "draft", ...formData }])
+      .from('passport_applications')
+      .insert([{ user_id: userId, status: 'draft', application_type: stepData.application_type, ...stepData }])
       .select()
-      .single();
-    if (data) applicationId = data.id;
-  } else {
-    await supabase
-      .from("passport_applications")
-      .update({ ...formData, updated_at: new Date().toISOString() })
-      .eq("id", applicationId);
-  }
-}
-
-// Final submit
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  loader.style.display = "flex";
-
-  await saveStep();
-
-  if (applicationId) {
-    await supabase
-      .from("passport_applications")
-      .update({ status: "submitted", submitted_at: new Date().toISOString() })
-      .eq("id", applicationId);
-  }
-
-  loader.style.display = "none";
-  window.location.href = "thankyou.html";
-});
-
-// Run on load
-getUser().then(async () => {
-  
-  const editingId = localStorage.getItem("editingApplicationId");
-  if (editingId) {
-    const { data, error } = await supabase
-      .from("passport_applications")
-      .select("*")
-      .eq("id", editingId)
       .single();
     if (data) {
       applicationId = data.id;
-      document.getElementById("application_type").value = data.application_type || "";
-      document.getElementById("surname").value = data.surname || "";
-      document.getElementById("first_middle_names").value = data.first_middle_names || "";
-      document.getElementById("social_security_number").value = data.social_security_number || "";
-      document.getElementById("phone_number").value = data.phone_number || "";
-      document.getElementById("city").value = data.city || "";
-      document.getElementById("postal_code").value = data.postal_code || "";
-      document.getElementById("emergency_contact_name").value = data.emergency_contact_name || "";
-      document.getElementById("emergency_contact_phone").value = data.emergency_contact_phone || "";
+      console.log("Created application ID:", applicationId);
+    } else if (error) {
+      console.error("Insert error:", error);
     }
-    localStorage.removeItem("editingApplicationId");
+  } else {
+    const { error } = await supabase
+      .from('passport_applications')
+      .update({ ...stepData, updated_at: new Date().toISOString() })
+      .eq('id', applicationId);
+    if (error) console.error("Update error:", error);
+  }
+}
+
+async function uploadFile(fieldName, file) {
+  if (!userId || !applicationId || !file || file.size === 0) return;
+  const filePath = `${userId}/${fieldName}-${Date.now()}-${file.name}`;
+  const { data, error } = await supabase.storage
+    .from('passport-documents')
+    .upload(filePath, file, { upsert: true });
+  if (!error) {
+    const publicUrl = data.path;
+    await supabase
+      .from('passport_applications')
+      .update({ [fieldName]: publicUrl })
+      .eq('id', applicationId);
+  } else {
+    console.error(`Upload error for ${fieldName}:`, error);
+  }
+}
+
+document.getElementById('application-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!userId) await getUser();
+  if (!userId) return;
+
+  const form = e.target;
+  const formData = new FormData(form);
+
+  for (const [key, value] of formData.entries()) {
+    if (value instanceof File && value.size > 0) {
+      await uploadFile(key, value);
+    }
   }
 
+  const { error } = await supabase
+    .from('passport_applications')
+    .update({ status: 'submitted', submitted_at: new Date().toISOString() })
+    .eq('id', applicationId);
+
+  if (error) {
+    alert("Error submitting application.");
+    console.error("Submission error:", error);
+  } else {
+    alert('Application submitted successfully!');
+    window.location.href = 'dashboard.html';
+  }
 });
+
+document.querySelectorAll('.next-btn').forEach(btn => {
+  btn.addEventListener('click', nextStep);
+});
+document.querySelectorAll('.prev-btn').forEach(btn => {
+  btn.addEventListener('click', prevStep);
+});
+
+getUser();
