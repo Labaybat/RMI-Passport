@@ -121,6 +121,10 @@ document.getElementById('application-form')?.addEventListener('submit', async (e
     console.error("Submission error:", error);
   } else {
     alert('Application submitted successfully!');
+    
+    if (loader) loader.style.display = "none";
+    if (submitButton) submitButton.disabled = false;
+
     window.location.href = 'dashboard.html';
   }
 });
