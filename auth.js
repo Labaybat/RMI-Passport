@@ -1,33 +1,34 @@
 
-import { supabase } from './supabase.js';
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('auth-form');
+  const toggleLink = document.getElementById('toggle-link');
+  const formTitle = document.getElementById('form-title');
+  const authButton = document.getElementById('auth-button');
 
-// Redirect to dashboard if already logged in
-supabase.auth.getSession().then(({ data: { session } }) => {
-  if (session) {
-    window.location.href = "dashboard.html";
-  }
-});
+  let isLogin = true;
 
-document.getElementById('login-form')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (!error) {
+  toggleLink.addEventListener('click', () => {
+    isLogin = !isLogin;
+    formTitle.innerText = isLogin ? 'Login' : 'Sign Up';
+    authButton.innerText = isLogin ? 'Login' : 'Sign Up';
+    toggleLink.innerText = isLogin
+      ? 'Don\'t have an account? Sign Up'
+      : 'Already have an account? Login';
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (isLogin) {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return alert('Login failed: ' + error.message);
+    } else {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) return alert('Sign up failed: ' + error.message);
+    }
+
     window.location.href = 'dashboard.html';
-  } else {
-    alert('Login failed: ' + error.message);
-  }
-});
-
-document.getElementById('signup-link')?.addEventListener('click', async (e) => {
-  e.preventDefault();
-  const email = prompt("Enter your email to sign up:");
-  const password = prompt("Create a password:");
-  const { error } = await supabase.auth.signUp({ email, password });
-  if (!error) {
-    alert("Signup successful! Please log in.");
-  } else {
-    alert("Signup failed: " + error.message);
-  }
+  });
 });

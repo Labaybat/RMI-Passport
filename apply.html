@@ -2,119 +2,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Passport Application</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7f9;
+      padding: 2rem;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+    }
+    .step {
+      display: none;
+    }
+    .step.active {
+      display: block;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 0.5rem 0 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+    }
+    #loader {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    .loader-box {
+      border: 5px solid #ccc;
+      border-top: 5px solid #007BFF;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+  </style>
 </head>
 <body>
-<div id="loader" class="loader-overlay" style="display:none;">
-  <div class="loader">Submitting...</div>
-</div>
-
+<div id="loader"><div class="loader-box"></div></div>
 <div class="container">
-  <h1>Passport Application</h1>
+  <h2>Passport Application</h2>
   <form id="application-form">
-<h2 class="section-title">Personal Information</h2>
-<!-- Step 1: Personal Info -->
-<div class="step" id="step-1">
-<h2>Personal Information</h2>
-<label>Application Type</label>
-<select id="application_type" name="application_type" required="">
-<option value="">Select</option>
-<option value="new">New Passport</option>
-<option value="renewal">Passport Renewal</option>
-</select>
-<input id="surname" name="surname" placeholder="Surname or Family Name" required="" type="text"/>
-<input id="first_middle_names" name="first_middle_names" placeholder="First and Middle Names" required="" type="text"/>
-<input id="social_security_number" name="social_security_number" placeholder="Social Security Number" required="" type="text"/>
-<input id="place_of_birth_city" name="place_of_birth_city" placeholder="City or Town of Birth" required="" type="text"/>
-<input id="place_of_birth_state" name="place_of_birth_state" placeholder="State (if in U.S.)" type="text"/>
-<input id="country_of_birth" name="country_of_birth" placeholder="Country of Birth" required="" type="text"/>
-<input id="date_of_birth" name="date_of_birth" required="" type="date"/>
-<input id="gender" name="gender" placeholder="Gender" required="" type="text"/>
-<input id="hair_color" name="hair_color" placeholder="Hair Color" required="" type="text"/>
-<input id="marital_status" name="marital_status" placeholder="Marital Status" required="" type="text"/>
-<input id="height_feet" name="height_feet" placeholder="Height (Feet)" required="" type="number"/>
-<input id="height_inches" name="height_inches" placeholder="Height (Inches)" required="" type="number"/>
-<input id="eye_color" name="eye_color" placeholder="Eye Color" required="" type="text"/>
-<div style="display: flex; justify-content: center; margin-top: 20px;"><button class="next-btn" type="button">Next</button></div>
-</div>
-<!-- Step 2: Contact Info -->
-<div class="step" id="step-2" style="display:none;">
-<h2>Contact and Delivery</h2>
-<input id="address_unit" name="address_unit" placeholder="Unit and/or House Number" required="" type="text"/>
-<input id="street_name" name="street_name" placeholder="Street Name" required="" type="text"/>
-<input id="phone_number" name="phone_number" placeholder="Phone Number" required="" type="text"/>
-<input id="city" name="city" placeholder="City or Town" required="" type="text"/>
-<input id="state" name="state" placeholder="State" required="" type="text"/>
-<input id="postal_code" name="postal_code" placeholder="Postal Code" required="" type="text"/>
-<button class="prev-btn" type="button">Back</button>
-<div style="display: flex; justify-content: center; margin-top: 20px;"><button class="next-btn" type="button">Next</button></div>
-</div>
-<!-- Step 3: Emergency Contact -->
-<div class="step" id="step-3" style="display:none;">
-<h2>Emergency Contact</h2>
-<input id="emergency_full_name" name="emergency_full_name" placeholder="Full Name" required="" type="text"/>
-<input id="emergency_phone_number" name="emergency_phone_number" placeholder="Phone Number" required="" type="text"/>
-<input id="emergency_address_unit" name="emergency_address_unit" placeholder="Unit and/or House Number" required="" type="text"/>
-<input id="emergency_street_name" name="emergency_street_name" placeholder="Street Name" required="" type="text"/>
-<input id="emergency_city" name="emergency_city" placeholder="City or Town" required="" type="text"/>
-<input id="emergency_state" name="emergency_state" placeholder="State" required="" type="text"/>
-<input id="emergency_postal_code" name="emergency_postal_code" placeholder="Postal Code" required="" type="text"/>
-<button class="prev-btn" type="button">Back</button>
-<div style="display: flex; justify-content: center; margin-top: 20px;"><button class="next-btn" type="button">Next</button></div>
-</div>
-<!-- Step 4: Parent Info -->
-<div class="step" id="step-4" style="display:none;">
-<h2>Parent Details</h2>
-<h3>Father</h3>
-<input id="father_full_name" name="father_full_name" placeholder="Father's Full Name" required="" type="text"/>
-<input id="father_dob" name="father_dob" required="" type="date"/>
-<input id="father_nationality" name="father_nationality" placeholder="Nationality" required="" type="text"/>
-<input id="father_birth_city" name="father_birth_city" placeholder="City or Town" required="" type="text"/>
-<input id="father_birth_state" name="father_birth_state" placeholder="State" type="text"/>
-<input id="father_birth_country" name="father_birth_country" placeholder="Country" required="" type="text"/>
-<h3>Mother</h3>
-<input id="mother_full_name" name="mother_full_name" placeholder="Mother's Full Name" required="" type="text"/>
-<input id="mother_dob" name="mother_dob" required="" type="date"/>
-<input id="mother_nationality" name="mother_nationality" placeholder="Nationality" required="" type="text"/>
-<input id="mother_birth_city" name="mother_birth_city" placeholder="City or Town" required="" type="text"/>
-<input id="mother_birth_state" name="mother_birth_state" placeholder="State" type="text"/>
-<input id="mother_birth_country" name="mother_birth_country" placeholder="Country" required="" type="text"/>
-<button class="prev-btn" type="button">Back</button>
-<div style="display: flex; justify-content: center; margin-top: 20px;"><button class="next-btn" type="button">Next</button></div>
-</div>
-<!-- Step 5: Uploads -->
-<div class="step" id="step-5" style="display:none;">
-<h2>Document Uploads</h2>
-<input accept=".pdf,.jpg,.jpeg,.png" id="birth_certificate" name="birth_certificate" type="file"/>
-<input accept=".pdf,.jpg,.jpeg,.png" id="consent_form" name="consent_form" type="file"/>
-<input accept=".pdf,.jpg,.jpeg,.png" id="marriage_or_divorce_certificate" name="marriage_or_divorce_certificate" type="file"/>
-<input accept=".pdf,.jpg,.jpeg,.png" id="old_passport_copy" name="old_passport_copy" type="file"/>
-<input accept=".png,.jpg,.jpeg" id="signature" name="signature" type="file"/>
-<input accept=".jpg,.jpeg,.png" id="photo_id" name="photo_id" type="file"/>
-<button class="prev-btn" type="button">Back</button>
-<div style="display: flex; justify-content: center; margin-top: 20px;"><button class="next-btn" type="button">Next</button></div>
-</div>
-<!-- Step 6: Review & Submit -->
-<div class="step" id="step-6" style="display:none;">
-<h2>Review &amp; Submit</h2>
-<p>Please review your details before submitting.</p>
-<div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;"><button class="prev-btn" type="button">Back</button>
-<button id="submit-button" type="submit">Submit</button></div>
-</div>
-</form>
+    <!-- Step 1 -->
+    <div class="step active" id="step-1">
+      <h3>Step 1: Personal Information</h3>
+      <select id="application_type" required>
+        <option value="">Select Application Type</option>
+        <option value="new">New Passport</option>
+        <option value="renewal">Renewal</option>
+      </select>
+      <input type="text" id="surname" placeholder="Surname or Family Name" required />
+      <input type="text" id="first_middle_names" placeholder="First and Middle Names" required />
+      <input type="text" id="social_security_number" placeholder="Social Security Number" required />
+      <button type="button" id="next-1">Next</button>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step" id="step-2">
+      <h3>Step 2: Contact Information</h3>
+      <input type="text" id="phone_number" placeholder="Phone Number" required />
+      <input type="text" id="city" placeholder="City or Town" required />
+      <input type="text" id="postal_code" placeholder="Postal Code" required />
+      <button type="button" id="back-2">Back</button>
+      <button type="button" id="next-2">Next</button>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step" id="step-3">
+      <h3>Step 3: Emergency Contact</h3>
+      <input type="text" id="emergency_contact_name" placeholder="Contact Name" required />
+      <input type="text" id="emergency_contact_phone" placeholder="Contact Phone" required />
+      <button type="button" id="back-3">Back</button>
+      <button type="submit" id="submit-button">Submit</button>
+    </div>
+  </form>
 </div>
 
-<script type="module" src="form.js"></script>
-<script type="module">
-  import { supabase } from './supabase.js';
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (!session) {
-      alert("Please log in to access this page.");
+<script src="supabase.js"></script>
+<script src="form.js"></script>
+
+<script>
+  supabase.auth.getUser().then(({ data, error }) => {
+    if (!data?.user) {
+      alert("You must be logged in to access this page.");
       window.location.href = "index.html";
     }
   });
 </script>
+
 </body>
 </html>
