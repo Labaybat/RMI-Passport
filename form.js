@@ -1,4 +1,4 @@
-const loader = document.getElementById("loader");
+cconst loader = document.getElementById("loader");
 
 const submitButton = document.getElementById("submit-button");
 
@@ -286,7 +286,7 @@ document.querySelectorAll('.prev-btn').forEach(btn => {
 
   submitButton.disabled = true;
 
-  submitButton.disabled = false;onst loader = document.getElementById("loader");
+  submitButton.disabled = false;const loader = document.getElementById("loader");
 
 const submitButton = document.getElementById("submit-button");
 
