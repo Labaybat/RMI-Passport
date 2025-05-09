@@ -7,8 +7,10 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="container">
   <h1>Passport Application</h1>
   <form id="application-form">
+    <h2 class="section-title">Personal Information</h2>
     <!-- Step 1: Personal Info -->
     <div class="step" id="step-1">
       <h2>Personal Information</h2>
@@ -103,6 +105,20 @@
       <button type="submit">Submit</button>
     </div>
   </form>
+  </div>
   <script type="module" src="form.js"></script>
+
+<script type="module">
+  import { supabase } from './supabase.js';
+
+  // Redirect to login page if not logged in
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (!session) {
+      alert("Please log in to access this page.");
+      window.location.href = 'index.html';
+    }
+  });
+</script>
+
 </body>
 </html>
