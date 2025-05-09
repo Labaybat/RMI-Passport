@@ -1,96 +1,107 @@
 
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>Passport Application</title>
-<link href="style.css" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <title>Passport Application</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <div id="loader" class="loader-overlay" style="display:none;">
-    <div class="loader"></div>
-  </div>
+<div id="loader" class="loader-overlay" style="display:none;">
+  <div class="loader">Submitting...</div>
+</div>
 
 <div class="container">
-<h1>Passport Application</h1>
-<form id="application-form">
-<h2 class="section-title">Personal Information</h2>
-<!-- Step 1: Personal Info -->
+  <h1>Passport Application</h1>
+  <form id="application-form">
 
-<div class="step" id="step-1">
-  <h2>Personal Information</h2>
-  <!-- (fields omitted for brevity in this patch) -->
-  <div style="display: flex; justify-content: center; margin-top: 20px;">
-    <button class="next-btn" type="button">Next</button>
-  </div>
+    <!-- Step 1 -->
+    <div class="step" id="step-1">
+      <h2>Personal Information</h2>
+      <input type="text" name="surname" placeholder="Surname or Family Name" required>
+      <input type="text" name="first_middle_names" placeholder="First and Middle Names" required>
+      <input type="text" name="social_security_number" placeholder="Social Security Number" required>
+      <input type="date" name="date_of_birth" placeholder="Date of Birth" required>
+      <input type="text" name="place_of_birth_city" placeholder="City of Birth" required>
+      <input type="text" name="country_of_birth" placeholder="Country of Birth" required>
+      <div style="display: flex; justify-content: center; margin-top: 20px;">
+        <button class="next-btn" type="button">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step" id="step-2" style="display:none;">
+      <h2>Contact and Delivery</h2>
+      <input type="text" name="address_unit" placeholder="Unit / House Number" required>
+      <input type="text" name="street_name" placeholder="Street Name" required>
+      <input type="text" name="city" placeholder="City or Town" required>
+      <input type="text" name="state" placeholder="State" required>
+      <input type="text" name="postal_code" placeholder="Postal Code" required>
+      <input type="text" name="phone_number" placeholder="Phone Number" required>
+      <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+        <button class="prev-btn" type="button">Back</button>
+        <button class="next-btn" type="button">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step" id="step-3" style="display:none;">
+      <h2>Emergency Contact</h2>
+      <input type="text" name="emergency_full_name" placeholder="Full Name" required>
+      <input type="text" name="emergency_phone_number" placeholder="Phone Number" required>
+      <input type="text" name="emergency_city" placeholder="City" required>
+      <input type="text" name="emergency_state" placeholder="State" required>
+      <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+        <button class="prev-btn" type="button">Back</button>
+        <button class="next-btn" type="button">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step" id="step-4" style="display:none;">
+      <h2>Parent Information</h2>
+      <input type="text" name="father_full_name" placeholder="Father's Full Name" required>
+      <input type="text" name="mother_full_name" placeholder="Mother's Full Name" required>
+      <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+        <button class="prev-btn" type="button">Back</button>
+        <button class="next-btn" type="button">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step" id="step-5" style="display:none;">
+      <h2>Document Uploads</h2>
+      <input type="file" name="birth_certificate" required>
+      <input type="file" name="photo_id" required>
+      <input type="file" name="signature" required>
+      <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+        <button class="prev-btn" type="button">Back</button>
+        <button class="next-btn" type="button">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step" id="step-6" style="display:none;">
+      <h2>Review & Submit</h2>
+      <p>Please review your application before submission.</p>
+      <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+        <button class="prev-btn" type="button">Back</button>
+        <button id="submit-button" type="submit">Submit</button>
+      </div>
+    </div>
+
+  </form>
 </div>
 
-<div class="step" id="step-2" style="display:none;">
-  <h2>Step Content</h2>
-  <!-- (fields omitted for brevity) -->
-  <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
-    <button class="prev-btn" type="button">Back</button>
-    <button class="next-btn" type="button">Next</button>
-  </div>
-</div>
-
-<div class="step" id="step-3" style="display:none;">
-  <h2>Step Content</h2>
-  <!-- (fields omitted for brevity) -->
-  <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
-    <button class="prev-btn" type="button">Back</button>
-    <button class="next-btn" type="button">Next</button>
-  </div>
-</div>
-
-<div class="step" id="step-4" style="display:none;">
-  <h2>Step Content</h2>
-  <!-- (fields omitted for brevity) -->
-  <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
-    <button class="prev-btn" type="button">Back</button>
-    <button class="next-btn" type="button">Next</button>
-  </div>
-</div>
-
-<div class="step" id="step-5" style="display:none;">
-  <h2>Step Content</h2>
-  <!-- (fields omitted for brevity) -->
-  <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
-    <button class="prev-btn" type="button">Back</button>
-    <button class="next-btn" type="button">Next</button>
-  </div>
-</div>
-
-<div class="step" id="step-6" style="display:none;">
-  <h2>Review &amp; Submit</h2>
-  <p>Please review your details before submitting.</p>
-  <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
-    <button class="prev-btn" type="button">Back</button>
-    <button id="submit-button" type="submit">Submit</button>
-  </div>
-</div>
-</form>
-
-
-</div>
-<script src="form.js" type="module"></script>
+<script type="module" src="form.js"></script>
 <script type="module">
   import { supabase } from './supabase.js';
-
-  // Redirect to login page if not logged in
   supabase.auth.getSession().then(({ data: { session } }) => {
     if (!session) {
       alert("Please log in to access this page.");
-      window.location.href = 'index.html';
+      window.location.href = "index.html";
     }
   });
 </script>
-<div class="loader-overlay" id="loader" style="display:none;">
-<div class="loader">Submitting...</div>
-</div>
-
 </body>
-
 </html>
