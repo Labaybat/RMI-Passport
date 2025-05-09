@@ -107,5 +107,15 @@
   </form>
   </div>
   <script type="module" src="form.js"></script>
+
+<script>
+  supabase.auth.getUser().then(({ data, error }) => {
+    if (!data?.user) {
+      alert("You must be logged in to access this page.");
+      window.location.href = "index.html";
+    }
+  });
+</script>
+
 </body>
 </html>
