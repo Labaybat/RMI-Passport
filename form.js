@@ -33,8 +33,6 @@ submitButton.addEventListener("click", async () => {
   }
 });
 
-const loader = document.getElementById("loader");
-const submitButton = document.getElementById("submit-button");
 
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
@@ -87,8 +85,6 @@ function prevStep() {
 }
 
 async function saveStep() {
-  const form = document.getElementById('application-form');
-  const formData = new FormData(form);
   const stepData = {};
   formData.forEach((value, key) => {
     if (!(value instanceof File)) stepData[key] = value === '' ? null : value;
@@ -140,8 +136,6 @@ document.getElementById('application-form')?.addEventListener('submit', async (e
   if (!userId) await getUser();
   if (!userId) return;
 
-  const form = e.target;
-  const formData = new FormData(form);
 
   for (const [key, value] of formData.entries()) {
     if (value instanceof File && value.size > 0) {
