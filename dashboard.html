@@ -2,11 +2,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
   <title>Dashboard - RMI Passport</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+<div class="container">
   <div class="dashboard-section">
     <h1>Welcome to Your Passport Dashboard</h1>
     <p>Use the options below to manage your application.</p>
@@ -15,7 +17,7 @@
       <a href="status.html">📊 Application Status</a>
       <a href="passport-act.html">📄 View Passport Act</a>
     </div>
-    <button class="logout-btn">Logout</button>
+    <button class="btn" class="logout-btn">Logout</button>
   </div>
 
   <script type="module">
@@ -34,5 +36,6 @@
       window.location.href = 'index.html';
     });
   </script>
+</div>
 </body>
 </html>

@@ -3,12 +3,14 @@
 
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta charset="utf-8"/>
 <title>Passport Application</title>
 <link href="style.css" rel="stylesheet"/>
 </head>
 
 <body>
+<div class="container">
   <div id="loader" class="loader-overlay" style="display:none;">
     <div class="loader"></div>
   </div>
@@ -39,7 +41,7 @@
 <input id="height_feet" name="height_feet" placeholder="Height (Feet)" required="" type="number"/>
 <input id="height_inches" name="height_inches" placeholder="Height (Inches)" required="" type="number"/>
 <input id="eye_color" name="eye_color" placeholder="Eye Color" required="" type="text"/>
-<button class="next-btn" type="button">Next</button>
+<button class="btn" class="next-btn" type="button">Next</button>
 </div>
 <!-- Step 2: Contact Info -->
 <div class="step" id="step-2" style="display:none;">
@@ -50,8 +52,8 @@
 <input id="city" name="city" placeholder="City or Town" required="" type="text"/>
 <input id="state" name="state" placeholder="State" required="" type="text"/>
 <input id="postal_code" name="postal_code" placeholder="Postal Code" required="" type="text"/>
-<button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<button class="btn" class="prev-btn" type="button">Back</button>
+<button class="btn" class="next-btn" type="button">Next</button>
 </div>
 <!-- Step 3: Emergency Contact -->
 <div class="step" id="step-3" style="display:none;">
@@ -63,8 +65,8 @@
 <input id="emergency_city" name="emergency_city" placeholder="City or Town" required="" type="text"/>
 <input id="emergency_state" name="emergency_state" placeholder="State" required="" type="text"/>
 <input id="emergency_postal_code" name="emergency_postal_code" placeholder="Postal Code" required="" type="text"/>
-<button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<button class="btn" class="prev-btn" type="button">Back</button>
+<button class="btn" class="next-btn" type="button">Next</button>
 </div>
 <!-- Step 4: Parent Info -->
 <div class="step" id="step-4" style="display:none;">
@@ -83,8 +85,8 @@
 <input id="mother_birth_city" name="mother_birth_city" placeholder="City or Town" required="" type="text"/>
 <input id="mother_birth_state" name="mother_birth_state" placeholder="State" type="text"/>
 <input id="mother_birth_country" name="mother_birth_country" placeholder="Country" required="" type="text"/>
-<button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<button class="btn" class="prev-btn" type="button">Back</button>
+<button class="btn" class="next-btn" type="button">Next</button>
 </div>
 <!-- Step 5: Uploads -->
 <div class="step" id="step-5" style="display:none;">
@@ -95,15 +97,15 @@
 <input accept=".pdf,.jpg,.jpeg,.png" id="old_passport_copy" name="old_passport_copy" type="file"/>
 <input accept=".png,.jpg,.jpeg" id="signature" name="signature" type="file"/>
 <input accept=".jpg,.jpeg,.png" id="photo_id" name="photo_id" type="file"/>
-<button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<button class="btn" class="prev-btn" type="button">Back</button>
+<button class="btn" class="next-btn" type="button">Next</button>
 </div>
 <!-- Step 6: Review & Submit -->
 <div class="step" id="step-6" style="display:none;">
 <h2>Review &amp; Submit</h2>
 <p>Please review your details before submitting.</p>
-<button class="prev-btn" type="button">Back</button>
-<button id="submit-button" type="submit">Submit</button>
+<button class="btn" class="prev-btn" type="button">Back</button>
+<button class="btn" id="submit-button" type="submit">Submit</button>
 </div>
 </form>
 </div>
@@ -123,6 +125,7 @@
 <div class="loader">Submitting...</div>
 </div>
 
+</div>
 </body>
 
 </html>
