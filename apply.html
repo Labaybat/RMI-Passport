@@ -39,7 +39,7 @@
 <input id="height_feet" name="height_feet" placeholder="Height (Feet)" required="" type="number"/>
 <input id="height_inches" name="height_inches" placeholder="Height (Inches)" required="" type="number"/>
 <input id="eye_color" name="eye_color" placeholder="Eye Color" required="" type="text"/>
-<button class="next-btn" type="button">Next</button>
+<div style="display: flex; justify-content: center; margin-top: 20px;"><button class="next-btn" type="button">Next</button></div>
 </div>
 <!-- Step 2: Contact Info -->
 <div class="step" id="step-2" style="display:none;">
@@ -51,7 +51,7 @@
 <input id="state" name="state" placeholder="State" required="" type="text"/>
 <input id="postal_code" name="postal_code" placeholder="Postal Code" required="" type="text"/>
 <button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<div style="display: flex; justify-content: center; margin-top: 20px;"><button class="next-btn" type="button">Next</button></div>
 </div>
 <!-- Step 3: Emergency Contact -->
 <div class="step" id="step-3" style="display:none;">
@@ -64,7 +64,7 @@
 <input id="emergency_state" name="emergency_state" placeholder="State" required="" type="text"/>
 <input id="emergency_postal_code" name="emergency_postal_code" placeholder="Postal Code" required="" type="text"/>
 <button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<div style="display: flex; justify-content: center; margin-top: 20px;"><button class="next-btn" type="button">Next</button></div>
 </div>
 <!-- Step 4: Parent Info -->
 <div class="step" id="step-4" style="display:none;">
@@ -84,7 +84,7 @@
 <input id="mother_birth_state" name="mother_birth_state" placeholder="State" type="text"/>
 <input id="mother_birth_country" name="mother_birth_country" placeholder="Country" required="" type="text"/>
 <button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<div style="display: flex; justify-content: center; margin-top: 20px;"><button class="next-btn" type="button">Next</button></div>
 </div>
 <!-- Step 5: Uploads -->
 <div class="step" id="step-5" style="display:none;">
@@ -96,24 +96,15 @@
 <input accept=".png,.jpg,.jpeg" id="signature" name="signature" type="file"/>
 <input accept=".jpg,.jpeg,.png" id="photo_id" name="photo_id" type="file"/>
 <button class="prev-btn" type="button">Back</button>
-<button class="next-btn" type="button">Next</button>
+<div style="display: flex; justify-content: center; margin-top: 20px;"><button class="next-btn" type="button">Next</button></div>
 </div>
 <!-- Step 6: Review & Submit -->
 <div class="step" id="step-6" style="display:none;">
 <h2>Review &amp; Submit</h2>
 <p>Please review your details before submitting.</p>
-<button class="prev-btn" type="button">Back</button>
-<button id="submit-button" type="submit">Submit</button>
+<div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;"><button class="prev-btn" type="button">Back</button><button id="submit-button" type="submit">Submit</button></div>
 </div>
-
-  <div class="form-buttons">
-    <div class="form-buttons">
-<button type="button" id="back">Back</button>
-    <button type="button" id="next">Next</button>
-</div>
-  </div>
 </form>
-
 </div>
 <script src="form.js" type="module"></script>
 <script type="module">
