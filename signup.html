@@ -10,11 +10,28 @@
 <body>
 <div class="container">
 <h1 style="text-align:center;">RMI Passport Portal</h1>
-<form id="login-form"><div class="form-group"><input id="signup-email" placeholder="Email" required="True" type="email"/></div><div class="form-group"><input id="signup-password" placeholder="Password" required="True" type="password"/></div><div class="form-group"><input id="confirm-password" placeholder="Confirm your password" required="True" type="password"/></div><button class="signup-btn" type="submit">Sign Up</button></form>
-  <p style="text-align:center; margin-top: 10px;">
+<form id="login-form">
+<div class="form-group"><input class="form-input" id="first-name" placeholder="First Name" required="" type="text"/></div>
+<div class="form-group"><input class="form-input" id="last-name" placeholder="Last Name" required="" type="text"/></div>
+<div class="form-group"><input class="form-input" id="phone-number" placeholder="Phone Number" required="" type="tel"/></div>
+<div class="form-group"><input class="form-input" id="signup-email" placeholder="Email" required="True" type="email"/></div><div class="form-group"><input class="form-input" id="signup-password" placeholder="Password" required="True" type="password"/></div><div class="form-group"><input class="form-input" id="confirm-password" placeholder="Confirm your password" required="True" type="password"/></div><button class="signup-btn" type="submit">Sign Up</button></form>
+<p style="text-align:center; margin-top: 10px;">
     Already have an account? <a href="index.html">Sign In</a>
-  </p>
-
+</p>
 </div>
-<script src="supabase.js" type="module"></script><script src="supabase.js" type="module"></script><script src="signup-auth.js" type="module"></script></body>
+<script src="supabase.js" type="module"></script><script src="supabase.js" type="module"></script><script src="signup-auth.js" type="module"></script>
+<!-- Success Modal -->
+<div class="modal-overlay" id="signupSuccessModal" style="display: none;">
+<div class="modal-box">
+<p><span class="success-icon">✅</span> Account created! Please check your email to confirm before logging in.</p>
+<button onclick="closeSignupModal()">OK</button>
+</div>
+</div>
+<script>
+function closeSignupModal() {
+  document.getElementById('signupSuccessModal').style.display = 'none';
+  window.location.href = 'index.html'; // redirect to login
+}
+</script>
+</body>
 </html>

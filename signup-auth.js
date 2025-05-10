@@ -2,7 +2,10 @@ import { supabase } from './supabase.js';
 
 document.getElementById('login-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('signup-email')?.value;
+  const firstName = document.getElementById('first-name')?.value;
+const lastName = document.getElementById('last-name')?.value;
+const phoneNumber = document.getElementById('phone-number')?.value;
+const email = document.getElementById('signup-email')?.value;
   const password = document.getElementById('signup-password')?.value;
   const confirm = document.getElementById('confirm-password')?.value;
 
@@ -24,17 +27,25 @@ document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     return;
   }
 
-  const { error } = await supabase.auth.signUp({ email, password });
+  const { error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    data: {
+      first_name: firstName,
+      last_name: lastName,
+      phone: phoneNumber
+    }
+  }
+});
 
   if (error) {
+  console.error(error);
+
     alert("Sign up failed: " + error.message);
   } else {
-    const modal = document.createElement("div");
-    modal.innerHTML = `<div style='background:#fff;border:2px solid red;padding:20px;text-align:center;position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);z-index:1000'>
-      ✅ Account created! Please check your email to confirm before logging in.<br/><br/>
-      <button onclick="window.location.href='index.html'">OK</button>
-    </div>`;
-    document.body.appendChild(modal);
+  document.getElementById("signupSuccessModal").style.display = "flex";
+    
   }
 
   btn.innerText = "Sign Up";
