@@ -407,3 +407,15 @@ body.scroll-page {
   padding-left: 10px;
   margin-bottom: 4px;
 }
+
+/* Responsive enhancements */
+input, button, select, textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 768px) {
+  .form-section {
+    padding: 1rem;
+  }
+}

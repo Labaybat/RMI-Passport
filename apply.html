@@ -222,7 +222,7 @@ document.getElementById("reviewBtn").addEventListener("click", function () {
   padding: 2rem;
   max-height: 80vh;
   width: 90%;
-  max-width: 600px;
+  max-width: 100%; max-width: 600px;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 0 20px rgba(0,0,0,0.2);
@@ -244,6 +244,17 @@ document.getElementById("reviewBtn").addEventListener("click", function () {
   padding: 0.5rem 1rem;
   border-radius: 5px;
   cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    padding: 1rem;
+    font-size: 0.95rem;
+    width: 90%;
+  }
+  .modal-scroll div {
+    font-size: 0.95rem;
+  }
 }
 </style>
 
