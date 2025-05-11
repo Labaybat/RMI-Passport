@@ -3,14 +3,49 @@
 
 <html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta charset="utf-8"/>
 <title>Dashboard - RMI Passport</title>
 <link href="style.css" rel="stylesheet"/>
+
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    font-family: Arial, sans-serif;
+  }
+  .responsive-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .form-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+  button, .signup-btn, .logout-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #0055a5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .logout-btn {
+    background-color: #b00020;
+  }
+</style>
 </head>
-<body class=\"dashboard\" class=\"dashboard\" class=\"dashboard\">
-<div class=\"responsive-container\">
-<div class=\"responsive-container\">
+<body><div class="responsive-container">
 <div class="dashboard-section">
 <h1>Welcome to Your Passport Dashboard</h1>
 <div class="dashboard-buttons">
@@ -21,8 +56,5 @@
 </div>
 <button class="logout-btn" onclick="logout()">Logout</button>
 </div>
-<script src="supabase.js" type="module"></script><script src="dashboard-auth.js" type="module"></script><script src="supabase.js" type="module"></script><script src="dashboard-auth.js" type="module"></script></div>
-</div>
-</div>
-</body>
+</div><script src="supabase.js" type="module"></script><script src="dashboard-auth.js" type="module"></script><script src="supabase.js" type="module"></script><script src="dashboard-auth.js" type="module"></script></body>
 </html>
