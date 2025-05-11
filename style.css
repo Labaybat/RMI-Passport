@@ -467,3 +467,24 @@ button {
     font-size: 1rem;
   }
 }
+
+
+/* Mobile-friendly login/signup/dashboard */
+.auth-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.05);
+  box-sizing: border-box;
+}
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 1.5rem 1rem;
+    margin: 1rem;
+  }
+  h1, h2 {
+    font-size: 1.2rem;
+  }
+}
