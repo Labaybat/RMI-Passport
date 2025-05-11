@@ -1,21 +1,21 @@
 
-/* Base styling */
+/* Global base styling */
 body {
   margin: 0;
   padding: 0;
   background-color: #f4f4f4;
   font-family: Arial, sans-serif;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  min-height: 100vh;
 }
 
-/* Responsive container */
+/* Container layout */
 .responsive-container {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 40px auto;
   padding: 20px;
   background: white;
   border-radius: 12px;
@@ -23,7 +23,7 @@ body {
   width: 90%;
 }
 
-/* Form input and select fields */
+/* Inputs */
 .form-input, input[type="text"], input[type="email"], input[type="password"], input[type="tel"], select {
   width: 100%;
   padding: 10px;
@@ -33,8 +33,7 @@ body {
 }
 
 /* Buttons */
-button, .signup-btn, .logout-btn {
-  display: inline-block;
+button, .signup-btn {
   padding: 10px 20px;
   font-size: 16px;
   background-color: #0055a5;
@@ -42,14 +41,13 @@ button, .signup-btn, .logout-btn {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  text-align: center;
 }
 
 .logout-btn {
   background-color: #b00020;
 }
 
-/* Center text headers and paragraphs */
+/* Text alignment */
 h1, h2, h3, p {
   text-align: center;
 }
