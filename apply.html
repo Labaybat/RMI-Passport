@@ -8,7 +8,82 @@
 <link href="style.css" rel="stylesheet"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/></head>
 <body class="scroll-page">
-<div class="container">
+
+<script src="form.js" type="module"></script>
+<script type="module">
+  import { supabase } from './supabase.js';
+
+  // Redirect to login page if not logged in
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (!session) {
+      alert("Please log in to access this page.");
+      window.location.href = 'index.html';
+    }
+  });
+</script>
+<!-- Review Modal -->
+<script>
+function closeReviewModal() {
+  document.getElementById("reviewModal").style.display = "none";
+}
+
+document.getElementById("reviewBtn").addEventListener("click", function () {
+  const formData = new FormData(document.getElementById("application-form"));
+  let output = "";
+  for (let [key, value] of formData.entries()) {
+    output += `${key}: ${value}\n`;
+  }
+  document.getElementById("reviewModal").style.display = "flex";
+});
+</script>
+<!-- Clean and Modern Modal -->
+<div class="modal-overlay" id="reviewModal" style="display:none;">
+<div class="modal-content">
+<h2>Review Your Application</h2>
+<div class="modal-scroll" id="reviewContent"></div>
+<button class="form-button" id="closeReviewBtn">Close</button>
+</div>
+</div>
+<style>
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  max-height: 80vh;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+.modal-scroll {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+.modal-scroll div {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #eee;
+}
+.form-button {
+  background-color: #004080;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+</style>
+<div class="form-wrapper"><div class="container">
 <h1>Passport Application</h1>
 <form id="application-form">
 <!-- Step 1: Personal Info -->
@@ -155,80 +230,5 @@
 <div class="button-group"><button id="reviewBtn" type="button">Review</button><button type="submit">Submit</button></div>
 </div>
 </form>
-</div>
-<script src="form.js" type="module"></script>
-<script type="module">
-  import { supabase } from './supabase.js';
-
-  // Redirect to login page if not logged in
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (!session) {
-      alert("Please log in to access this page.");
-      window.location.href = 'index.html';
-    }
-  });
-</script>
-<!-- Review Modal -->
-<script>
-function closeReviewModal() {
-  document.getElementById("reviewModal").style.display = "none";
-}
-
-document.getElementById("reviewBtn").addEventListener("click", function () {
-  const formData = new FormData(document.getElementById("application-form"));
-  let output = "";
-  for (let [key, value] of formData.entries()) {
-    output += `${key}: ${value}\n`;
-  }
-  document.getElementById("reviewModal").style.display = "flex";
-});
-</script>
-<!-- Clean and Modern Modal -->
-<div class="modal-overlay" id="reviewModal" style="display:none;">
-<div class="modal-content">
-<h2>Review Your Application</h2>
-<div class="modal-scroll" id="reviewContent"></div>
-<button class="form-button" id="closeReviewBtn">Close</button>
-</div>
-</div>
-<style>
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.modal-content {
-  background: #fff;
-  padding: 2rem;
-  max-height: 80vh;
-  width: 90%;
-  max-width: 600px;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(0,0,0,0.2);
-}
-.modal-scroll {
-  max-height: 60vh;
-  overflow-y: auto;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-}
-.modal-scroll div {
-  padding: 0.25rem 0;
-  border-bottom: 1px solid #eee;
-}
-.form-button {
-  background-color: #004080;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-}
-</style>
-</body>
+</div></div></body>
 </html>

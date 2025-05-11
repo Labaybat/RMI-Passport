@@ -483,52 +483,62 @@ body.scroll-page {
     background-color: #002244;
 }
 
-/* Responsive improvements for application form */
-@media (max-width: 600px) {
-  .container {
-    margin: 20px;
-    padding: 20px;
-    border-radius: 10px;
-  }
-
-  h1, h2 {
-    font-size: 20px;
-  }
-
-  .form-group {
-    width: 100%;
-  }
-
-  input, select, textarea {
-    font-size: 14px;
-    padding: 10px;
-  }
-
-  button {
-    font-size: 14px;
-    padding: 10px;
-    width: 100%;
-  }
-}
-
-button {
-  display: block;
-  margin: 0 auto;
-  min-width: 120px;
-}
-
-/* Ensure the application container is horizontally centered */
+/* Apply Page Layout Improvements */
 body.scroll-page {
+    display: block;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 0;
+}
+
+.form-wrapper {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    padding-top: 40px;
-    min-height: 100vh;
+    padding: 30px 10px;
     box-sizing: border-box;
+    min-height: 100vh;
+    width: 100%;
 }
 
 .container {
-    width: 100%;
     max-width: 600px;
+    width: 100%;
     margin: 0 auto;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Headings & Buttons */
+h1, h2 {
+    text-align: center;
+    color: #003366;
+    margin-top: 0;
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 22px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px;
+        width: 100%;
+    }
+
+    .container {
+        padding: 15px;
+    }
+}
+
+button {
+    display: block;
+    margin: 20px auto 0;
+    min-width: 120px;
 }
