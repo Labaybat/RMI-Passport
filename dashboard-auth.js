@@ -12,3 +12,9 @@ document.querySelector('.logout-btn')?.addEventListener('click', async () => {
   await supabase.auth.signOut();
   window.location.href = 'index.html';
 });
+
+// Global logout function for mobile browsers that rely on inline onclick
+window.logout = async function () {
+  await supabase.auth.signOut();
+  window.location.href = 'index.html';
+};
