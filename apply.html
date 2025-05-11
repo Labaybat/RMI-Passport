@@ -6,7 +6,7 @@
 <meta charset="utf-8"/>
 <title>Passport Application</title>
 <link href="style.css" rel="stylesheet"/>
-</head>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/></head>
 <body class="scroll-page">
 <div class="container">
 <h1>Passport Application</h1>
@@ -26,8 +26,8 @@
 <div class="form-group"><input class="form-input" name="place_of_birth_city" placeholder="City or Town of Birth" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="place_of_birth_state" placeholder="State (if in U.S.)" type="text"/></div>
 <div class="form-group"><input class="form-input" name="country_of_birth" placeholder="Country of Birth" required="" type="text"/></div>
-<div class="form-group"><label class="form-label"  for="date_of_birth">Date of Birth</label>
-<input class="form-input" name="date_of_birth" id="date_of_birth" required="" type="date"/></div>
+<div class="form-group"><label class="form-label" for="date_of_birth">Date of Birth</label>
+<input class="form-input" id="date_of_birth" name="date_of_birth" required="" type="date"/></div>
 <div class="form-group"><input class="form-input" name="gender" placeholder="Gender" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="hair_color" placeholder="Hair Color" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="marital_status" placeholder="Marital Status" required="" type="text"/></div>
@@ -64,16 +64,16 @@
 <h2>Parent Details</h2>
 <h3>Father</h3>
 <div class="form-group"><input class="form-input" name="father_full_name" placeholder="Father's Full Name" required="" type="text"/></div>
-<div class="form-group"><label class="form-label"  for="father_dob">Father's Date of Birth</label>
-<input class="form-input" name="father_dob" id="father_dob" required="" type="date"/></div>
+<div class="form-group"><label class="form-label" for="father_dob">Father's Date of Birth</label>
+<input class="form-input" id="father_dob" name="father_dob" required="" type="date"/></div>
 <div class="form-group"><input class="form-input" name="father_nationality" placeholder="Nationality" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="father_birth_city" placeholder="City or Town" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="father_birth_state" placeholder="State" type="text"/></div>
 <div class="form-group"><input class="form-input" name="father_birth_country" placeholder="Country" required="" type="text"/></div>
 <h3>Mother</h3>
 <div class="form-group"><input class="form-input" name="mother_full_name" placeholder="Mother's Full Name" required="" type="text"/></div>
-<div class="form-group"><label class="form-label"  for="mother_dob">Mother's Date of Birth</label>
-<input class="form-input" name="mother_dob" id="mother_dob" required="" type="date"/></div>
+<div class="form-group"><label class="form-label" for="mother_dob">Mother's Date of Birth</label>
+<input class="form-input" id="mother_dob" name="mother_dob" required="" type="date"/></div>
 <div class="form-group"><input class="form-input" name="mother_nationality" placeholder="Nationality" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="mother_birth_city" placeholder="City or Town" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="mother_birth_state" placeholder="State" type="text"/></div>
@@ -81,87 +81,73 @@
 <div class="button-group"><button class="prev-btn" type="button">Back</button><button class="next-btn" type="button">Next</button></div>
 </div>
 <!-- Step 5: Uploads -->
-
 <div class="step" id="step-5" style="display:none;">
 <h2>Document Uploads</h2>
-
 <div class="upload-group">
-  <label for="birth_certificate">Birth Certificate</label>
-  <div class="upload-area" data-target="birth_certificate">
-    <i class="upload-icon">📎</i>
-    <p>Click or drag and drop a Birth Certificate</p>
-    <small>Accepted: .pdf, .jpg, .jpeg, .png</small>
-  </div>
-  <input id="birth_certificate" name="birth_certificate" type="file" accept=".pdf, .jpg, .jpeg, .png" class="file-input" hidden />
-  <div id="birth_certificate_preview" class="file-preview"></div>
+<label for="birth_certificate">Birth Certificate</label>
+<div class="upload-area" data-target="birth_certificate">
+<i class="upload-icon">📎</i>
+<p>Click or drag and drop a Birth Certificate</p>
+<small>Accepted: .pdf, .jpg, .jpeg, .png</small>
 </div>
-
-
+<input accept=".pdf, .jpg, .jpeg, .png" class="file-input" hidden="" id="birth_certificate" name="birth_certificate" type="file"/>
+<div class="file-preview" id="birth_certificate_preview"></div>
+</div>
 <div class="upload-group">
-  <label for="consent_form">Consent Form</label>
-  <div class="upload-area" data-target="consent_form">
-    <i class="upload-icon">📎</i>
-    <p>Click or drag and drop a Consent Form</p>
-    <small>Accepted: .pdf, .jpg, .jpeg, .png</small>
-  </div>
-  <input id="consent_form" name="consent_form" type="file" accept=".pdf, .jpg, .jpeg, .png" class="file-input" hidden />
-  <div id="consent_form_preview" class="file-preview"></div>
+<label for="consent_form">Consent Form</label>
+<div class="upload-area" data-target="consent_form">
+<i class="upload-icon">📎</i>
+<p>Click or drag and drop a Consent Form</p>
+<small>Accepted: .pdf, .jpg, .jpeg, .png</small>
 </div>
-
-
+<input accept=".pdf, .jpg, .jpeg, .png" class="file-input" hidden="" id="consent_form" name="consent_form" type="file"/>
+<div class="file-preview" id="consent_form_preview"></div>
+</div>
 <div class="upload-group">
-  <label for="marriage_or_divorce_certificate">Marriage or Divorce Certificate</label>
-  <div class="upload-area" data-target="marriage_or_divorce_certificate">
-    <i class="upload-icon">📎</i>
-    <p>Click or drag and drop a Marriage or Divorce Certificate</p>
-    <small>Accepted: .pdf, .jpg, .jpeg, .png</small>
-  </div>
-  <input id="marriage_or_divorce_certificate" name="marriage_or_divorce_certificate" type="file" accept=".pdf, .jpg, .jpeg, .png" class="file-input" hidden />
-  <div id="marriage_or_divorce_certificate_preview" class="file-preview"></div>
+<label for="marriage_or_divorce_certificate">Marriage or Divorce Certificate</label>
+<div class="upload-area" data-target="marriage_or_divorce_certificate">
+<i class="upload-icon">📎</i>
+<p>Click or drag and drop a Marriage or Divorce Certificate</p>
+<small>Accepted: .pdf, .jpg, .jpeg, .png</small>
 </div>
-
-
+<input accept=".pdf, .jpg, .jpeg, .png" class="file-input" hidden="" id="marriage_or_divorce_certificate" name="marriage_or_divorce_certificate" type="file"/>
+<div class="file-preview" id="marriage_or_divorce_certificate_preview"></div>
+</div>
 <div class="upload-group">
-  <label for="old_passport_copy">Old Passport Copy</label>
-  <div class="upload-area" data-target="old_passport_copy">
-    <i class="upload-icon">📎</i>
-    <p>Click or drag and drop a Old Passport Copy</p>
-    <small>Accepted: .pdf, .jpg, .jpeg, .png</small>
-  </div>
-  <input id="old_passport_copy" name="old_passport_copy" type="file" accept=".pdf, .jpg, .jpeg, .png" class="file-input" hidden />
-  <div id="old_passport_copy_preview" class="file-preview"></div>
+<label for="old_passport_copy">Old Passport Copy</label>
+<div class="upload-area" data-target="old_passport_copy">
+<i class="upload-icon">📎</i>
+<p>Click or drag and drop a Old Passport Copy</p>
+<small>Accepted: .pdf, .jpg, .jpeg, .png</small>
 </div>
-
-
+<input accept=".pdf, .jpg, .jpeg, .png" class="file-input" hidden="" id="old_passport_copy" name="old_passport_copy" type="file"/>
+<div class="file-preview" id="old_passport_copy_preview"></div>
+</div>
 <div class="upload-group">
-  <label for="signature">Signature</label>
-  <div class="upload-area" data-target="signature">
-    <i class="upload-icon">📎</i>
-    <p>Click or drag and drop a Signature</p>
-    <small>Accepted: .png, .jpg, .jpeg</small>
-  </div>
-  <input id="signature" name="signature" type="file" accept=".png, .jpg, .jpeg" class="file-input" hidden />
-  <div id="signature_preview" class="file-preview"></div>
+<label for="signature">Signature</label>
+<div class="upload-area" data-target="signature">
+<i class="upload-icon">📎</i>
+<p>Click or drag and drop a Signature</p>
+<small>Accepted: .png, .jpg, .jpeg</small>
 </div>
-
-
+<input accept=".png, .jpg, .jpeg" class="file-input" hidden="" id="signature" name="signature" type="file"/>
+<div class="file-preview" id="signature_preview"></div>
+</div>
 <div class="upload-group">
-  <label for="photo_id">Photo ID</label>
-  <div class="upload-area" data-target="photo_id">
-    <i class="upload-icon">📎</i>
-    <p>Click or drag and drop a Photo ID</p>
-    <small>Accepted: .jpg, .jpeg, .png</small>
-  </div>
-  <input id="photo_id" name="photo_id" type="file" accept=".jpg, .jpeg, .png" class="file-input" hidden />
-  <div id="photo_id_preview" class="file-preview"></div>
+<label for="photo_id">Photo ID</label>
+<div class="upload-area" data-target="photo_id">
+<i class="upload-icon">📎</i>
+<p>Click or drag and drop a Photo ID</p>
+<small>Accepted: .jpg, .jpeg, .png</small>
 </div>
-
+<input accept=".jpg, .jpeg, .png" class="file-input" hidden="" id="photo_id" name="photo_id" type="file"/>
+<div class="file-preview" id="photo_id_preview"></div>
+</div>
 <div class="button-group">
-  <button class="prev-btn" type="button" >Back</button>
-  <button class="next-btn" type="button" >Next</button>
+<button class="prev-btn" type="button">Back</button>
+<button class="next-btn" type="button">Next</button>
 </div>
 </div>
-
 <!-- Step 6: Review & Submit -->
 <div class="step" id="step-6" style="display:none;">
 <h2>Review &amp; Submit</h2>
@@ -183,7 +169,6 @@
   });
 </script>
 <!-- Review Modal -->
-
 <script>
 function closeReviewModal() {
   document.getElementById("reviewModal").style.display = "none";
@@ -198,14 +183,13 @@ document.getElementById("reviewBtn").addEventListener("click", function () {
   document.getElementById("reviewModal").style.display = "flex";
 });
 </script>
-
 <!-- Clean and Modern Modal -->
-<div id="reviewModal" class="modal-overlay" style="display:none;">
-  <div class="modal-content">
-    <h2>Review Your Application</h2>
-    <div id="reviewContent" class="modal-scroll"></div>
-    <button id="closeReviewBtn" class="form-button">Close</button>
-  </div>
+<div class="modal-overlay" id="reviewModal" style="display:none;">
+<div class="modal-content">
+<h2>Review Your Application</h2>
+<div class="modal-scroll" id="reviewContent"></div>
+<button class="form-button" id="closeReviewBtn">Close</button>
+</div>
 </div>
 <style>
 .modal-overlay {
@@ -246,6 +230,5 @@ document.getElementById("reviewBtn").addEventListener("click", function () {
   cursor: pointer;
 }
 </style>
-
 </body>
 </html>
