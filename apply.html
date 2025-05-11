@@ -2,11 +2,11 @@
 <!DOCTYPE html>
 
 <html lang="en">
-<head><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<head>
 <meta charset="utf-8"/>
 <title>Passport Application</title>
 <link href="style.css" rel="stylesheet"/>
-</head>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/></head>
 <body class="scroll-page"><div class="responsive-container">
 <div class="container">
 <h1>Passport Application</h1>
@@ -156,10 +156,33 @@
 </div>
 </form>
 </div>
+<script src="form.js" type="module"></script>
+<script type="module">
+  import { supabase } from './supabase.js';
 
-
+  // Redirect to login page if not logged in
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (!session) {
+      alert("Please log in to access this page.");
+      window.location.href = 'index.html';
+    }
+  });
+</script>
 <!-- Review Modal -->
+<script>
+function closeReviewModal() {
+  document.getElementById("reviewModal").style.display = "none";
+}
 
+document.getElementById("reviewBtn").addEventListener("click", function () {
+  const formData = new FormData(document.getElementById("application-form"));
+  let output = "";
+  for (let [key, value] of formData.entries()) {
+    output += `${key}: ${value}\n`;
+  }
+  document.getElementById("reviewModal").style.display = "flex";
+});
+</script>
 <!-- Clean and Modern Modal -->
 <div class="modal-overlay" id="reviewModal" style="display:none;">
 <div class="modal-content">
@@ -207,28 +230,5 @@
   cursor: pointer;
 }
 </style>
-</div><script src="form.js" type="module"></script><script type="module">
-  import { supabase } from './supabase.js';
-
-  // Redirect to login page if not logged in
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (!session) {
-      alert("Please log in to access this page.");
-      window.location.href = 'index.html';
-    }
-  });
-</script><script>
-function closeReviewModal() {
-  document.getElementById("reviewModal").style.display = "none";
-}
-
-document.getElementById("reviewBtn").addEventListener("click", function () {
-  const formData = new FormData(document.getElementById("application-form"));
-  let output = "";
-  for (let [key, value] of formData.entries()) {
-    output += `${key}: ${value}\n`;
-  }
-  document.getElementById("reviewModal").style.display = "flex";
-});
-</script></body>
+</div></body>
 </html>

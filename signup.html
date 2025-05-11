@@ -2,11 +2,11 @@
 <!DOCTYPE html>
 
 <html lang="en">
-<head><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<head>
 <meta charset="utf-8"/>
 <title>RMI Passport Portal - Sign Up</title>
 <link href="style.css" rel="stylesheet"/>
-</head>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/></head>
 <body><div class="responsive-container">
 <div class="container">
 <h1 style="text-align:center;">RMI Passport Portal</h1>
@@ -19,7 +19,7 @@
     Already have an account? <a href="index.html">Sign In</a>
 </p>
 </div>
-
+<script src="supabase.js" type="module"></script><script src="supabase.js" type="module"></script><script src="signup-auth.js" type="module"></script>
 <!-- Success Modal -->
 <div class="modal-overlay" id="signupSuccessModal" style="display: none;">
 <div class="modal-box">
@@ -27,11 +27,11 @@
 <button onclick="closeSignupModal()">OK</button>
 </div>
 </div>
-
-</div><script src="supabase.js" type="module"></script><script src="supabase.js" type="module"></script><script src="signup-auth.js" type="module"></script><script>
+<script>
 function closeSignupModal() {
   document.getElementById('signupSuccessModal').style.display = 'none';
   window.location.href = 'index.html'; // redirect to login
 }
-</script></body>
+</script>
+</div></body>
 </html>
