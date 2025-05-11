@@ -428,3 +428,57 @@ body.scroll-page {
     box-sizing: border-box;
     flex-direction: column;
 }
+
+/* Enhanced Dashboard Layout */
+.dashboard-section {
+    background: white;
+    padding: 30px 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    max-width: 420px;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.dashboard-section h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #003366;
+}
+
+.dashboard-section p {
+    color: #555;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.dashboard-section a {
+    display: block;
+    background-color: #e6f0ff;
+    color: #003366;
+    margin: 12px 0;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.dashboard-section a:hover {
+    background-color: #cce0ff;
+}
+
+.logout-btn {
+    background-color: #003366;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background-color: #002244;
+}
