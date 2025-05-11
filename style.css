@@ -516,3 +516,19 @@ button {
   margin: 0 auto;
   min-width: 120px;
 }
+
+/* Ensure the application container is horizontally centered */
+body.scroll-page {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 40px;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
