@@ -417,3 +417,14 @@ body.scroll-page {
     padding: 20px;
     box-sizing: border-box;
 }
+
+/* Dashboard Centering */
+.dashboard-center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    flex-direction: column;
+}
