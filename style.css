@@ -1,17 +1,26 @@
 
-
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f4f6f9;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f9;
   color: #333;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   min-height: 100vh;
-  flex-direction: column;
 }
+
+
+.responsive-container {
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+
+
+
 
 
 h1, h2 {
@@ -78,13 +87,7 @@ a:hover {
 
 
 /* Center everything vertically and horizontally */
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
+html, 
 
 .container, .dashboard-section {
   width: 100%;
@@ -459,9 +462,7 @@ button {
 }
 
 @media (max-width: 480px) {
-  body {
-    font-size: 0.95rem;
-  }
+  
 
   input, select, textarea, button {
     font-size: 1rem;
@@ -470,13 +471,7 @@ button {
 
 
 /* Responsive layout for homepage, dashboard, signup */
-.responsive-container {
-  width: 100%;
-  max-width: 1024px;
-  margin: auto;
-  padding: 1rem;
-  box-sizing: border-box;
-}
+
 
 button, .button, .nav-link {
   padding: 0.75rem 1.25rem;
@@ -487,9 +482,7 @@ button, .button, .nav-link {
 }
 
 @media (max-width: 768px) {
-  .responsive-container {
-    padding: 1rem 0.75rem;
-  }
+  
   h1, h2, h3 {
     font-size: 1.2rem;
   }
