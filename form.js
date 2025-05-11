@@ -169,3 +169,62 @@ document.querySelectorAll('.upload-area').forEach(area => {
     preview.textContent = input.files[0]?.name || '';
   });
 });
+
+document.getElementById('reviewBtn')?.addEventListener('click', () => {
+  const form = document.getElementById('application-form');
+  const formData = new FormData(form);
+
+  const labelMap = {
+    application_type: "Application Type",
+    surname: "Surname or Family Name",
+    first_middle_names: "First and Middle Names",
+    social_security_number: "Social Security Number",
+    place_of_birth_city: "City or Town of Birth",
+    place_of_birth_state: "State (if in U.S.)",
+    country_of_birth: "Country of Birth",
+    date_of_birth: "Date of Birth",
+    gender: "Gender",
+    hair_color: "Hair Color",
+    marital_status: "Marital Status",
+    height_feet: "Height (Feet)",
+    height_inches: "Height (Inches)",
+    eye_color: "Eye Color",
+    address_unit: "Address Unit",
+    street_name: "Street Name",
+    phone_number: "Phone Number",
+    city: "City",
+    state: "State",
+    postal_code: "Postal Code",
+    emergency_full_name: "Emergency Contact Full Name",
+    emergency_phone_number: "Emergency Phone Number",
+    emergency_address_unit: "Emergency Address Unit",
+    emergency_street_name: "Emergency Street Name",
+    emergency_city: "Emergency City",
+    emergency_state: "Emergency State",
+    emergency_postal_code: "Emergency Postal Code",
+    father_full_name: "Father's Full Name",
+    father_dob: "Father's Date of Birth",
+    father_nationality: "Father's Nationality",
+    father_birth_city: "Father's City of Birth",
+    father_birth_state: "Father's State of Birth",
+    father_birth_country: "Father's Country of Birth",
+    mother_full_name: "Mother's Full Name",
+    mother_dob: "Mother's Date of Birth",
+    mother_nationality: "Mother's Nationality",
+    mother_birth_city: "Mother's City of Birth",
+    mother_birth_state: "Mother's State of Birth",
+    mother_birth_country: "Mother's Country of Birth"
+  };
+
+  const entries = Array.from(formData.entries());
+  const content = entries.map(([key, val]) => {
+    const label = labelMap[key] || key.replaceAll('_', ' ');
+    return `<div><strong>${label}:</strong> ${val}</div>`;
+  }).join('');
+  document.getElementById('reviewContent').innerHTML = content;
+  document.getElementById('reviewModal').style.display = 'flex';
+});
+
+document.getElementById('closeReviewBtn')?.addEventListener('click', () => {
+  document.getElementById('reviewModal').style.display = 'none';
+});

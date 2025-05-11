@@ -26,7 +26,8 @@
 <div class="form-group"><input class="form-input" name="place_of_birth_city" placeholder="City or Town of Birth" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="place_of_birth_state" placeholder="State (if in U.S.)" type="text"/></div>
 <div class="form-group"><input class="form-input" name="country_of_birth" placeholder="Country of Birth" required="" type="text"/></div>
-<div class="form-group"><input class="form-input" name="date_of_birth" required="" type="date"/></div>
+<div class="form-group"><label class="form-label"  for="date_of_birth">Date of Birth</label>
+<input class="form-input" name="date_of_birth" id="date_of_birth" required="" type="date"/></div>
 <div class="form-group"><input class="form-input" name="gender" placeholder="Gender" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="hair_color" placeholder="Hair Color" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="marital_status" placeholder="Marital Status" required="" type="text"/></div>
@@ -63,14 +64,16 @@
 <h2>Parent Details</h2>
 <h3>Father</h3>
 <div class="form-group"><input class="form-input" name="father_full_name" placeholder="Father's Full Name" required="" type="text"/></div>
-<div class="form-group"><input class="form-input" name="father_dob" required="" type="date"/></div>
+<div class="form-group"><label class="form-label"  for="father_dob">Father's Date of Birth</label>
+<input class="form-input" name="father_dob" id="father_dob" required="" type="date"/></div>
 <div class="form-group"><input class="form-input" name="father_nationality" placeholder="Nationality" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="father_birth_city" placeholder="City or Town" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="father_birth_state" placeholder="State" type="text"/></div>
 <div class="form-group"><input class="form-input" name="father_birth_country" placeholder="Country" required="" type="text"/></div>
 <h3>Mother</h3>
 <div class="form-group"><input class="form-input" name="mother_full_name" placeholder="Mother's Full Name" required="" type="text"/></div>
-<div class="form-group"><input class="form-input" name="mother_dob" required="" type="date"/></div>
+<div class="form-group"><label class="form-label"  for="mother_dob">Mother's Date of Birth</label>
+<input class="form-input" name="mother_dob" id="mother_dob" required="" type="date"/></div>
 <div class="form-group"><input class="form-input" name="mother_nationality" placeholder="Nationality" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="mother_birth_city" placeholder="City or Town" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" name="mother_birth_state" placeholder="State" type="text"/></div>
@@ -180,13 +183,7 @@
   });
 </script>
 <!-- Review Modal -->
-<div class="modal-overlay" id="reviewModal" style="display: none;">
-<div class="modal-content">
-<h2>Review Your Application</h2>
-<pre class="review-box" id="reviewData"></pre>
-<button onclick="closeReviewModal()">Close</button>
-</div>
-</div>
+
 <script>
 function closeReviewModal() {
   document.getElementById("reviewModal").style.display = "none";
@@ -198,9 +195,57 @@ document.getElementById("reviewBtn").addEventListener("click", function () {
   for (let [key, value] of formData.entries()) {
     output += `${key}: ${value}\n`;
   }
-  document.getElementById("reviewData").textContent = output;
   document.getElementById("reviewModal").style.display = "flex";
 });
 </script>
+
+<!-- Clean and Modern Modal -->
+<div id="reviewModal" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+    <h2>Review Your Application</h2>
+    <div id="reviewContent" class="modal-scroll"></div>
+    <button id="closeReviewBtn" class="form-button">Close</button>
+  </div>
+</div>
+<style>
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  max-height: 80vh;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+.modal-scroll {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+.modal-scroll div {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #eee;
+}
+.form-button {
+  background-color: #004080;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+</style>
+
 </body>
 </html>
