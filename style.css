@@ -1,11 +1,18 @@
 
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f6f9;
   margin: 0;
   padding: 0;
   color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  flex-direction: column;
 }
+
 
 h1, h2 {
   text-align: center;
@@ -348,4 +355,47 @@ form input[type="password"] {
   border-radius: 8px;
   box-sizing: border-box;
   margin-bottom: 15px;
+}
+
+
+body.scroll-page {
+  display: block !important;
+  padding: 0;
+  min-height: auto;
+  align-items: unset;
+  justify-content: unset;
+}
+
+
+.upload-group {
+  margin-bottom: 20px;
+}
+
+.upload-area {
+  border: 2px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  border-radius: 8px;
+}
+
+.upload-area:hover {
+  border-color: #007BFF;
+}
+
+.upload-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.upload-area.dragover {
+  background-color: #eef6ff;
+}
+
+.file-preview {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #333;
 }

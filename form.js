@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
 const supabase = createClient(
@@ -133,3 +132,40 @@ document.querySelectorAll('.prev-btn').forEach(btn => {
 });
 
 getUser();
+
+
+
+document.querySelectorAll('#step-5 .prev-btn').forEach(btn => {
+  btn.addEventListener('click', prevStep);
+});
+document.querySelectorAll('#step-5 .next-btn').forEach(btn => {
+  btn.addEventListener('click', nextStep);
+});
+
+document.querySelectorAll('.upload-area').forEach(area => {
+  const targetId = area.dataset.target;
+  const input = document.getElementById(targetId);
+  const preview = document.getElementById(`${targetId}_preview`);
+
+  area.addEventListener('click', () => input.click());
+
+  area.addEventListener('dragover', e => {
+    e.preventDefault();
+    area.classList.add('dragover');
+  });
+
+  area.addEventListener('dragleave', () => {
+    area.classList.remove('dragover');
+  });
+
+  area.addEventListener('drop', e => {
+    e.preventDefault();
+    area.classList.remove('dragover');
+    input.files = e.dataTransfer.files;
+    preview.textContent = input.files[0]?.name || '';
+  });
+
+  input.addEventListener('change', () => {
+    preview.textContent = input.files[0]?.name || '';
+  });
+});
