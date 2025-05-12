@@ -7,7 +7,7 @@ body {
   color: #333;
   overflow-x: hidden;
   overflow-y: auto;
-  min-height: 100vh;
+  min-height: 100%;
 }
 
 
@@ -491,7 +491,7 @@ body.scroll-page {
     justify-content: center;
     padding: 30px 10px;
     box-sizing: border-box;
-    min-height: 100vh;
+    min-height: 100%;
     width: 100%;
 }
 
@@ -550,4 +550,46 @@ input[type="date"] {
   appearance: none;
   -webkit-appearance: none;
   background-color: white;
+}
+
+.auth-center-container {
+  display: block;
+  padding-top: env(safe-area-inset-top, 20px);
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+.form-wrapper {
+  padding: 20px 16px;
+}
+
+.auth-center-container {
+  display: flex;
+  justify-content: center;
+  padding: 30px 15px;
+}
+
+.auth-center-container .container {
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  body, html {
+    min-height: auto !important;
+    height: auto !important;
+    overflow-y: scroll;
+  }
+
+  .auth-center-container {
+    display: block !important;
+    min-height: auto !important;
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  .form-wrapper {
+    padding-top: 30px;
+  }
 }
