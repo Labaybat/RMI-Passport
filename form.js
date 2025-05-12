@@ -238,15 +238,23 @@ document.getElementById('closeReviewBtn')?.addEventListener('click', () => {
   });
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-  const step1 = document.getElementById("step-1");
-  if (step1) step1.style.display = "block";
-
-  document.querySelectorAll(".next-btn").forEach(btn => {
-    btn.addEventListener("click", nextStep);
-  });
 
   document.querySelectorAll(".prev-btn").forEach(btn => {
     btn.addEventListener("click", prevStep);
   });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  var step1 = document.getElementById("step-1");
+  if (step1) step1.style.display = "block";
+
+  var nextBtns = document.querySelectorAll(".next-btn");
+  for (var i = 0; i < nextBtns.length; i++) {
+    nextBtns[i].addEventListener("click", nextStep);
+  }
+
+  var prevBtns = document.querySelectorAll(".prev-btn");
+  for (var i = 0; i < prevBtns.length; i++) {
+    prevBtns[i].addEventListener("click", prevStep);
+  }
 });
