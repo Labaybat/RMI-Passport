@@ -542,3 +542,17 @@ button {
     margin: 20px auto 0;
     min-width: 120px;
 }
+
+
+/* Fix iOS Safari rendering issue for date input fields */
+input[type="date"] {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: white;
+}
