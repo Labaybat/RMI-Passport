@@ -1,3 +1,9 @@
+
+document.addEventListener("DOMContentLoaded", () => {
+  const step1 = document.getElementById("step-1");
+  if (step1) step1.style.display = "block";
+});
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
 const supabase = createClient(
