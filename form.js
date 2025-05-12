@@ -228,3 +228,11 @@ document.getElementById('reviewBtn')?.addEventListener('click', () => {
 document.getElementById('closeReviewBtn')?.addEventListener('click', () => {
   document.getElementById('reviewModal').style.display = 'none';
 });
+
+document.querySelectorAll(".next-btn").forEach(btn => {
+  btn.addEventListener("click", nextStep);
+});
+
+document.querySelectorAll(".prev-btn").forEach(btn => {
+  btn.addEventListener("click", prevStep);
+});
