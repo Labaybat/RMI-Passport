@@ -1,5 +1,3 @@
-
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
 const supabase = createClient(
@@ -126,8 +124,10 @@ document.getElementById('application-form')?.addEventListener('submit', async (e
   }
 });
 
+document.querySelectorAll('.next-btn').forEach(btn => {
   btn.addEventListener('click', nextStep);
 });
+document.querySelectorAll('.prev-btn').forEach(btn => {
   btn.addEventListener('click', prevStep);
 });
 
@@ -135,8 +135,10 @@ getUser();
 
 
 
+document.querySelectorAll('#step-5 .prev-btn').forEach(btn => {
   btn.addEventListener('click', prevStep);
 });
+document.querySelectorAll('#step-5 .next-btn').forEach(btn => {
   btn.addEventListener('click', nextStep);
 });
 
@@ -225,36 +227,4 @@ document.getElementById('reviewBtn')?.addEventListener('click', () => {
 
 document.getElementById('closeReviewBtn')?.addEventListener('click', () => {
   document.getElementById('reviewModal').style.display = 'none';
-});
-
-  btn.addEventListener("click", nextStep);
-});
-
-  btn.addEventListener("click", prevStep);
-});
-
-
-    btn.addEventListener("click", prevStep);
-  });
-});
-
-
-  document.querySelectorAll(".prev-btn").forEach(btn => {
-    btn.addEventListener("click", prevStep);
-  });
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  var step1 = document.getElementById("step-1");
-  if (step1) step1.style.display = "block";
-
-  var nextBtns = document.querySelectorAll(".next-btn");
-  for (var i = 0; i < nextBtns.length; i++) {
-    nextBtns[i].addEventListener("click", nextStep);
-  }
-
-  var prevBtns = document.querySelectorAll(".prev-btn");
-  for (var i = 0; i < prevBtns.length; i++) {
-    prevBtns[i].addEventListener("click", prevStep);
-  }
 });
