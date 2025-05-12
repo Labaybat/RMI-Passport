@@ -1,8 +1,4 @@
 
-document.addEventListener("DOMContentLoaded", () => {
-  const step1 = document.getElementById("step-1");
-  if (step1) step1.style.display = "block";
-});
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
@@ -130,10 +126,8 @@ document.getElementById('application-form')?.addEventListener('submit', async (e
   }
 });
 
-document.querySelectorAll('.next-btn').forEach(btn => {
   btn.addEventListener('click', nextStep);
 });
-document.querySelectorAll('.prev-btn').forEach(btn => {
   btn.addEventListener('click', prevStep);
 });
 
@@ -141,10 +135,8 @@ getUser();
 
 
 
-document.querySelectorAll('#step-5 .prev-btn').forEach(btn => {
   btn.addEventListener('click', prevStep);
 });
-document.querySelectorAll('#step-5 .next-btn').forEach(btn => {
   btn.addEventListener('click', nextStep);
 });
 
@@ -241,7 +233,15 @@ document.getElementById('closeReviewBtn')?.addEventListener('click', () => {
   btn.addEventListener("click", prevStep);
 });
 
+
+    btn.addEventListener("click", prevStep);
+  });
+});
+
 document.addEventListener("DOMContentLoaded", () => {
+  const step1 = document.getElementById("step-1");
+  if (step1) step1.style.display = "block";
+
   document.querySelectorAll(".next-btn").forEach(btn => {
     btn.addEventListener("click", nextStep);
   });
