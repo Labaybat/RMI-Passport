@@ -22,20 +22,27 @@
   });
 </script>
 <!-- Review Modal -->
-<script>
-function closeReviewModal() {
-  document.getElementById("reviewModal").style.display = "none";
-}
 
-document.getElementById("reviewBtn").addEventListener("click", function () {
-  const formData = new FormData(document.getElementById("application-form"));
-  let output = "";
-  for (let [key, value] of formData.entries()) {
-    output += `${key}: ${value}\n`;
-  }
-  document.getElementById("reviewModal").style.display = "flex";
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const waitForReviewBtn = setInterval(() => {
+    const reviewBtn = document.getElementById("reviewBtn");
+    if (reviewBtn) {
+      clearInterval(waitForReviewBtn);
+      reviewBtn.addEventListener("click", function () {
+        const formData = new FormData(document.getElementById("application-form"));
+        let output = "";
+        for (let [key, value] of formData.entries()) {
+          output += `${key}: ${value}
+`;
+        }
+        document.getElementById("reviewModal").style.display = "flex";
+      });
+    }
+  }, 100);
 });
 </script>
+
 <!-- Clean and Modern Modal -->
 <div class="modal-overlay" id="reviewModal" style="display:none;">
 <div class="modal-content">
