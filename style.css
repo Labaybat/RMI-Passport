@@ -1,17 +1,18 @@
 
-
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f6f9;
   margin: 0;
   padding: 0;
   color: #333;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow-x: hidden;
+  overflow-y: auto;
   min-height: 100vh;
-  flex-direction: column;
 }
+
+
+
+
 
 
 h1, h2 {
@@ -78,13 +79,7 @@ a:hover {
 
 
 /* Center everything vertically and horizontally */
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
+html, 
 
 .container, .dashboard-section {
   width: 100%;

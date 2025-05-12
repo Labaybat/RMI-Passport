@@ -14,7 +14,66 @@
 <div class="form-group"><input class="form-input" id="first-name" placeholder="First Name" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" id="last-name" placeholder="Last Name" required="" type="text"/></div>
 <div class="form-group"><input class="form-input" id="phone-number" placeholder="Phone Number" required="" type="tel"/></div>
-<div class="form-group"><input class="form-input" id="signup-email" placeholder="Email" required="True" type="email"/></div><div class="form-group"><input class="form-input" id="signup-password" placeholder="Password" required="True" type="password"/></div><div class="form-group"><input class="form-input" id="confirm-password" placeholder="Confirm your password" required="True" type="password"/></div><button class="signup-btn" type="submit">Sign Up</button></form>
+<div class="form-group"><input class="form-input" id="signup-email" placeholder="Email" required="True" type="email"/></div><div class="form-group"><input class="form-input" id="signup-password" placeholder="Password" required="True" type="password"/>
+<div id="password-feedback" style="margin-top: 12px; font-family: 'Segoe UI', sans-serif;">
+  <div id="password-strength" style="height: 6px; background-color: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
+    <div id="password-strength-bar" style="height: 100%; width: 0%; transition: width 0.4s ease;"></div>
+  </div>
+  <ul style="list-style: none; padding-left: 0; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
+    <li id="length-check" style="color: #d9534f;">❌ At least 8 characters</li>
+    <li id="uppercase-check" style="color: #d9534f;">❌ One uppercase letter</li>
+    <li id="lowercase-check" style="color: #d9534f;">❌ One lowercase letter</li>
+    <li id="number-check" style="color: #d9534f;">❌ One number</li>
+    <li id="special-check" style="color: #d9534f;">❌ One special character (@$!%*?&)</li>
+  </ul>
+</div>
+
+<script>
+  const passwordInput = document.getElementById('signup-password');
+  const strengthBar = document.getElementById('password-strength-bar');
+  const checks = {
+    length: document.getElementById('length-check'),
+    uppercase: document.getElementById('uppercase-check'),
+    lowercase: document.getElementById('lowercase-check'),
+    number: document.getElementById('number-check'),
+    special: document.getElementById('special-check')
+  };
+
+  passwordInput.addEventListener('input', function () {
+    const val = passwordInput.value;
+    let score = 0;
+    const rules = {
+      length: val.length >= 8,
+      uppercase: /[A-Z]/.test(val),
+      lowercase: /[a-z]/.test(val),
+      number: /\d/.test(val),
+      special: /[@$!%*?&]/.test(val)
+    };
+
+    for (let key in rules) {
+      if (rules[key]) {
+        score++;
+        checks[key].style.color = '#28a745';
+        checks[key].innerText = '✅ ' + checks[key].innerText.slice(2);
+      } else {
+        checks[key].style.color = '#d9534f';
+        checks[key].innerText = '❌ ' + checks[key].innerText.slice(2);
+      }
+    }
+
+    if (score <= 2) {
+      strengthBar.style.width = '33%';
+      strengthBar.style.backgroundColor = '#d9534f';
+    } else if (score === 3 || score === 4) {
+      strengthBar.style.width = '66%';
+      strengthBar.style.backgroundColor = '#f0ad4e';
+    } else if (score === 5) {
+      strengthBar.style.width = '100%';
+      strengthBar.style.backgroundColor = '#28a745';
+    }
+  });
+</script>
+</div><div class="form-group"><input class="form-input" id="confirm-password" placeholder="Confirm your password" required="True" type="password"/></div><button class="signup-btn" type="submit">Sign Up</button></form>
 <p style="text-align:center; margin-top: 10px;">
     Already have an account? <a href="index.html">Sign In</a>
 </p>
