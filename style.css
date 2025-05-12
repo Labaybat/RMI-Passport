@@ -542,3 +542,41 @@ button {
     margin: 20px auto 0;
     min-width: 120px;
 }
+
+/* Navigation button wrapper */
+.nav-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* Ensure all navigation buttons are mobile-friendly */
+.nav-buttons button {
+  min-width: 120px;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #003366;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.nav-buttons button:hover {
+  background-color: #0055a5;
+}
+
+@media (max-width: 600px) {
+  .nav-buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-buttons button {
+    width: 100%;
+  }
+}
