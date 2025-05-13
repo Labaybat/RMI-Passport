@@ -1095,3 +1095,22 @@ body.signup-page {
   word-break: break-word;
   max-width: 100%;
 }
+
+
+/* ===== Match Signup Container Width to Login Page ===== */
+.signup-page .container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+
+/* ===== Match Container Widths Across All Pages ===== */
+.dashboard-page .dashboard-center-container,
+.apply-page .container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
