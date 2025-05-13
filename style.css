@@ -1058,3 +1058,40 @@ body.signup-page {
     padding: 0 10px;
   }
 }
+
+
+/* ===== Mobile-Only Padding Fix for Signup Top/Bottom Spacing ===== */
+@media (max-width: 768px) {
+  .signup-page .container {
+    padding-top: 32px;
+    padding-bottom: 40px;
+  }
+}
+
+
+/* ===== Dashboard Responsive Container Fixes ===== */
+.dashboard-page .responsive-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.dashboard-page .dashboard-title {
+  text-align: center;
+  margin: 20px 0;
+}
+
+
+/* ===== Fix Horizontal Centering of Welcome Message ===== */
+.dashboard-page .dashboard-title {
+  text-align: center;
+  display: block;
+  margin: 24px auto;
+  font-size: 1.25rem;
+  font-weight: 600;
+  word-break: break-word;
+  max-width: 100%;
+}
