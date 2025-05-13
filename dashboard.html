@@ -11,22 +11,28 @@
   <div class="responsive-container">
   <div class="dashboard-center-container">
     <div class="dashboard-card">
-      <div class="dashboard-header flex-align">
-        <img src="seal.png" alt="Seal" class="dashboard-seal">
-        <div class="dashboard-profile">
-          <img src="profile.png" alt="Profile" class="profile-pic">
-          
-    <div class="profile-hover-container" onmouseenter="showMenu()" onmouseleave="hideMenuWithDelay()">
-      <img src="profile.png" alt="Profile" class="profile-pic">
-      <div class="profile-menu" id="profileMenu">
+      
+<div class="dashboard-header flex-align header-space-between">
+  <img src="seal.png" alt="Seal" class="dashboard-seal">
+  
+    <div class="dashboard-avatar-hover" onmouseenter="showMenu()" onmouseleave="startHideTimer()" ontouchstart="toggleMenu(event)">
+      <svg viewBox="0 0 24 24" width="48" height="48" fill="#cccccc">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 20c0-4 4-6 8-6s8 2 8 6v1H4v-1z"/>
+      </svg>
+      <div class="avatar-menu" id="avatarMenu">
         <button class="logout-btn">Logout</button>
       </div>
     </div>
     
-        </div>
-      </div>
+    <svg viewBox="0 0 24 24" width="48" height="48" fill="#cccccc">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M4 20c0-4 4-6 8-6s8 2 8 6v1H4v-1z"/>
+    </svg>
+  </div>
+</div>
 
-      <h1 class="dashboard-title">Welcome, <span id="user-name">Guest</span>!</h1>
+<h1 class="dashboard-title">Welcome, <span id="user-name">Guest</span>!</h1>
 
       <div class="button-grid">
         <a href="apply.html" class="dashboard-button">Start Application</a>

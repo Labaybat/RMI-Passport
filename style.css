@@ -1114,3 +1114,58 @@ body.signup-page {
   padding: 20px;
   box-sizing: border-box;
 }
+
+
+/* ===== Balanced Avatar Aligned with Seal ===== */
+.dashboard-page .header-space-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-page .dashboard-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* ===== Avatar Hover Menu for Logout ===== */
+.dashboard-page .dashboard-avatar-hover {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.dashboard-page .avatar-menu {
+  display: none;
+  position: absolute;
+  top: 56px;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.dashboard-page .avatar-menu.show {
+  display: block;
+}
+
+.dashboard-page .avatar-menu .logout-btn {
+  background: #f8f8f8;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.dashboard-page .avatar-menu .logout-btn:hover {
+  background-color: #eee;
+}
