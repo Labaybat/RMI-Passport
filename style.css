@@ -624,16 +624,3 @@ body.index-page .auth-center-container {
   display: flex;
   justify-content: center;
 }
-
-.scroll-page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.scroll-spacer {
-  height: 140px;
-}
