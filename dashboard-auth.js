@@ -24,7 +24,7 @@ supabase.auth.getUser().then(({ data: { user } }) => {
 document.addEventListener('DOMContentLoaded', () => {
   let hideMenuTimer;
   const menu = document.getElementById('avatarMenu');
-  const avatar = document.querySelector('.dashboard-avatar-hover');
+  const avatar = document.querySelector('.dashboard-avatar-placeholder');
 
   function showMenu() {
     if (!menu) return;
@@ -55,8 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.dashboard-avatar-hover')) {
+    if (!e.target.closest('.dashboard-avatar-placeholder')) {
       menu?.classList.remove('show');
     }
+  });
+
+  const logoutBtn = document.querySelector('.logout-btn');
+  logoutBtn?.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'index.html';
   });
 });
