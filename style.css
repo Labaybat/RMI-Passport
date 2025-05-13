@@ -7,7 +7,7 @@ body {
   color: #333;
   overflow-x: hidden;
   overflow-y: auto;
-  min-height: 100vh;
+  min-height: 100%;
 }
 
 
@@ -491,7 +491,7 @@ body.scroll-page {
     justify-content: center;
     padding: 30px 10px;
     box-sizing: border-box;
-    min-height: 100vh;
+    min-height: 100%;
     width: 100%;
 }
 
@@ -550,4 +550,118 @@ input[type="date"] {
   appearance: none;
   -webkit-appearance: none;
   background-color: white;
+}
+
+.auth-center-container {
+  display: block;
+  padding-top: env(safe-area-inset-top, 20px);
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+.form-wrapper {
+  padding: 20px 16px;
+}
+
+.auth-center-container {
+  display: flex;
+  justify-content: center;
+  padding: 30px 15px;
+}
+
+.auth-center-container .container {
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  body, html {
+    min-height: auto !important;
+    height: auto !important;
+    overflow-y: scroll;
+  }
+
+  .auth-center-container {
+    display: block !important;
+    min-height: auto !important;
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  .form-wrapper {
+    padding-top: 30px;
+  }
+}
+
+/* Scoped styles for signup.html */
+body.signup-page {
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 100dvh;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scoped scroll wrapper for signup.html only */
+body.signup-page, body.signup-page .signup-scroll-wrapper {
+  height: auto;
+  min-height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* Scroll fix override for signup.html */
+body.signup-page .auth-center-container {
+  display: block !important;
+  padding: 30px 15px;
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+/* Restore flex horizontal centering ONLY for index.html */
+body.index-page .auth-center-container {
+  display: flex;
+  justify-content: center;
+}
+
+
+.dashboard-page {
+  min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.dashboard-center-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  padding: 40px 20px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.dashboard-section {
+  max-width: 800px;
+  width: 100%;
+  background: #fff;
+  padding: 30px;
+  margin-top: 40px;
+  margin-bottom: 60px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.scroll-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.scroll-spacer {
+  height: 140px;
 }
