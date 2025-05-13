@@ -665,3 +665,396 @@ body.index-page .auth-center-container {
 .scroll-spacer {
   height: 140px;
 }
+
+
+/* ===== Dashboard Page Scoped Styles ===== */
+body.dashboard-page {
+  font-family: system-ui, sans-serif;
+  background: #f8f8f8;
+  margin: 0;
+}
+
+.dashboard-center-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.dashboard-card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 700px;
+  text-align: center;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-seal {
+  height: 50px;
+}
+
+.dashboard-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-pic {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+}
+
+.profile-dropdown {
+  font-size: 14px;
+  background: #f0f0f0;
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+
+.dashboard-title {
+  margin-top: 30px;
+  margin-bottom: 20px;
+  font-size: 28px;
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.dashboard-button {
+  background: white;
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
+  padding: 15px;
+  text-decoration: none;
+  color: #000;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.dashboard-button:hover {
+  background: #f2f2f2;
+}
+
+.application-status-box {
+  background: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 10px;
+}
+
+.status-link {
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.status-bar-bg {
+  background: #e0e0e0;
+  height: 8px;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+
+.status-bar-fill {
+  background: #1a73e8;
+  height: 8px;
+  border-radius: 5px;
+}
+
+.last-updated {
+  font-size: 12px;
+  color: #666;
+}
+
+.dashboard-footer {
+  margin-top: 40px;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+}
+
+.dashboard-footer a {
+  color: #666;
+  text-decoration: none;
+  margin: 0 5px;
+}
+
+
+/* ===== Dashboard Page Consistent Styling with apply.html ===== */
+body.dashboard-page {
+  background-color: #ffffff;
+}
+
+.dashboard-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #e5e5e5;
+}
+
+.dashboard-title {
+  color: #1a1a1a;
+  font-weight: 700;
+}
+
+.dashboard-button {
+  border-radius: 12px;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-button:hover {
+  background-color: #f5f5f5;
+}
+
+.application-status-box {
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+
+/* ===== Dashboard Header Alignment Enhancements ===== */
+.dashboard-header.flex-align {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-seal {
+  height: 50px;
+  width: auto;
+}
+
+.dashboard-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-pic {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+}
+
+.profile-dropdown {
+  font-size: 14px;
+  background: #f0f0f0;
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+
+
+/* ===== Rebuilt Index Page from Screenshot ===== */
+body.index-page {
+  background-color: #fff;
+  font-family: system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.auth-center-container {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  padding: 20px;
+  margin: auto;
+}
+
+.login-title {
+  font-size: 20px;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  color: #111;
+}
+
+.login-avatar {
+  margin: 0 auto 10px;
+}
+
+.login-subtitle {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.password-container {
+  position: relative;
+}
+
+.password-container input {
+  padding-right: 40px;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.login-button {
+  width: 100%;
+  background-color: #273c75;
+  color: white;
+  font-weight: bold;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.signup-link {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.signup-link a {
+  color: #273c75;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.login-footer {
+  margin-top: 40px;
+  font-size: 14px;
+  color: #333;
+}
+
+
+/* ===== Signup Page Styles (Reused from index) ===== */
+body.signup-page {
+  background-color: #fff;
+  font-family: system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+body.signup-page .auth-center-container {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  padding: 20px;
+  margin: auto;
+}
+
+
+/* ===== Dashboard Hover Menu with Delayed Hide ===== */
+.dashboard-page .profile-hover-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.dashboard-page .profile-hover-container .profile-pic {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+}
+
+.dashboard-page .profile-hover-container .profile-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 40px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  min-width: 120px;
+  z-index: 200;
+  padding: 10px;
+}
+
+.dashboard-page .profile-hover-container:hover .profile-menu {
+  display: block;
+}
+
+.dashboard-page .profile-hover-container .logout-btn {
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dashboard-page .profile-hover-container .logout-btn:hover {
+  background-color: #e6e6e6;
+}
+
+
+/* ===== Cleaned Signup Page Styles ===== */
+body.signup-page {
+  background-color: #fff;
+  font-family: system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.signup-page .auth-center-container {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  padding: 20px;
+  margin: auto;
+}
+
+
+/* ===== Fix Horizontal Centering on Signup Page for Mobile ===== */
+@media (max-width: 767px) {
+  .signup-page .auth-center-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .signup-page .container {
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    padding: 0 10px;
+  }
+}

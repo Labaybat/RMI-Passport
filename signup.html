@@ -1,99 +1,45 @@
 
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta charset="utf-8"/>
-<title>RMI Passport Portal - Sign Up</title>
-<link href="style.css" rel="stylesheet"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/></head>
+  <meta charset="utf-8"/>
+  <title>RMI Passport Portal - Sign Up</title>
+  <link href="style.css" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
 <body class="signup-page">
-  <div class="signup-scroll-wrapper"><div class="auth-center-container">
-<div class="form-wrapper"><div class="container">
-<h1 style="text-align:center;">RMI Passport Portal</h1>
-<form id="login-form">
-<div class="form-group"><input class="form-input" id="first-name" placeholder="First Name" required="" type="text"/></div>
-<div class="form-group"><input class="form-input" id="last-name" placeholder="Last Name" required="" type="text"/></div>
-<div class="form-group"><input class="form-input" id="phone-number" placeholder="Phone Number" required="" type="tel"/></div>
-<div class="form-group"><input class="form-input" id="signup-email" placeholder="Email" required="True" type="email"/></div><div class="form-group"><input class="form-input" id="signup-password" placeholder="Password" required="True" type="password"/>
-<div id="password-feedback" style="margin-top: 12px; font-family: 'Segoe UI', sans-serif;">
-  <div id="password-strength" style="height: 6px; background-color: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
-    <div id="password-strength-bar" style="height: 100%; width: 0%; transition: width 0.4s ease;"></div>
+  <div class="auth-center-container">
+    <div class="container">
+      <h1 class="login-title">RMI PASSPORT PORTAL</h1>
+      <div class="login-avatar">
+        <svg viewBox="0 0 24 24" width="72" height="72" fill="#cccccc">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 20c0-4 4-6 8-6s8 2 8 6v1H4v-1z"/>
+        </svg>
+      </div>
+      <h2 class="login-subtitle">Sign Up</h2>
+      <form id="signup-form" class="login-form">
+        <input id="email" type="email" placeholder="Email address" required>
+        <div class="password-container">
+          <input id="password" type="password" placeholder="Password" required>
+          <span class="toggle-password" onclick="togglePasswordVisibility('password')">👁️</span>
+        </div>
+        <div class="password-container">
+          <input id="confirm-password" type="password" placeholder="Confirm Password" required>
+          <span class="toggle-password" onclick="togglePasswordVisibility('confirm-password')">👁️</span>
+        </div>
+        <button type="submit" class="login-button">Sign Up</button>
+      </form>
+      <p class="signup-link">Already have an account? <a href="index.html">Sign in</a></p>
+      <p class="login-footer">PASSPORT</p>
+    </div>
   </div>
-  <ul style="list-style: none; padding-left: 0; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
-    <li id="length-check" style="color: #d9534f;">❌ At least 8 characters</li>
-    <li id="uppercase-check" style="color: #d9534f;">❌ One uppercase letter</li>
-    <li id="lowercase-check" style="color: #d9534f;">❌ One lowercase letter</li>
-    <li id="number-check" style="color: #d9534f;">❌ One number</li>
-    <li id="special-check" style="color: #d9534f;">❌ One special character (@$!%*?&)</li>
-  </ul>
-</div>
-
-<script>
-  const passwordInput = document.getElementById('signup-password');
-  const strengthBar = document.getElementById('password-strength-bar');
-  const checks = {
-    length: document.getElementById('length-check'),
-    uppercase: document.getElementById('uppercase-check'),
-    lowercase: document.getElementById('lowercase-check'),
-    number: document.getElementById('number-check'),
-    special: document.getElementById('special-check')
-  };
-
-  passwordInput.addEventListener('input', function () {
-    const val = passwordInput.value;
-    let score = 0;
-    const rules = {
-      length: val.length >= 8,
-      uppercase: /[A-Z]/.test(val),
-      lowercase: /[a-z]/.test(val),
-      number: /\d/.test(val),
-      special: /[@$!%*?&]/.test(val)
-    };
-
-    for (let key in rules) {
-      if (rules[key]) {
-        score++;
-        checks[key].style.color = '#28a745';
-        checks[key].innerText = '✅ ' + checks[key].innerText.slice(2);
-      } else {
-        checks[key].style.color = '#d9534f';
-        checks[key].innerText = '❌ ' + checks[key].innerText.slice(2);
-      }
+  <script src="signup-auth.js" type="module"></script>
+  <script>
+    function togglePasswordVisibility(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === 'password' ? 'text' : 'password';
     }
-
-    if (score <= 2) {
-      strengthBar.style.width = '33%';
-      strengthBar.style.backgroundColor = '#d9534f';
-    } else if (score === 3 || score === 4) {
-      strengthBar.style.width = '66%';
-      strengthBar.style.backgroundColor = '#f0ad4e';
-    } else if (score === 5) {
-      strengthBar.style.width = '100%';
-      strengthBar.style.backgroundColor = '#28a745';
-    }
-  });
-</script>
-</div><div class="form-group"><input class="form-input" id="confirm-password" placeholder="Confirm your password" required="True" type="password"/></div><button class="signup-btn" type="submit">Sign Up</button></form>
-<p style="text-align:center; margin-top: 10px;">
-    Already have an account? <a href="index.html">Sign In</a>
-</p>
-</div>
-<script src="supabase.js" type="module"></script><script src="supabase.js" type="module"></script><script src="signup-auth.js" type="module"></script>
-<!-- Success Modal -->
-<div class="modal-overlay" id="signupSuccessModal" style="display: none;">
-<div class="modal-box">
-<p><span class="success-icon">✅</span> Account created! Please check your email to confirm before logging in.</p>
-<button onclick="closeSignupModal()">OK</button>
-</div>
-</div>
-<script>
-function closeSignupModal() {
-  document.getElementById('signupSuccessModal').style.display = 'none';
-  window.location.href = 'index.html'; // redirect to login
-}
-</script>
-</div>  </div>
+  </script>
 </body>
 </html>

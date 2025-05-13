@@ -1,15 +1,14 @@
+
 import { supabase } from './supabase.js';
 
-document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+document.getElementById('signup-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const firstName = document.getElementById('first-name')?.value;
-const lastName = document.getElementById('last-name')?.value;
-const phoneNumber = document.getElementById('phone-number')?.value;
-const email = document.getElementById('signup-email')?.value;
-  const password = document.getElementById('signup-password')?.value;
+
+  const email = document.getElementById('email')?.value;
+  const password = document.getElementById('password')?.value;
   const confirm = document.getElementById('confirm-password')?.value;
 
-  const btn = document.querySelector(".signup-btn");
+  const btn = document.querySelector(".login-button");
   btn.innerText = "Signing up...";
   btn.disabled = true;
 
@@ -28,26 +27,16 @@ const email = document.getElementById('signup-email')?.value;
   }
 
   const { error } = await supabase.auth.signUp({
-  email,
-  password,
-  options: {
-    data: {
-      first_name: firstName,
-      last_name: lastName,
-      phone: phoneNumber
-    }
-  }
-});
+    email,
+    password
+  });
 
   if (error) {
-  console.error(error);
-
-    alert("Sign up failed: " + error.message);
+    alert(error.message);
+    btn.innerText = "Sign Up";
+    btn.disabled = false;
   } else {
-  document.getElementById("signupSuccessModal").style.display = "flex";
-    
+    alert("Signup successful. Please check your email.");
+    window.location.href = "dashboard.html";
   }
-
-  btn.innerText = "Sign Up";
-  btn.disabled = false;
 });

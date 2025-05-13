@@ -7,19 +7,71 @@
   <link href="style.css" rel="stylesheet"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
-<body class="scroll-page">
-  <div class="dashboard-section">
-    <h1>Welcome to Your Passport Dashboard</h1>
-    <div class="dashboard-buttons">
-      <p>Use the options below to manage your application.</p>
-      <a href="apply.html">📝 Start Application</a>
-      <a href="status.html">📊 Application Status</a>
-      <a href="passport-act.html">📄 View Passport Act</a>
+<body class="dashboard-page">
+  <div class="dashboard-center-container">
+    <div class="dashboard-card">
+      <div class="dashboard-header flex-align">
+        <img src="seal.png" alt="Seal" class="dashboard-seal">
+        <div class="dashboard-profile">
+          <img src="profile.png" alt="Profile" class="profile-pic">
+          
+    <div class="profile-hover-container" onmouseenter="showMenu()" onmouseleave="hideMenuWithDelay()">
+      <img src="profile.png" alt="Profile" class="profile-pic">
+      <div class="profile-menu" id="profileMenu">
+        <button class="logout-btn">Logout</button>
+      </div>
     </div>
-    <button class="logout-btn">Logout</button>
+    
+        </div>
+      </div>
+
+      <h1 class="dashboard-title">Welcome, <span id="user-name">Guest</span>!</h1>
+
+      <div class="button-grid">
+        <a href="apply.html" class="dashboard-button">Start Application</a>
+        <a href="resume.html" class="dashboard-button">Resume Application</a>
+        <a href="dashboard.html" class="dashboard-button">My Dashboard</a>
+        <a href="passport-act.html" class="dashboard-button">View Passport Act PDF</a>
+        <a href="upload.html" class="dashboard-button">Upload Supporting Documents</a>
+        <a href="photo-guidelines.html" class="dashboard-button">Passport Photo Guidelines</a>
+      </div>
+
+      <div class="application-status-box">
+        <p><strong>Application Status</strong></p>
+        <p><a href="status.html" class="status-link">In Progress</a></p>
+        <div class="status-bar-bg">
+          <div class="status-bar-fill" style="width: 60%;"></div>
+        </div>
+        <p class="last-updated">Last Updated:<br>April 23, 2024</p>
+      </div>
+    </div>
+    <footer class="dashboard-footer">
+      <a href="#">Terms of Use</a>
+      <span>|</span>
+      <a href="#">English / Kajin M̧ajeļ</a>
+      <span>|</span>
+      <a href="#">Contact Support</a>
+    </footer>
   </div>
-  <div class="scroll-spacer"></div>
+
   <script src="supabase.js" type="module"></script>
   <script src="dashboard-auth.js" type="module"></script>
+
+<script>
+  let hideTimeout;
+  const profileMenu = document.getElementById('profileMenu');
+
+  function showMenu() {
+    clearTimeout(hideTimeout);
+    profileMenu.style.display = 'block';
+  }
+
+  function hideMenuWithDelay() {
+    hideTimeout = setTimeout(() => {
+      profileMenu.style.display = 'none';
+    }, 2000); // 2 second delay
+  }
+</script>
+
 </body>
 </html>
