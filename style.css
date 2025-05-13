@@ -593,3 +593,34 @@ input[type="date"] {
     padding-top: 30px;
   }
 }
+
+/* Scoped styles for signup.html */
+body.signup-page {
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 100dvh;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scoped scroll wrapper for signup.html only */
+body.signup-page, body.signup-page .signup-scroll-wrapper {
+  height: auto;
+  min-height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* Scroll fix override for signup.html */
+body.signup-page .auth-center-container {
+  display: block !important;
+  padding: 30px 15px;
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+/* Restore flex horizontal centering ONLY for index.html */
+body.index-page .auth-center-container {
+  display: flex;
+  justify-content: center;
+}
