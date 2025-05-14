@@ -1166,3 +1166,39 @@ body.signup-page {
 .dashboard-page .avatar-menu .logout-btn:hover {
   background-color: #eee;
 }
+
+
+/* ✅ Dashboard scroll and responsive button layout fix */
+.dashboard-page {
+  min-height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix top container visibility and prevent inner scrollbars */
+.dashboard-page .responsive-container {
+  min-height: 100vh;
+  overflow: visible;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.dashboard-page .dashboard-center-container {
+  max-width: 960px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Button grid responsive layout */
+.dashboard-page .button-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 600px) {
+  .dashboard-page .button-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
