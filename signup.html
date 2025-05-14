@@ -12,21 +12,46 @@
     <div class="container">
       <h1 class="login-title">RMI PASSPORT PORTAL</h1>
       <div class="login-avatar">
-        <svg viewBox="0 0 24 24" width="72" height="72" fill="#cccccc">
-          <circle cx="12" cy="8" r="4"/>
-          <path d="M4 20c0-4 4-6 8-6s8 2 8 6v1H4v-1z"/>
-        </svg>
+        
       </div>
       <h2 class="login-subtitle">Sign Up</h2>
       <form id="signup-form" class="login-form">
         <input id="email" type="email" placeholder="Email address" required>
         <div class="password-container">
-          <input id="password" type="password" placeholder="Password" required>
-          <span class="toggle-password" onclick="togglePasswordVisibility('password')">👁️</span>
+          <div class="password-wrapper"><input id="password" type="password" placeholder="Password" required>
+<span class="password-toggle" onclick="togglePasswordVisibility(this)">
+  
+<svg xmlns="http://www.w3.org/2000/svg" class="eye-icon" viewBox="0 0 24 24" fill="none"
+     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C7 20 2.73 16.11 1 12
+           c.74-1.61 1.81-3.06 3.06-4.24M9.88 9.88
+           A3 3 0 0 0 12 15a3 3 0 0 0 2.12-5.12M22.54 16.88
+           A10.94 10.94 0 0 0 23 12c-1.73-4.11-6-8-11-8
+           a10.94 10.94 0 0 0-4.24.88" />
+  <line x1="1" y1="1" x2="23" y2="23" />
+</svg>
+
+</span>
+</div>
+          
         </div>
         <div class="password-container">
-          <input id="confirm-password" type="password" placeholder="Confirm Password" required>
-          <span class="toggle-password" onclick="togglePasswordVisibility('confirm-password')">👁️</span>
+          <div class="password-wrapper"><input id="confirm-password" type="password" placeholder="Confirm Password" required>
+<span class="password-toggle" onclick="togglePasswordVisibility(this)">
+  
+<svg xmlns="http://www.w3.org/2000/svg" class="eye-icon" viewBox="0 0 24 24" fill="none"
+     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C7 20 2.73 16.11 1 12
+           c.74-1.61 1.81-3.06 3.06-4.24M9.88 9.88
+           A3 3 0 0 0 12 15a3 3 0 0 0 2.12-5.12M22.54 16.88
+           A10.94 10.94 0 0 0 23 12c-1.73-4.11-6-8-11-8
+           a10.94 10.94 0 0 0-4.24.88" />
+  <line x1="1" y1="1" x2="23" y2="23" />
+</svg>
+
+</span>
+</div>
+          
         </div>
         <button type="submit" class="login-button">Sign Up</button>
       </form>
@@ -41,5 +66,26 @@
       input.type = input.type === 'password' ? 'text' : 'password';
     }
   </script>
+
+<script>
+function togglePasswordVisibility(el) {
+  const input = el.closest('.password-wrapper').querySelector('input');
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  el.innerHTML = isHidden ? `<svg xmlns="http://www.w3.org/2000/svg" class="eye-icon" viewBox="0 0 24 24" fill="none"
+     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/>
+  <circle cx="12" cy="12" r="3"/>
+</svg>` : `<svg xmlns="http://www.w3.org/2000/svg" class="eye-icon" viewBox="0 0 24 24" fill="none"
+     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C7 20 2.73 16.11 1 12
+           c.74-1.61 1.81-3.06 3.06-4.24M9.88 9.88
+           A3 3 0 0 0 12 15a3 3 0 0 0 2.12-5.12M22.54 16.88
+           A10.94 10.94 0 0 0 23 12c-1.73-4.11-6-8-11-8
+           a10.94 10.94 0 0 0-4.24.88" />
+  <line x1="1" y1="1" x2="23" y2="23" />
+</svg>`;
+}
+</script>
 </body>
 </html>
