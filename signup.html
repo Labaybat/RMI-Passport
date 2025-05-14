@@ -20,14 +20,18 @@
       <h2 class="login-subtitle">Sign Up</h2>
       <form id="signup-form" class="login-form">
         <input id="email" type="email" placeholder="Email address" required>
-        <div class="password-container">
-          <input id="password" type="password" placeholder="Password" required>
-          <span class="toggle-password" onclick="togglePasswordVisibility('password')">👁️</span>
-        </div>
-        <div class="password-container">
-          <input id="confirm-password" type="password" placeholder="Confirm Password" required>
-          <span class="toggle-password" onclick="togglePasswordVisibility('confirm-password')">👁️</span>
-        </div>
+        
+    <div class="password-wrapper">
+      <input id="password" type="password" placeholder="Password" required>
+      <span class="password-toggle" onclick="togglePasswordVisibility(this)"><svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='#555' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'/><circle cx='12' cy='12' r='3'/></svg></span>
+    </div>
+    
+        
+    <div class="password-wrapper">
+      <input id="confirm-password" type="password" placeholder="Confirm Password" required>
+      <span class="password-toggle" onclick="togglePasswordVisibility(this)"><svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='#555' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'/><circle cx='12' cy='12' r='3'/></svg></span>
+    </div>
+    
         <button type="submit" class="login-button">Sign Up</button>
       </form>
       <p class="signup-link">Already have an account? <a href="index.html">Sign in</a></p>
@@ -41,5 +45,15 @@
       input.type = input.type === 'password' ? 'text' : 'password';
     }
   </script>
+
+<script>
+function togglePasswordVisibility(el) {
+  const input = el.previousElementSibling;
+  const isPassword = input.type === "password";
+  input.type = isPassword ? "text" : "password";
+  el.innerHTML = isPassword ? `<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='#555' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M17.94 17.94A10.94 10.94 0 0 1 12 20c-4.69 0-8.5-3.81-8.5-8.5a10.94 10.94 0 0 1 1.54-5.5M1 1l22 22'/><path d='M9.88 9.88a3 3 0 0 0 4.24 4.24'/></svg>` : `<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='#555' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'/><circle cx='12' cy='12' r='3'/></svg>`;
+}
+</script>
+
 </body>
 </html>

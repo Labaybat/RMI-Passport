@@ -1202,3 +1202,23 @@ body.signup-page {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-wrapper input {
+  padding-right: 36px;
+  flex: 1;
+}
+.password-wrapper .password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  height: 18px;
+  width: 18px;
+}
