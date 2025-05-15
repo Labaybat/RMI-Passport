@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
         errorMessage.innerText = 'Password reset email sent! Please check your inbox.';
         errorMessage.style.color = 'green';
         errorMessage.style.display = 'block';
+        setTimeout(() => { window.location.href = 'index.html'; }, 2500);
       }
 
     } catch (err) {

@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
         errorMessage.innerText = 'Your password has been updated.';
         errorMessage.style.color = 'green';
         errorMessage.style.display = 'block';
+        setTimeout(() => { window.location.href = 'index.html'; }, 2500);
       }
     } catch (err) {
       errorMessage.innerText = 'Unexpected error. Please try again.';
