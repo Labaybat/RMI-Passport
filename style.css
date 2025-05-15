@@ -1222,3 +1222,15 @@ body.signup-page {
   height: 18px;
   width: 18px;
 }
+
+.forgot-password {
+  margin-top: -10px;
+  font-size: 13px;
+  line-height: 1;
+  margin-top: -6px;
+  font-size: 13px;
+  margin-top: 2px;
+  margin-top: -10px;
+  margin-bottom: 12px;
+  text-align: right;
+}
