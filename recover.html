@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Password Recovery</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="recover-page">
+<div class="auth-center-container">
+  <div class="container">
+    <h1 class="login-title">RMI PASSPORT PORTAL</h1>
+    <div class="login-avatar">
+  <svg viewBox="0 0 24 24" width="72" height="72" fill="#cccccc">
+    <circle cx="12" cy="8" r="4"/>
+    <path d="M4 20c0-4 4-6 8-6s8 2 8 6v1H4v-1z"/>
+  </svg>
+</div>
+    <h2 class="login-subtitle">Password Recovery</h2>
+
+    <form id="recover-form">
+      <input type="email" id="email1" placeholder="Enter your registered email address" required />
+      <input type="email" id="email2" placeholder="Re-enter your email address" required />
+      <div id="error-message" class="error-message" style="display:none; text-align:center; margin: 10px 0;"></div>
+      <button type="submit" class="submit-btn">Send</button>
+    </form>
+
+    <p class="signup-link">Don’t have an account? <a href="signup.html">Sign up</a></p>
+    <p class="footer">PASSPORT</p>
+  </div>
+
+  <script type="module" src="recover-auth.js"></script>
+</body>
+</html>
