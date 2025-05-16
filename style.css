@@ -1234,3 +1234,20 @@ body.signup-page {
   margin-bottom: 12px;
   text-align: right;
 }
+
+
+/* === Scoped Scroll Fix for signup.html === */
+html, body.scroll-page {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-page .auth-center-container,
+.scroll-page .container {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  position: static !important;
+}
