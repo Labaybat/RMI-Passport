@@ -1251,3 +1251,21 @@ html, body.scroll-page {
   overflow: visible !important;
   position: static !important;
 }
+
+
+/* Scoped responsive fix for auth pages */
+.auth-center-container, .container {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Mobile responsive behavior */
+@media screen and (max-width: 600px) {
+  .auth-center-container, .container {
+    max-width: 100%;
+    padding: 15px;
+  }
+}
