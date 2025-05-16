@@ -5,6 +5,9 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
   e.preventDefault();
 
   const email = document.getElementById('email')?.value;
+  const firstName = document.getElementById('firstName')?.value;
+  const lastName = document.getElementById('lastName')?.value;
+  const phone = document.getElementById('phone')?.value;
   const password = document.getElementById('password')?.value;
   const confirm = document.getElementById('confirm-password')?.value;
 
@@ -26,10 +29,7 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
     return;
   }
 
-  const { error } = await supabase.auth.signUp({
-    email,
-    password
-  });
+  const { error } = await supabase.auth.signUp({ email, password, options: { data: { email, firstName, lastName, phone } } });
 
   if (error) {
     alert(error.message);

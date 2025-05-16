@@ -19,7 +19,17 @@
       </div>
       <h2 class="login-subtitle">Sign Up</h2>
       <form id="signup-form" class="login-form">
-        <input id="email" type="email" placeholder="Email address" required>
+        
+<div class="password-wrapper">
+  <input id="firstName" type="text" placeholder="First name" required>
+</div>
+<div class="password-wrapper">
+  <input id="lastName" type="text" placeholder="Last name" required>
+</div>
+<div class="password-wrapper">
+  <input id="phone" type="tel" placeholder="Phone number" required pattern="\+?[0-9\s\-]{7,20}" title="Enter a valid phone number, including area code or country code if needed">
+</div>
+<input id="email" type="email" placeholder="Email address" required>
         
     <div class="password-wrapper">
       <input id="password" type="password" placeholder="Password" required>
