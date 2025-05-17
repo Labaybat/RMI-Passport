@@ -1269,3 +1269,10 @@ html, body.scroll-page {
     padding: 15px;
   }
 }
+
+
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
