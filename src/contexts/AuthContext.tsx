@@ -55,6 +55,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [])
 
+  useEffect(() => {
+    // Check if environment variables are configured
+    const isSupabaseConfigured = Boolean(
+      import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+    );
+    setIsConfigured(isSupabaseConfigured);
+  }, []);
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
     setUser(null)

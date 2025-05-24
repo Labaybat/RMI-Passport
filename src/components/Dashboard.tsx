@@ -4,14 +4,61 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import supabase from "../lib/supabase/client"
+import { useNavigate } from "@tanstack/react-router"
 
-// Define the PassportApplication type based on the application's structure
+// Define the PassportApplication type based on the Supabase table
+// (see attached schema)
 type PassportApplication = {
   id: string
   user_id: string
-  status: string
-  progress: number
-  application_data: Record<string, any>
+  application_type: string | null
+  surname: string | null
+  first_middle_names: string | null
+  social_security_number: string | null
+  place_of_birth_city: string | null
+  place_of_birth_state: string | null
+  country_of_birth: string | null
+  date_of_birth: string | null
+  gender: string | null
+  hair_color: string | null
+  marital_status: string | null
+  height_feet: number | null
+  height_inches: number | null
+  eye_color: string | null
+  address_unit: string | null
+  street_name: string | null
+  phone_number: string | null
+  city: string | null
+  state: string | null
+  postal_code: string | null
+  emergency_full_name: string | null
+  emergency_phone_number: string | null
+  emergency_address_unit: string | null
+  emergency_street_name: string | null
+  emergency_city: string | null
+  emergency_state: string | null
+  emergency_postal_code: string | null
+  father_full_name: string | null
+  father_dob: string | null
+  father_nationality: string | null
+  father_birth_city: string | null
+  father_birth_state: string | null
+  father_birth_country: string | null
+  mother_full_name: string | null
+  mother_dob: string | null
+  mother_nationality: string | null
+  mother_birth_city: string | null
+  mother_birth_state: string | null
+  mother_birth_country: string | null
+  birth_certificate: string | null
+  consent_form: string | null
+  marriage_or_divorce_certificate: string | null
+  old_passport_copy: string | null
+  signature: string | null
+  photo_id: string | null
+  status: string | null
+  progress: number | null
+  submitted_at: string | null
   created_at: string
   updated_at: string
 }
@@ -23,6 +70,7 @@ const PassportDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const popupRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -41,9 +89,54 @@ const PassportDashboard: React.FC = () => {
       setApplication({
         id: "mock-app-id",
         user_id: user.id,
+        application_type: null,
+        surname: null,
+        first_middle_names: null,
+        social_security_number: null,
+        place_of_birth_city: null,
+        place_of_birth_state: null,
+        country_of_birth: null,
+        date_of_birth: null,
+        gender: null,
+        hair_color: null,
+        marital_status: null,
+        height_feet: null,
+        height_inches: null,
+        eye_color: null,
+        address_unit: null,
+        street_name: null,
+        phone_number: null,
+        city: null,
+        state: null,
+        postal_code: null,
+        emergency_full_name: null,
+        emergency_phone_number: null,
+        emergency_address_unit: null,
+        emergency_street_name: null,
+        emergency_city: null,
+        emergency_state: null,
+        emergency_postal_code: null,
+        father_full_name: null,
+        father_dob: null,
+        father_nationality: null,
+        father_birth_city: null,
+        father_birth_state: null,
+        father_birth_country: null,
+        mother_full_name: null,
+        mother_dob: null,
+        mother_nationality: null,
+        mother_birth_city: null,
+        mother_birth_state: null,
+        mother_birth_country: null,
+        birth_certificate: null,
+        consent_form: null,
+        marriage_or_divorce_certificate: null,
+        old_passport_copy: null,
+        signature: null,
+        photo_id: null,
         status: "draft",
         progress: 33,
-        application_data: {},
+        submitted_at: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -65,26 +158,33 @@ const PassportDashboard: React.FC = () => {
     }
   }, [])
 
+  // Utility: Validate UUID format
+  const isValidUUID = (id: string) => /^[0-9a-fA-F-]{36}$/.test(id)
+
   const fetchApplication = async () => {
     if (!user || !isConfigured) return
-
+    console.log("[fetchApplication] Current user.id:", user.id, "Type:", typeof user.id)
+    if (!isValidUUID(user.id)) {
+      alert("Invalid user ID format. Cannot fetch application.")
+      setLoading(false)
+      return
+    }
     try {
       const { data, error } = await supabase
         .from("passport_applications")
         .select("*")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
+        .order("updated_at", { ascending: false })
         .limit(1)
-        .single()
-
-      if (error && error.code !== "PGRST116") {
-        console.error("Error fetching application:", error)
+      if (error) {
+        console.error("Error fetching application:", error, error.message, error.details)
+        alert("Error fetching application: " + (error.message || "Unknown error"))
         return
       }
-
-      setApplication(data)
+      setApplication(data && data.length > 0 ? data[0] : null)
     } catch (error) {
-      console.error("Error fetching application:", error)
+      console.error("Unexpected error fetching application:", error)
+      alert("Unexpected error fetching application: " + error)
     } finally {
       setLoading(false)
     }
@@ -102,12 +202,57 @@ const PassportDashboard: React.FC = () => {
 
     if (!isConfigured) {
       // Mock application creation for development
-      const mockApp = {
+      const mockApp: PassportApplication = {
         id: "mock-app-" + Date.now(),
         user_id: user.id,
-        status: "draft" as const,
+        application_type: null,
+        surname: null,
+        first_middle_names: null,
+        social_security_number: null,
+        place_of_birth_city: null,
+        place_of_birth_state: null,
+        country_of_birth: null,
+        date_of_birth: null,
+        gender: null,
+        hair_color: null,
+        marital_status: null,
+        height_feet: null,
+        height_inches: null,
+        eye_color: null,
+        address_unit: null,
+        street_name: null,
+        phone_number: null,
+        city: null,
+        state: null,
+        postal_code: null,
+        emergency_full_name: null,
+        emergency_phone_number: null,
+        emergency_address_unit: null,
+        emergency_street_name: null,
+        emergency_city: null,
+        emergency_state: null,
+        emergency_postal_code: null,
+        father_full_name: null,
+        father_dob: null,
+        father_nationality: null,
+        father_birth_city: null,
+        father_birth_state: null,
+        father_birth_country: null,
+        mother_full_name: null,
+        mother_dob: null,
+        mother_nationality: null,
+        mother_birth_city: null,
+        mother_birth_state: null,
+        mother_birth_country: null,
+        birth_certificate: null,
+        consent_form: null,
+        marriage_or_divorce_certificate: null,
+        old_passport_copy: null,
+        signature: null,
+        photo_id: null,
+        status: "draft",
         progress: 10,
-        application_data: {},
+        submitted_at: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
@@ -116,6 +261,11 @@ const PassportDashboard: React.FC = () => {
       return
     }
 
+    console.log("[handleStartApplication] Current user.id:", user.id, "Type:", typeof user.id)
+    if (!isValidUUID(user.id)) {
+      alert("Invalid user ID format. Cannot create application.")
+      return
+    }
     try {
       const { data, error } = await supabase
         .from("passport_applications")
@@ -124,21 +274,22 @@ const PassportDashboard: React.FC = () => {
             user_id: user.id,
             status: "draft",
             progress: 10,
-            application_data: {},
           },
         ])
         .select()
-        .single()
+        .limit(1)
 
       if (error) {
-        console.error("Error creating application:", error)
+        console.error("Error creating application:", error, error.message, error.details)
+        alert("Error creating application: " + (error.message || "Unknown error"))
         return
       }
 
-      setApplication(data)
+      setApplication(data && data.length > 0 ? data[0] : null)
       console.log("Application started successfully!")
     } catch (error) {
       console.error("Error starting application:", error)
+      alert("Unexpected error starting application: " + error)
     }
   }
 
@@ -151,9 +302,20 @@ const PassportDashboard: React.FC = () => {
   }
 
   const handleLogout = async () => {
-    const { error } = await signOut()
-    if (error) {
-      console.error("Error signing out:", error)
+    try {
+      const { error } = await signOut()
+      if (error) {
+        console.error("Error signing out:", error)
+        alert("Failed to log out. Please try again.")
+      } else {
+        console.log("User signed out successfully. Redirecting to login page...")
+        navigate({ to: "/login" })
+        // Fallback to ensure navigation
+        setTimeout(() => navigate({ to: "/login" }), 1000)
+      }
+    } catch (err) {
+      console.error("Unexpected error during logout:", err)
+      alert("An unexpected error occurred. Please try again.")
     }
   }
 
@@ -302,7 +464,7 @@ const PassportDashboard: React.FC = () => {
 
             {/* Welcome & Profile Section */}
             <div className="flex items-center gap-2 sm:gap-3 relative">
-              <div className="hidden xs:flex flex-col items-end">
+              <div className="flex flex-col items-end">
                 <div className="flex items-center gap-1.5 justify-end">
                   <h1 className="text-xs sm:text-sm font-bold text-gray-800">
                     {getGreeting()}, {userDisplayName}!
@@ -408,7 +570,7 @@ const PassportDashboard: React.FC = () => {
                         className="group flex items-center gap-2 sm:gap-3 w-full rounded-md px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gradient-to-r hover:from-red-50 hover:to-orange-50 hover:text-red-600 hover:shadow-sm transition-all duration-150 border border-gray-100"
                         onClick={handleLogout}
                       >
-                        <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white shadow-sm border border-gray-100 text-red-500 group-hover:text-red-600 group-hover:border-red-100 group-hover:shadow-md transition-all duration-150">
+                        <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white shadow-sm border border-gray-100 text-red-500 group-hover:text-red-600 group_hover:border-red-100 group-hover:shadow-md transition-all duration-150">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="14"
@@ -638,7 +800,7 @@ const PassportDashboard: React.FC = () => {
                   <h2 className="text-base sm:text-lg font-medium text-gray-800">Application Status</h2>
                 </div>
                 <div className="rounded-full bg-blue-100 px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-medium text-blue-700 self-start sm:self-auto">
-                  {application
+                  {application && application.status
                     ? application.status.replace("_", " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
                     : "Not Started"}
                 </div>
