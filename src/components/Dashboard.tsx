@@ -295,7 +295,7 @@ const PassportDashboard: React.FC = () => {
 
   const handleDownloadForm = (): void => {
     const link = document.createElement("a")
-    link.href = "/consent-form.pdf"
+    link.href = "/consent.pdf" // Updated to match the file you will put in public folder
     link.download = "passport-consent-form.pdf"
     link.click()
     console.log("Form downloaded")
@@ -321,7 +321,7 @@ const PassportDashboard: React.FC = () => {
 
   const handleProfileClick = (e: React.MouseEvent<HTMLAnchorElement>): void => {
     e.preventDefault()
-    console.log("Profile clicked")
+    navigate({ to: "/my-profile" })
   }
 
   // Show loading while auth is being determined
@@ -691,7 +691,7 @@ const PassportDashboard: React.FC = () => {
 
               <button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-                onClick={() => console.log("View PDF clicked")}
+                onClick={() => window.open("/passport-act.pdf", "_blank")}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 to-amber-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
                 <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 shadow-sm transition-all duration-300 group-hover:bg-amber-200 group-hover:text-amber-700 group-hover:shadow">

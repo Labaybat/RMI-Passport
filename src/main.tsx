@@ -13,6 +13,7 @@ import "./index.css"
 import { LoginPage } from "./components/LoginPage"
 import { SignUpPage } from "./components/SignUpPage"
 import PassportDashboard from "./components/Dashboard"
+import MyProfile from "./components/MyProfile"
 import { AuthProvider } from "./contexts/AuthContext"
 
 // Root layout
@@ -49,6 +50,12 @@ const dashboardRoute = createRoute({
   component: PassportDashboard,
 })
 
+const myProfileRoute = createRoute({
+  path: "/my-profile",
+  getParentRoute: () => rootRoute,
+  component: MyProfile,
+})
+
 // Router setup
 const router = createRouter({
   routeTree: rootRoute.addChildren([
@@ -56,6 +63,7 @@ const router = createRouter({
     loginRoute,
     signupRoute,
     dashboardRoute,
+    myProfileRoute,
   ]),
 })
 
