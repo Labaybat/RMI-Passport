@@ -94,17 +94,22 @@ export function SignUpPage() {
             { id: "password", label: "Password", type: "password" },
             { id: "confirmPassword", label: "Confirm Password", type: "password" }
           ].map(({ id, label, type }) => (
-            <div key={id} className="relative space-y-1">
-              <label htmlFor={id} className="block mb-1 text-sm font-medium text-gray-600">{label}</label>
+            <div key={id} className="relative">
               <input
                 type={type || "text"}
                 name={id}
                 id={id}
-                placeholder={label}
+                placeholder=" "
                 value={formData[id as keyof typeof formData]}
                 onChange={handleChange}
-                className="peer block w-full rounded-md border border-gray-300 bg-white px-4 pt-5 pb-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                className="peer block w-full rounded-md border border-gray-300 bg-white px-4 pt-5 pb-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 placeholder-transparent"
               />
+              <label
+                htmlFor={id}
+                className="absolute left-4 top-2 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-sm peer-focus:text-blue-600 bg-white px-1 pointer-events-none"
+              >
+                {label}
+              </label>
             </div>
           ))}
 
