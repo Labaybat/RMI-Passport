@@ -336,9 +336,8 @@ const PassportDashboard: React.FC = () => {
     )
   }
 
-  // This component should only render for authenticated users
-  // The App component handles redirecting non-authenticated users
-  if (!user) {
+  // Only redirect if auth is loaded and user is not authenticated
+  if (!authLoading && !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -420,11 +419,15 @@ const PassportDashboard: React.FC = () => {
 
   // Extract user data from Supabase profiles table - using first_name and last_name
   const getDisplayName = () => {
-    if (profile?.first_name && profile?.last_name) {
+    // Patch: log profile for debugging
+    console.log('Dashboard profile:', profile)
+    if (profile && typeof profile.first_name === 'string' && profile.first_name.trim() && typeof profile.last_name === 'string' && profile.last_name.trim()) {
       return `${profile.first_name} ${profile.last_name}`
-    } else if (profile?.first_name) {
+    } else if (profile && typeof profile.first_name === 'string' && profile.first_name.trim()) {
       return profile.first_name
-    } else if (profile?.full_name) {
+    } else if (profile && typeof profile.last_name === 'string' && profile.last_name.trim()) {
+      return profile.last_name
+    } else if (profile && typeof profile.full_name === 'string' && profile.full_name.trim()) {
       return profile.full_name
     } else {
       return user?.email?.split("@")[0] || "User"
@@ -432,7 +435,7 @@ const PassportDashboard: React.FC = () => {
   }
 
   const userDisplayName = getDisplayName()
-  const userEmail = profile?.email || user?.email || ""
+  const userEmail = user?.email || ""
   const applicationProgress = application?.progress || 0
   const lastUpdated = application?.updated_at
     ? new Date(application.updated_at).toLocaleDateString("en-US", {
@@ -819,6 +822,7 @@ const PassportDashboard: React.FC = () => {
                 ></div>
               </div>
 
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 text-[10px] sm:text-xs text-gray-500"></div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 text-[10px] sm:text-xs text-gray-500">
                 <div className="flex items-center gap-1.5">
                   <svg

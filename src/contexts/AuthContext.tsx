@@ -23,11 +23,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (data?.user) {
         setUser({ id: data.user.id, email: data.user.email || "" })
 
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("first_name, last_name, email")
+          .select("first_name, last_name")
           .eq("id", data.user.id)
           .single()
+
+        if (profileError) {
+          console.error("Error fetching profile:", profileError.message)
+        }
 
         setProfile(profileData || null)
       } else {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { Label } from '../components/ui/Label'
@@ -6,33 +6,51 @@ import { Button } from '../components/ui/Button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select'
 import { useToast } from '../hooks/use-toast'
 import { User, Save, Mail, Calendar, Shield } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
+import supabase from '../lib/supabase/client'
 
 interface Profile {
   first_name: string
   last_name: string
-  phone: string
-  gender: string
+  phone?: string
+  gender?: string
+  email?: string
 }
 
 export default function MyProfile() {
-  // Mock user data
+  const { user, profile: contextProfile, loading: authLoading } = useAuth()
   const [profile, setProfile] = useState<Profile>({
-    first_name: "John",
-    last_name: "Doe",
-    phone: "+6921234567",
-    gender: "male",
+    first_name: '',
+    last_name: '',
+    phone: '',
+    gender: '',
+    email: '',
   })
-
   const [saving, setSaving] = useState(false)
   const { toast } = useToast()
+  const [lastSignIn, setLastSignIn] = useState<string | null>(null)
+  const [createdAt, setCreatedAt] = useState<string | null>(null)
 
-  // Mock user account info
-  const mockUser = {
-    email: "john.doe@example.com",
-    id: "user_123456789",
-    last_sign_in_at: "2024-01-15T10:30:00Z",
-    created_at: "2023-06-01T14:20:00Z",
-  }
+  // Load profile from context or Supabase
+  useEffect(() => {
+    if (contextProfile) {
+      setProfile({
+        first_name: contextProfile.first_name || '',
+        last_name: contextProfile.last_name || '',
+        // phone and gender may not exist on contextProfile, so fallback to empty string
+        phone: '',
+        gender: '',
+        email: contextProfile.email || user?.email || '',
+      })
+    }
+    if (user) {
+      // Fetch user metadata for last sign in and created at
+      supabase.auth.getUser().then(({ data }) => {
+        setLastSignIn(data?.user?.last_sign_in_at || null)
+        setCreatedAt(data?.user?.created_at || null)
+      })
+    }
+  }, [contextProfile, user])
 
   // Handle form input changes
   const handleInputChange = (field: keyof Profile, value: string) => {
@@ -42,21 +60,42 @@ export default function MyProfile() {
     }))
   }
 
-  // Handle form submission (mock save)
+  // Save changes to Supabase
   const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault()
-
+    if (!user) return
     setSaving(true)
-
-    // Simulate API call delay
-    setTimeout(() => {
-      setSaving(false)
-      toast({
-        title: "Success",
-        description: "Profile updated successfully!",
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        phone: profile.phone,
+        gender: profile.gender,
       })
-      console.log("Profile data saved:", profile)
-    }, 1500)
+      .eq('id', user.id)
+    setSaving(false)
+    if (error) {
+      toast({ title: 'Error', description: error.message })
+    } else {
+      toast({ title: 'Success', description: 'Profile updated successfully!' })
+    }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">Loading profile...</div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">You must be logged in to view your profile.</div>
+      </div>
+    )
   }
 
   return (
@@ -105,7 +144,7 @@ export default function MyProfile() {
                           id="first_name"
                           type="text"
                           value={profile.first_name}
-                          onChange={(e) => handleInputChange("first_name", e.target.value)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('first_name', e.target.value)}
                           placeholder="Enter your first name"
                           className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12"
                         />
@@ -118,7 +157,7 @@ export default function MyProfile() {
                           id="last_name"
                           type="text"
                           value={profile.last_name}
-                          onChange={(e) => handleInputChange("last_name", e.target.value)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('last_name', e.target.value)}
                           placeholder="Enter your last name"
                           className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12"
                         />
@@ -134,7 +173,7 @@ export default function MyProfile() {
                         id="phone"
                         type="tel"
                         value={profile.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('phone', e.target.value)}
                         placeholder="Enter your phone number"
                         className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12"
                       />
@@ -146,17 +185,17 @@ export default function MyProfile() {
                       <Label htmlFor="gender" className="text-sm font-semibold text-gray-700">
                         Gender
                       </Label>
-                      <Select value={profile.gender} onValueChange={(value) => handleInputChange("gender", value)}>
-    <SelectTrigger id="gender" className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12">
-      <SelectValue placeholder="Select your gender" className="text-gray-900" />
-    </SelectTrigger>
-    <SelectContent className="rounded-lg">
-      <SelectItem value="male">Male</SelectItem>
-      <SelectItem value="female">Female</SelectItem>
-      <SelectItem value="other">Other</SelectItem>
-      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-    </SelectContent>
-  </Select>
+                      <Select value={profile.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+                        <SelectTrigger id="gender" className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12">
+                          <SelectValue placeholder="Select your gender" className="text-gray-900" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-lg">
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     {/* Save Button */}
@@ -182,14 +221,18 @@ export default function MyProfile() {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() =>
-                            setProfile({
-                              first_name: "John",
-                              last_name: "Doe",
-                              phone: "+6921234567",
-                              gender: "male",
-                            })
-                          }
+                          onClick={() => {
+                            if (contextProfile) {
+                              setProfile({
+                                first_name: contextProfile.first_name || '',
+                                last_name: contextProfile.last_name || '',
+                                // phone and gender may not exist on contextProfile, so fallback to empty string
+                                phone: '',
+                                gender: '',
+                                email: contextProfile.email || user?.email || '',
+                              })
+                            }
+                          }}
                           className="flex-1 sm:flex-none rounded-lg h-12 px-8 font-semibold border-gray-300 hover:bg-gray-50 transition-all duration-200"
                         >
                           Reset to Default
@@ -220,7 +263,7 @@ export default function MyProfile() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</p>
-                      <p className="text-sm text-gray-900 truncate font-medium">{mockUser.email}</p>
+                      <p className="text-sm text-gray-900 truncate font-medium">{profile.email}</p>
                     </div>
                   </div>
 
@@ -230,7 +273,7 @@ export default function MyProfile() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">User ID</p>
-                      <p className="text-sm text-gray-900 font-mono font-medium">{mockUser.id}</p>
+                      <p className="text-sm text-gray-900 font-mono font-medium">{user.id}</p>
                     </div>
                   </div>
 
@@ -241,11 +284,7 @@ export default function MyProfile() {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Last Sign In</p>
                       <p className="text-sm text-gray-900 font-medium">
-                        {new Date(mockUser.last_sign_in_at).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                        {lastSignIn ? new Date(lastSignIn).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -257,11 +296,7 @@ export default function MyProfile() {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Member Since</p>
                       <p className="text-sm text-gray-900 font-medium">
-                        {new Date(mockUser.created_at).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                        {createdAt ? new Date(createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -288,7 +323,7 @@ export default function MyProfile() {
                     <div className="flex justify-between items-center p-3 bg-gray-50/50 rounded-lg">
                       <span className="text-sm text-gray-600 font-medium">Gender</span>
                       <span className="text-sm font-semibold text-gray-900 capitalize">
-                        {profile.gender.replace("_", " ")}
+                        {profile.gender?.replace('_', ' ')}
                       </span>
                     </div>
                     <div className="pt-4 border-t border-gray-200">
