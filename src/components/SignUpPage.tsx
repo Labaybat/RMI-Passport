@@ -73,7 +73,27 @@ export function SignUpPage() {
         toast.error(error.message)
       }
     } else {
-      toast.success("Signup successful! Please check your email to confirm your account.", { duration: 5000 })
+      // Profile update after successful signup
+      const user = data?.user;
+      if (user && user.id) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            date_of_birth: formData.dob,
+            gender: formData.gender,
+            phone: formData.phone
+          })
+          .eq("id", user.id);
+        if (profileError) {
+          toast.error("Signup succeeded, but failed to update profile: " + profileError.message);
+        } else {
+          toast.success("Signup and profile update successful! Please check your email to confirm your account.", { duration: 5000 });
+        }
+      } else {
+        toast.success("Signup successful! Please check your email to confirm your account.", { duration: 5000 });
+      }
       setLoading(false)
       navigate({ to: "/login" })
     }

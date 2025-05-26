@@ -40,36 +40,51 @@ export function LoginPage() {
         return
       }
 
-      toast.success("Login successful! Redirecting...", { duration: 5000 })
-
-      const user = data.user
-      if (user) {
-        // Check if profile exists
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-
-        if ((!profile || profile.length === 0) && !profileError) {
-          const meta = user.user_metadata || {}
-          const { error: insertError } = await supabase.from("profiles").insert({
-            id: user.id,
-            first_name: meta.first_name || "",
-            last_name: meta.last_name || "",
-            phone: meta.phone || "",
-            gender: meta.gender || "",
-            date_of_birth: meta.dob || ""
-          })
-
-          if (insertError) {
-            toast.error("Could not create user profile. Please contact support.")
-            console.error("Profile insert failed:", insertError)
-          }
+      // Immediately fetch session to confirm it's active
+      let sessionData = null;
+      for (let i = 0; i < 10; i++) { // Try for up to ~2 seconds
+        const { data: sessionResult } = await supabase.auth.getSession();
+        if (sessionResult && sessionResult.session && sessionResult.session.user) {
+          sessionData = sessionResult;
+          break;
+        }
+        await new Promise(res => setTimeout(res, 200));
+      }
+      if (!sessionData || !sessionData.session || !sessionData.session.user) {
+        toast.error("Login failed: could not establish session.");
+        setLoading(false);
+        return;
+      }
+      const user = sessionData.session.user;
+      // Check if profile exists
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+      let profileInserted = false;
+      if ((!profile || profile.length === 0) && !profileError) {
+        const meta = user.user_metadata || {};
+        const { error: insertError } = await supabase.from("profiles").insert({
+          id: user.id,
+          first_name: meta.first_name || "",
+          last_name: meta.last_name || "",
+          phone: meta.phone || "",
+          gender: meta.gender || "",
+          date_of_birth: meta.dob || meta.date_of_birth || ""
+        });
+        if (insertError) {
+          toast.error("Could not create user profile. Please contact support.");
+          console.error("Profile insert failed:", insertError);
+        } else {
+          profileInserted = true;
         }
       }
-
-      setLoading(false)
-      navigateToDashboard() // or to: "/home" depending on route
+      toast.success("Login successful! Redirecting...", { duration: 5000 });
+      setLoading(false);
+      // Wait a short delay to ensure context is ready (especially on mobile)
+      setTimeout(() => {
+        navigateToDashboard();
+      }, profileInserted ? 600 : 300);
     } catch (error) {
       toast.error("An unexpected error occurred.")
     } finally {

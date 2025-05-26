@@ -81,7 +81,16 @@ const PassportDashboard: React.FC = () => {
   useEffect(() => {
     const fetchSessionAndProfile = async () => {
       setLoading(true);
-      const { data: sessionData } = await supabaseClient.auth.getSession();
+      let sessionData = null;
+      // Wait for a valid session
+      for (let i = 0; i < 10; i++) { // Try for up to ~2 seconds
+        const { data } = await supabaseClient.auth.getSession();
+        if (data && data.session && data.session.user) {
+          sessionData = data;
+          break;
+        }
+        await new Promise(res => setTimeout(res, 200));
+      }
       if (!sessionData || !sessionData.session || !sessionData.session.user) {
         setSession(null);
         setProfile(null);
@@ -90,11 +99,12 @@ const PassportDashboard: React.FC = () => {
         return;
       }
       setSession(sessionData.session);
+      console.log("[Dashboard] Session:", sessionData.session);
       // Fetch profile from Supabase
       const userId = sessionData.session.user.id;
       const { data: profileData, error } = await supabaseClient
         .from("profiles")
-        .select("first_name, last_name, phone")
+        .select("*")
         .eq("id", userId)
         .single();
       if (error || !profileData) {
@@ -104,6 +114,7 @@ const PassportDashboard: React.FC = () => {
         return;
       }
       setProfile(profileData);
+      console.log("[Dashboard] Profile:", profileData);
       setLoading(false);
     };
     fetchSessionAndProfile();
@@ -186,6 +197,37 @@ const PassportDashboard: React.FC = () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
   }, [])
+
+  // Update missing profile fields from user_metadata after login
+  useEffect(() => {
+    const updateProfileIfNeeded = async () => {
+      if (!session || !session.user || !profile) return;
+      // Check if any required field is missing or empty
+      const missingFields = [
+        profile.first_name,
+        profile.last_name,
+        profile.date_of_birth,
+        profile.gender,
+        profile.phone
+      ].some(f => f === null || f === undefined || f === "");
+      if (!missingFields) return; // All fields present, skip update
+      const meta = session.user.user_metadata || {};
+      const updateData: any = {};
+      if (!profile.first_name && meta.first_name) updateData.first_name = meta.first_name;
+      if (!profile.last_name && meta.last_name) updateData.last_name = meta.last_name;
+      if (!profile.date_of_birth && (meta.date_of_birth || meta.dob)) updateData.date_of_birth = meta.date_of_birth || meta.dob;
+      if (!profile.gender && meta.gender) updateData.gender = meta.gender;
+      if (!profile.phone && meta.phone) updateData.phone = meta.phone;
+      if (Object.keys(updateData).length === 0) return;
+      await supabase
+        .from("profiles")
+        .update(updateData)
+        .eq("id", session.user.id);
+    };
+    updateProfileIfNeeded();
+    // Only run when session.user.id or profile changes
+    // eslint-disable-next-line
+  }, [session?.user?.id, profile]);
 
   // Utility: Validate UUID format
   const isValidUUID = (id: string) => /^[0-9a-fA-F-]{36}$/.test(id)
@@ -354,7 +396,7 @@ const PassportDashboard: React.FC = () => {
   }
 
   // Show loading while session or profile is being determined
-  if (loading) {
+  if (loading || !session || !profile) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -365,22 +407,23 @@ const PassportDashboard: React.FC = () => {
     );
   }
 
-  // Only render dashboard if session and profile are valid
-  if (!session || !profile) {
+  // Only block dashboard if session or profile is null (not based on profile fields)
+  if (session === null || profile === null) {
     return null;
   }
 
-  // Extract user data from Supabase profiles table - using first_name and last_name
+  // Smart display name logic: fallback to 'User' if first/last name missing or empty
   const getDisplayName = () => {
-    if (profile && typeof profile.first_name === 'string' && profile.first_name.trim() && typeof profile.last_name === 'string' && profile.last_name.trim()) {
-      return `${profile.first_name} ${profile.last_name}`;
-    } else if (profile && typeof profile.first_name === 'string' && profile.first_name.trim()) {
-      return profile.first_name;
-    } else if (profile && typeof profile.last_name === 'string' && profile.last_name.trim()) {
-      return profile.last_name;
-    } else {
-      return profile?.email?.split("@")[0] || "User";
+    const first = typeof profile.first_name === "string" ? profile.first_name.trim() : "";
+    const last = typeof profile.last_name === "string" ? profile.last_name.trim() : "";
+    if (first && last) return `${first} ${last}`;
+    if (first) return first;
+    if (last) return last;
+    // fallback: try email, else 'User'
+    if (typeof profile.email === "string" && profile.email.includes("@")) {
+      return profile.email.split("@")[0];
     }
+    return "User";
   };
   const userDisplayName = getDisplayName();
   const userEmail = profile?.email || ""
@@ -617,7 +660,7 @@ const PassportDashboard: React.FC = () => {
                 onClick={() => console.log("Dashboard clicked")}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 to-green-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
-                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 shadow-sm transition-all duration-300 group-hover:bg-green-200 group-hover:text-green-700 group-hover:shadow">
+                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 shadow-sm transition-all duration-300 group-hover:bg-green-200 group_hover:text-green-700 group-hover:shadow">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -703,7 +746,7 @@ const PassportDashboard: React.FC = () => {
                 onClick={() => console.log("Photo Guidelines clicked")}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-rose-500/0 to-rose-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
-                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm transition-all duration-300 group-hover:bg-rose-200 group-hover:text-rose-700 group-hover:shadow">
+                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm transition-all duration-300 group_hover:bg-rose-200 group-hover:text-rose-700 group-hover:shadow">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
