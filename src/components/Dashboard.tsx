@@ -4,7 +4,10 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import supabase from "../lib/supabase/client"
+import { createClient } from '@supabase/supabase-js'
 import { useNavigate } from "@tanstack/react-router"
+
+const supabaseClient = supabase // already imported
 
 // Define the PassportApplication type based on the Supabase table
 // (see attached schema)
@@ -64,31 +67,57 @@ type PassportApplication = {
 }
 
 const PassportDashboard: React.FC = () => {
-  const { user, profile, signOut, isConfigured, loading: authLoading } = useAuth()
-  const [application, setApplication] = useState<PassportApplication | null>(null)
-  const [isPopupVisible, setIsPopupVisible] = useState<boolean>(false)
-  const [loading, setLoading] = useState(true)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const popupRef = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
+  const { signOut, isConfigured } = useAuth(); // Only use signOut and isConfigured from context
+  const [application, setApplication] = useState<PassportApplication | null>(null);
+  const [isPopupVisible, setIsPopupVisible] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
-  // Redirect to login if not authenticated
+  // Explicitly fetch session and profile
   useEffect(() => {
-    if (!authLoading && !user) {
-      console.log("User not authenticated, should redirect to login")
-      // In a real app, you would redirect here
-      // For now, we'll let the App component handle this
-    }
-  }, [user, authLoading])
+    const fetchSessionAndProfile = async () => {
+      setLoading(true);
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      if (!sessionData || !sessionData.session || !sessionData.session.user) {
+        setSession(null);
+        setProfile(null);
+        setLoading(false);
+        navigate({ to: "/login" });
+        return;
+      }
+      setSession(sessionData.session);
+      // Fetch profile from Supabase
+      const userId = sessionData.session.user.id;
+      const { data: profileData, error } = await supabaseClient
+        .from("profiles")
+        .select("first_name, last_name, phone")
+        .eq("id", userId)
+        .single();
+      if (error || !profileData) {
+        setProfile(null);
+        setLoading(false);
+        navigate({ to: "/login" });
+        return;
+      }
+      setProfile(profileData);
+      setLoading(false);
+    };
+    fetchSessionAndProfile();
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
-    if (user && isConfigured) {
+    if (session && isConfigured) {
       fetchApplication()
-    } else if (user && !isConfigured) {
+    } else if (session && !isConfigured) {
       // Create mock application for development
       setApplication({
         id: "mock-app-id",
-        user_id: user.id,
+        user_id: session.user.id,
         application_type: null,
         surname: null,
         first_middle_names: null,
@@ -142,7 +171,7 @@ const PassportDashboard: React.FC = () => {
       })
       setLoading(false)
     }
-  }, [user, isConfigured])
+  }, [session, isConfigured])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -162,9 +191,9 @@ const PassportDashboard: React.FC = () => {
   const isValidUUID = (id: string) => /^[0-9a-fA-F-]{36}$/.test(id)
 
   const fetchApplication = async () => {
-    if (!user || !isConfigured) return
-    console.log("[fetchApplication] Current user.id:", user.id, "Type:", typeof user.id)
-    if (!isValidUUID(user.id)) {
+    if (!session || !isConfigured) return
+    console.log("[fetchApplication] Current user.id:", session.user.id, "Type:", typeof session.user.id)
+    if (!isValidUUID(session.user.id)) {
       alert("Invalid user ID format. Cannot fetch application.")
       setLoading(false)
       return
@@ -173,7 +202,7 @@ const PassportDashboard: React.FC = () => {
       const { data, error } = await supabase
         .from("passport_applications")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", session.user.id)
         .order("updated_at", { ascending: false })
         .limit(1)
       if (error) {
@@ -198,13 +227,13 @@ const PassportDashboard: React.FC = () => {
   }
 
   const handleStartApplication = async () => {
-    if (!user) return
+    if (!session) return
 
     if (!isConfigured) {
       // Mock application creation for development
       const mockApp: PassportApplication = {
         id: "mock-app-" + Date.now(),
-        user_id: user.id,
+        user_id: session.user.id,
         application_type: null,
         surname: null,
         first_middle_names: null,
@@ -261,8 +290,8 @@ const PassportDashboard: React.FC = () => {
       return
     }
 
-    console.log("[handleStartApplication] Current user.id:", user.id, "Type:", typeof user.id)
-    if (!isValidUUID(user.id)) {
+    console.log("[handleStartApplication] Current user.id:", session.user.id, "Type:", typeof session.user.id)
+    if (!isValidUUID(session.user.id)) {
       alert("Invalid user ID format. Cannot create application.")
       return
     }
@@ -271,7 +300,7 @@ const PassportDashboard: React.FC = () => {
         .from("passport_applications")
         .insert([
           {
-            user_id: user.id,
+            user_id: session.user.id,
             status: "draft",
             progress: 10,
           },
@@ -324,8 +353,8 @@ const PassportDashboard: React.FC = () => {
     navigate({ to: "/my-profile" })
   }
 
-  // Show loading while auth is being determined
-  if (authLoading || loading) {
+  // Show loading while session or profile is being determined
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -333,105 +362,28 @@ const PassportDashboard: React.FC = () => {
           <p className="text-gray-600">Loading your dashboard...</p>
         </div>
       </div>
-    )
+    );
   }
 
-  // Only redirect if auth is loaded and user is not authenticated
-  if (!authLoading && !user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-red-50 to-orange-50 shadow-sm inline-block">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-red-600"
-            >
-              <path d="M9 12l2 2 4-4"></path>
-              <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.5 0 4.74 1.02 6.36 2.64"></path>
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold text-gray-800">Authentication Required</h2>
-          <p className="text-gray-600">Please log in to access your dashboard.</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Add a configuration status indicator
-  if (!isConfigured) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-2 sm:p-4 md:p-6 flex flex-col items-center justify-center">
-        <div className="w-full max-w-3xl p-4 sm:p-6 md:p-8 shadow-2xl bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border-0">
-          <div className="text-center space-y-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 shadow-sm inline-block">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-amber-600"
-              >
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-gray-800">Development Mode</h2>
-            <p className="text-gray-600 max-w-md mx-auto">
-              Supabase environment variables are not configured. The app is running in demo mode with mock data.
-            </p>
-            <div className="bg-gray-50 rounded-lg p-4 text-left text-sm">
-              <p className="font-medium text-gray-700 mb-2">To connect to Supabase:</p>
-              <ol className="list-decimal list-inside space-y-1 text-gray-600">
-                <li>
-                  Add <code className="bg-gray-200 px-1 rounded">VITE_SUPABASE_URL</code> to your .env file
-                </li>
-                <li>
-                  Add <code className="bg-gray-200 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> to your .env file
-                </li>
-                <li>Restart your development server</li>
-              </ol>
-            </div>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Continue with Demo
-            </button>
-          </div>
-        </div>
-      </div>
-    )
+  // Only render dashboard if session and profile are valid
+  if (!session || !profile) {
+    return null;
   }
 
   // Extract user data from Supabase profiles table - using first_name and last_name
   const getDisplayName = () => {
     if (profile && typeof profile.first_name === 'string' && profile.first_name.trim() && typeof profile.last_name === 'string' && profile.last_name.trim()) {
-      return `${profile.first_name} ${profile.last_name}`
+      return `${profile.first_name} ${profile.last_name}`;
     } else if (profile && typeof profile.first_name === 'string' && profile.first_name.trim()) {
-      return profile.first_name
+      return profile.first_name;
     } else if (profile && typeof profile.last_name === 'string' && profile.last_name.trim()) {
-      return profile.last_name
+      return profile.last_name;
     } else {
-      return user?.email?.split("@")[0] || "User"
+      return profile?.email?.split("@")[0] || "User";
     }
-  }
-
-  const userDisplayName = getDisplayName()
-  const userEmail = user?.email || ""
+  };
+  const userDisplayName = getDisplayName();
+  const userEmail = profile?.email || ""
   const applicationProgress = application?.progress || 0
   const lastUpdated = application?.updated_at
     ? new Date(application.updated_at).toLocaleDateString("en-US", {
