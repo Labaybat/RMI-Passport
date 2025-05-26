@@ -60,13 +60,19 @@ export function LoginPage() {
       // Step 2: Verify session is active
       console.log("[Login] Verifying session...")
       let verifiedSession = null
-      for (let i = 0; i < 5; i++) {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user?.id === signInData.user.id) {
-          verifiedSession = session
+      for (let i = 0; i < 10; i++) { // Increase retries for mobile reliability
+        const { data: sessionResult, error: sessionError } = await supabase.auth.getSession()
+        if (sessionError) {
+          console.error("[Login] Session verification error:", sessionError)
+          toast.error("Session verification failed. Please try again.")
+          setLoading(false)
+          return
+        }
+        if (sessionResult?.session?.user?.id === signInData.user.id) {
+          verifiedSession = sessionResult.session
           break
         }
-        await new Promise(res => setTimeout(res, 400))
+        await new Promise(res => setTimeout(res, 500)) // Slightly longer delay for mobile
       }
 
       if (!verifiedSession) {
@@ -75,6 +81,8 @@ export function LoginPage() {
         setLoading(false)
         return
       }
+
+      console.log("[Login] Session verified:", verifiedSession)
 
       // Step 3: Ensure profile exists
       console.log("[Login] Checking profile...")
