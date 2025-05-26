@@ -24,73 +24,125 @@ export function LoginPage() {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
-
-    if (!email.trim() || !password.trim()) {
-      setLoading(false)
-      toast.error("Please enter both email and password.")
-      return
-    }
+    console.log("[Login] Starting login process...")
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      // Clear any existing session first
+      await supabase.auth.signOut()
+      
+      if (!email.trim() || !password.trim()) {
+        setLoading(false)
+        toast.error("Please enter both email and password.")
+        return
+      }
 
-      if (error) {
-        toast.error(error.message)
+      // Step 1: Sign in
+      console.log("[Login] Attempting sign in...")
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      })
+
+      if (signInError) {
+        console.error("[Login] Sign in error:", signInError)
+        toast.error(signInError.message)
         setLoading(false)
         return
       }
 
-      // Immediately fetch session to confirm it's active
-      let sessionData = null;
-      for (let i = 0; i < 10; i++) { // Try for up to ~2 seconds
-        const { data: sessionResult } = await supabase.auth.getSession();
-        if (sessionResult && sessionResult.session && sessionResult.session.user) {
-          sessionData = sessionResult;
-          break;
+      if (!signInData?.user) {
+        console.error("[Login] No user data after sign in")
+        toast.error("Login failed: no user data")
+        setLoading(false)
+        return
+      }
+
+      // Step 2: Verify session is active
+      console.log("[Login] Verifying session...")
+      let verifiedSession = null
+      for (let i = 0; i < 5; i++) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user?.id === signInData.user.id) {
+          verifiedSession = session
+          break
         }
-        await new Promise(res => setTimeout(res, 200));
+        await new Promise(res => setTimeout(res, 400))
       }
-      if (!sessionData || !sessionData.session || !sessionData.session.user) {
-        toast.error("Login failed: could not establish session.");
-        setLoading(false);
-        return;
+
+      if (!verifiedSession) {
+        console.error("[Login] Could not verify session")
+        toast.error("Login failed: session verification error")
+        setLoading(false)
+        return
       }
-      const user = sessionData.session.user;
-      // Check if profile exists
+
+      // Step 3: Ensure profile exists
+      console.log("[Login] Checking profile...")
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", user.id)
-      let profileInserted = false;
-      if ((!profile || profile.length === 0) && !profileError) {
-        const meta = user.user_metadata || {};
-        const { error: insertError } = await supabase.from("profiles").insert({
-          id: user.id,
-          first_name: meta.first_name || "",
-          last_name: meta.last_name || "",
-          phone: meta.phone || "",
-          gender: meta.gender || "",
-          date_of_birth: meta.dob || meta.date_of_birth || ""
-        });
+        .eq("id", signInData.user.id)
+        .single()
+
+      if (profileError && profileError.code !== "PGRST116") { // PGRST116 = not found
+        console.error("[Login] Profile check error:", profileError)
+        toast.error("Error checking user profile")
+        setLoading(false)
+        return
+      }
+
+      if (!profile) {
+        console.log("[Login] Creating new profile...")
+        const meta = signInData.user.user_metadata || {}
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({
+            id: signInData.user.id,
+            email: signInData.user.email,
+            first_name: meta.first_name || "",
+            last_name: meta.last_name || "",
+            phone: meta.phone || "",
+            gender: meta.gender || "",
+            date_of_birth: meta.dob || meta.date_of_birth || ""
+          })
+
         if (insertError) {
-          toast.error("Could not create user profile. Please contact support.");
-          console.error("Profile insert failed:", insertError);
-        } else {
-          profileInserted = true;
+          console.error("[Login] Profile creation error:", insertError)
+          toast.error("Could not create user profile")
+          setLoading(false)
+          return
         }
       }
-      toast.success("Login successful! Redirecting...", { duration: 5000 });
-      setLoading(false);
-      // Wait a short delay to ensure context is ready (especially on mobile)
-      setTimeout(() => {
-        navigateToDashboard();
-      }, profileInserted ? 600 : 300);
+
+      // Success! Set states and redirect
+      console.log("[Login] Success, preparing to redirect...")
+      toast.success("Login successful! Redirecting...")
+      
+      // Ensure loading is set to false before redirect
+      setLoading(false)
+      
+      // Add a short delay before redirect to ensure UI updates
+      await new Promise(res => setTimeout(res, 500))
+      console.log("[Login] Redirecting to dashboard...")
+      navigateToDashboard()
+
     } catch (error) {
-      toast.error("An unexpected error occurred.")
-    } finally {
+      console.error("[Login] Unexpected error:", error)
+      toast.error("An unexpected error occurred")
       setLoading(false)
     }
   }
+
+  // Show loading state in button
+  const buttonText = loading ? (
+    <>
+      <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+      <span>Logging in...</span>
+    </>
+  ) : "Login"
 
   return (
     <div className="min-h-[100dvh] min-h-screen w-full overflow-y-auto flex items-center justify-center bg-gradient-to-br from-blue-50 to-white text-gray-800 px-4 py-10">
@@ -140,17 +192,7 @@ export function LoginPage() {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center justify-center gap-2"
           >
-            {loading ? (
-              <>
-                <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Logging in...
-              </>
-            ) : (
-              "Login"
-            )}
+            {buttonText}
           </button>
 
           <p className="text-center text-sm text-gray-500">
