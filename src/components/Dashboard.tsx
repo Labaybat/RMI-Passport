@@ -419,16 +419,12 @@ const PassportDashboard: React.FC = () => {
 
   // Extract user data from Supabase profiles table - using first_name and last_name
   const getDisplayName = () => {
-    // Patch: log profile for debugging
-    console.log('Dashboard profile:', profile)
     if (profile && typeof profile.first_name === 'string' && profile.first_name.trim() && typeof profile.last_name === 'string' && profile.last_name.trim()) {
       return `${profile.first_name} ${profile.last_name}`
     } else if (profile && typeof profile.first_name === 'string' && profile.first_name.trim()) {
       return profile.first_name
     } else if (profile && typeof profile.last_name === 'string' && profile.last_name.trim()) {
       return profile.last_name
-    } else if (profile && typeof profile.full_name === 'string' && profile.full_name.trim()) {
-      return profile.full_name
     } else {
       return user?.email?.split("@")[0] || "User"
     }

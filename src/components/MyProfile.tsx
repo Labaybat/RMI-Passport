@@ -8,53 +8,105 @@ import { useToast } from '../hooks/use-toast'
 import { User, Save, Mail, Calendar, Shield } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import supabase from '../lib/supabase/client'
+import { useNavigate } from '@tanstack/react-router'
 
 interface Profile {
   first_name: string
   last_name: string
   phone?: string
   gender?: string
+  date_of_birth?: string
   email?: string
+  updated_at?: string
 }
 
 export default function MyProfile() {
-  const { user, profile: contextProfile, loading: authLoading } = useAuth()
+  const { user, loading: authLoading } = useAuth()
+  const navigate = useNavigate()
+  // profile: last saved data from Supabase (for summary)
   const [profile, setProfile] = useState<Profile>({
     first_name: '',
     last_name: '',
     phone: '',
     gender: '',
+    date_of_birth: '',
     email: '',
+    updated_at: '',
+  })
+  // formProfile: local form state (for editing)
+  const [formProfile, setFormProfile] = useState<Profile>({
+    first_name: '',
+    last_name: '',
+    phone: '',
+    gender: '',
+    date_of_birth: '',
+    email: '',
+    updated_at: '',
   })
   const [saving, setSaving] = useState(false)
   const { toast } = useToast()
   const [lastSignIn, setLastSignIn] = useState<string | null>(null)
   const [createdAt, setCreatedAt] = useState<string | null>(null)
 
-  // Load profile from context or Supabase
+  // Fetch full profile from Supabase
   useEffect(() => {
-    if (contextProfile) {
-      setProfile({
-        first_name: contextProfile.first_name || '',
-        last_name: contextProfile.last_name || '',
-        // phone and gender may not exist on contextProfile, so fallback to empty string
-        phone: '',
-        gender: '',
-        email: contextProfile.email || user?.email || '',
-      })
+    const fetchProfile = async () => {
+      if (!user) return
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, phone, gender, date_of_birth, updated_at')
+        .eq('id', user.id)
+        .single()
+      if (data) {
+        // Ensure all fields are strings for controlled inputs
+        const loadedProfile = {
+          first_name: data.first_name ?? '',
+          last_name: data.last_name ?? '',
+          phone: data.phone ?? '',
+          gender: data.gender ?? '',
+          date_of_birth: data.date_of_birth ?? '',
+          updated_at: data.updated_at ?? '',
+          email: user.email || '',
+        }
+        setProfile(loadedProfile)
+        setFormProfile(loadedProfile)
+      } else {
+        // If no profile exists, clear both states
+        setProfile({
+          first_name: '',
+          last_name: '',
+          phone: '',
+          gender: '',
+          date_of_birth: '',
+          updated_at: '',
+          email: user.email || '',
+        })
+        setFormProfile({
+          first_name: '',
+          last_name: '',
+          phone: '',
+          gender: '',
+          date_of_birth: '',
+          updated_at: '',
+          email: user.email || '',
+        })
+      }
+      if (error) {
+        toast({ title: 'Error', description: error.message })
+      }
     }
+    fetchProfile()
     if (user) {
-      // Fetch user metadata for last sign in and created at
       supabase.auth.getUser().then(({ data }) => {
         setLastSignIn(data?.user?.last_sign_in_at || null)
         setCreatedAt(data?.user?.created_at || null)
       })
     }
-  }, [contextProfile, user])
+  }, [user])
 
-  // Handle form input changes
+  // Handle form input changes (only updates formProfile)
   const handleInputChange = (field: keyof Profile, value: string) => {
-    setProfile((prev) => ({
+    setFormProfile((prev) => ({
       ...prev,
       [field]: value,
     }))
@@ -65,20 +117,43 @@ export default function MyProfile() {
     e.preventDefault()
     if (!user) return
     setSaving(true)
+    // Only update fields that are strings or null
+    const updatePayload = {
+      first_name: formProfile.first_name || null,
+      last_name: formProfile.last_name || null,
+      phone: formProfile.phone || null,
+      gender: formProfile.gender || null,
+      date_of_birth: formProfile.date_of_birth || null,
+      updated_at: new Date().toISOString(), // Force update the updated_at field
+    }
     const { error } = await supabase
       .from('profiles')
-      .update({
-        first_name: profile.first_name,
-        last_name: profile.last_name,
-        phone: profile.phone,
-        gender: profile.gender,
-      })
+      .update(updatePayload)
       .eq('id', user.id)
     setSaving(false)
     if (error) {
       toast({ title: 'Error', description: error.message })
     } else {
       toast({ title: 'Success', description: 'Profile updated successfully!' })
+      // Refetch profile to get updated_at and update both states
+      const { data } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, phone, gender, date_of_birth, updated_at')
+        .eq('id', user.id)
+        .single()
+      if (data) {
+        const loadedProfile = {
+          first_name: data.first_name ?? '',
+          last_name: data.last_name ?? '',
+          phone: data.phone ?? '',
+          gender: data.gender ?? '',
+          date_of_birth: data.date_of_birth ?? '',
+          updated_at: data.updated_at ?? '',
+          email: user.email || '',
+        }
+        setProfile(loadedProfile)
+        setFormProfile(loadedProfile)
+      }
     }
   }
 
@@ -143,10 +218,10 @@ export default function MyProfile() {
                         <Input
                           id="first_name"
                           type="text"
-                          value={profile.first_name}
+                          value={formProfile.first_name}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('first_name', e.target.value)}
                           placeholder="Enter your first name"
-                          className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12"
+                          className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12 text-gray-900 placeholder-gray-400 bg-white"
                         />
                       </div>
                       <div className="space-y-3">
@@ -156,10 +231,10 @@ export default function MyProfile() {
                         <Input
                           id="last_name"
                           type="text"
-                          value={profile.last_name}
+                          value={formProfile.last_name}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('last_name', e.target.value)}
                           placeholder="Enter your last name"
-                          className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12"
+                          className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12 text-gray-900 placeholder-gray-400 bg-white"
                         />
                       </div>
                     </div>
@@ -172,12 +247,27 @@ export default function MyProfile() {
                       <Input
                         id="phone"
                         type="tel"
-                        value={profile.phone}
+                        value={formProfile.phone}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('phone', e.target.value)}
                         placeholder="Enter your phone number"
-                        className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12"
+                        className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12 text-gray-900 placeholder-gray-400 bg-white"
                       />
                       <p className="text-xs text-gray-500 ml-1">Include country code (e.g., +1, +44, +69)</p>
+                    </div>
+
+                    {/* Date of Birth Field */}
+                    <div className="space-y-3">
+                      <Label htmlFor="date_of_birth" className="text-sm font-semibold text-gray-700">
+                        Date of Birth
+                      </Label>
+                      <Input
+                        id="date_of_birth"
+                        type="date"
+                        value={formProfile.date_of_birth || ''}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('date_of_birth', e.target.value)}
+                        placeholder="Enter your date of birth"
+                        className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12 text-gray-900 placeholder-gray-400 bg-white"
+                      />
                     </div>
 
                     {/* Gender Field */}
@@ -185,8 +275,8 @@ export default function MyProfile() {
                       <Label htmlFor="gender" className="text-sm font-semibold text-gray-700">
                         Gender
                       </Label>
-                      <Select value={profile.gender} onValueChange={(value) => handleInputChange('gender', value)}>
-                        <SelectTrigger id="gender" className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12">
+                      <Select value={formProfile.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+                        <SelectTrigger id="gender" className="w-full rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 h-12 text-gray-900 bg-white">
                           <SelectValue placeholder="Select your gender" className="text-gray-900" />
                         </SelectTrigger>
                         <SelectContent className="rounded-lg">
@@ -221,21 +311,10 @@ export default function MyProfile() {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => {
-                            if (contextProfile) {
-                              setProfile({
-                                first_name: contextProfile.first_name || '',
-                                last_name: contextProfile.last_name || '',
-                                // phone and gender may not exist on contextProfile, so fallback to empty string
-                                phone: '',
-                                gender: '',
-                                email: contextProfile.email || user?.email || '',
-                              })
-                            }
-                          }}
+                          onClick={() => navigate({ to: '/dashboard' })}
                           className="flex-1 sm:flex-none rounded-lg h-12 px-8 font-semibold border-gray-300 hover:bg-gray-50 transition-all duration-200"
                         >
-                          Reset to Default
+                          Dashboard
                         </Button>
                       </div>
                     </div>
@@ -300,6 +379,18 @@ export default function MyProfile() {
                       </p>
                     </div>
                   </div>
+
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-lg border border-gray-100">
+                    <div className="p-2 bg-gray-200 rounded-lg">
+                      <Calendar className="h-4 w-4 text-gray-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Profile Last Updated</p>
+                      <p className="text-sm text-gray-900 font-medium">
+                        {profile.updated_at ? new Date(profile.updated_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -325,6 +416,10 @@ export default function MyProfile() {
                       <span className="text-sm font-semibold text-gray-900 capitalize">
                         {profile.gender?.replace('_', ' ')}
                       </span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-gray-50/50 rounded-lg">
+                      <span className="text-sm text-gray-600 font-medium">Date of Birth</span>
+                      <span className="text-sm font-semibold text-gray-900">{profile.date_of_birth}</span>
                     </div>
                     <div className="pt-4 border-t border-gray-200">
                       <div className="flex items-center justify-center p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
