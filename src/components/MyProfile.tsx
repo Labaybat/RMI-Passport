@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { Label } from '../components/ui/Label'
-import { Button } from '../components/ui/Button'
+import Button from '../components/ui/Button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select'
 import { useToast } from '../hooks/use-toast'
 import { User, Save, Mail, Calendar, Shield } from 'lucide-react'
@@ -310,7 +310,7 @@ export default function MyProfile() {
                         </Button>
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => navigate({ to: '/dashboard' })}
                           className="flex-1 sm:flex-none rounded-lg h-12 px-8 font-semibold border-gray-300 hover:bg-gray-50 transition-all duration-200"
                         >

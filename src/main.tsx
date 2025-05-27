@@ -14,6 +14,7 @@ import { LoginPage } from "./components/LoginPage"
 import { SignUpPage } from "./components/SignUpPage"
 import PassportDashboard from "./components/Dashboard"
 import MyProfile from "./components/MyProfile"
+import Application from "./components/Application"
 import { AuthProvider } from "./contexts/AuthContext"
 
 // Root layout
@@ -56,6 +57,12 @@ const myProfileRoute = createRoute({
   component: MyProfile,
 })
 
+const applicationRoute = createRoute({
+  path: "/apply",
+  getParentRoute: () => rootRoute, // Specify the parent route
+  component: Application,
+})
+
 // Router setup
 const router = createRouter({
   routeTree: rootRoute.addChildren([
@@ -64,6 +71,7 @@ const router = createRouter({
     signupRoute,
     dashboardRoute,
     myProfileRoute,
+    applicationRoute,
   ]),
 })
 

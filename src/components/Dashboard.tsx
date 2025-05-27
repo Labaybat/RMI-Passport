@@ -597,10 +597,10 @@ const PassportDashboard: React.FC = () => {
             <div className="grid w-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
               <button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                onClick={handleStartApplication}
+                onClick={() => navigate({ to: "/apply" })} // Redirect to the new route
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
-                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 shadow-sm transition-all duration-300 group-hover:bg-blue-200 group-hover:text-blue-700 group-hover:shadow">
+                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 shadow-sm transition-all duration-300 group-hover:bg-blue-200 group-hover:text-blue-700 group_hover:shadow">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -618,7 +618,7 @@ const PassportDashboard: React.FC = () => {
                   </svg>
                 </div>
                 <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
-                  {application ? "Continue Application" : "Start Application"}
+                  Start Application
                 </span>
               </button>
 
@@ -627,7 +627,7 @@ const PassportDashboard: React.FC = () => {
                 onClick={handleDownloadForm}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 to-purple-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
-                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-600 shadow-sm transition-all duration-300 group-hover:bg-purple-200 group-hover:text-purple-700 group-hover:shadow">
+                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-600 shadow-sm transition-all duration-300 group_hover:bg-purple-200 group-hover:text-purple-700 group_hover:shadow">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -660,7 +660,7 @@ const PassportDashboard: React.FC = () => {
                 onClick={() => console.log("Dashboard clicked")}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 to-green-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
-                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 shadow-sm transition-all duration-300 group-hover:bg-green-200 group_hover:text-green-700 group-hover:shadow">
+                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 shadow-sm transition-all duration-300 group_hover:bg-green-200 group_hover:text-green-700 group-hover:shadow">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -688,7 +688,7 @@ const PassportDashboard: React.FC = () => {
                 onClick={() => window.open("/passport-act.pdf", "_blank")}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 to-amber-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
-                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 shadow-sm transition-all duration-300 group-hover:bg-amber-200 group-hover:text-amber-700 group-hover:shadow">
+                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 shadow-sm transition-all duration-300 group_hover:bg-amber-200 group-hover:text-amber-700 group-hover:shadow">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -718,7 +718,7 @@ const PassportDashboard: React.FC = () => {
                 onClick={() => console.log("Upload Documents clicked")}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 to-cyan-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
-                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-cyan-100 text-cyan-600 shadow-sm transition-all duration-300 group-hover:bg-cyan-200 group-hover:text-cyan-700 group-hover:shadow">
+                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-cyan-100 text-cyan-600 shadow-sm transition-all duration-300 group_hover:bg-cyan-200 group_hover:text-cyan-700 group-hover:shadow">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -746,7 +746,7 @@ const PassportDashboard: React.FC = () => {
                 onClick={() => console.log("Photo Guidelines clicked")}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-rose-500/0 to-rose-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
-                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm transition-all duration-300 group_hover:bg-rose-200 group-hover:text-rose-700 group-hover:shadow">
+                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm transition-all duration-300 group_hover:bg-rose-200 group_hover:text-rose-700 group-hover:shadow">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
