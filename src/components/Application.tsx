@@ -486,7 +486,7 @@ const Step1PersonalInfo: React.FC<{
 
         <FormField
           id="cityOfBirth"
-          label="City or Town of Birth"
+          label="City of Birth"
           value={formData.city_of_birth}
           onChange={(value) => updateFormData({ city_of_birth: value })}
           required
@@ -618,7 +618,7 @@ const Step1PersonalInfo: React.FC<{
               <SelectItem value="green">Green</SelectItem>
               <SelectItem value="hazel">Hazel</SelectItem>
               <SelectItem value="gray">Gray</SelectItem>
-              <SelectItem value="black">Black</SelectItem>
+              <SelectItem value="amber">Amber</SelectItem>
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
@@ -1050,6 +1050,33 @@ const Step6Review: React.FC<{
   formData: FormData
   updateFormData: (data: Partial<FormData>) => void
 }> = ({ formData, updateFormData }) => {
+  const [editingSections, setEditingSections] = useState({
+    personal: false,
+    contact: false,
+    emergency: false,
+    parental: false,
+  })
+  const [editBuffer, setEditBuffer] = useState<FormData>(formData)
+
+  useEffect(() => {
+    setEditBuffer(formData)
+  }, [formData])
+
+  const handleEdit = (section: keyof typeof editingSections) => {
+    setEditingSections((prev) => ({ ...prev, [section]: true }))
+  }
+  const handleSave = (section: keyof typeof editingSections) => {
+    updateFormData(editBuffer)
+    setEditingSections((prev) => ({ ...prev, [section]: false }))
+  }
+  const handleCancel = (section: keyof typeof editingSections) => {
+    setEditBuffer(formData)
+    setEditingSections((prev) => ({ ...prev, [section]: false }))
+  }
+  const handleBufferChange = (data: Partial<FormData>) => {
+    setEditBuffer((prev) => ({ ...prev, ...data }))
+  }
+
   const ReviewItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
     <div className="grid grid-cols-2 text-sm py-1.5 border-b border-gray-100 last:border-0">
       <span className="text-gray-600 font-medium">{label}:</span>
@@ -1093,93 +1120,364 @@ const Step6Review: React.FC<{
       <h2 className="text-xl font-bold text-center text-blue-900 mb-2">Passport Application</h2>
       <h3 className="text-lg font-semibold text-center mb-6 block">Review and Submit</h3>
       <p className="text-sm text-gray-600 mb-4">Please review all information before submitting.</p>
-
       <div className="space-y-6">
         {/* Personal Information */}
         <Card className="overflow-hidden border-gray-200 shadow-sm">
-          <CardHeader className="bg-gray-50 py-3 px-6">
+          <CardHeader className="bg-gray-50 py-3 px-6 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-medium text-gray-800">Personal Information</CardTitle>
+            <div className="flex gap-2 items-center">
+              {editingSections.personal ? (
+                <>
+                  <Button variant="ghost" className="h-8 px-2 text-green-600 flex items-center" onClick={() => handleSave('personal')}>
+                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Save
+                  </Button>
+                  <Button variant="ghost" className="h-8 px-2 text-red-600 flex items-center" onClick={() => handleCancel('personal')}>
+                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <Button variant="ghost" className="h-8 px-2 text-blue-600 flex items-center" onClick={() => handleEdit('personal')}>
+                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
+                  Edit
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="p-6">
-            <ReviewItem label="Application Type" value={formData.application_type} />
-            <ReviewItem label="Last Name" value={formData.last_name} />
-            <ReviewItem label="First and Middle Names" value={formData.first_middle_names} />
-            <ReviewItem label="SSN" value={formData.social_security_number} />
-            <ReviewItem label="City of Birth" value={formData.city_of_birth} />
-            <ReviewItem label="State of Birth" value={formData.state_of_birth} />
-            <ReviewItem label="Country of Birth" value={formData.country_of_birth} />
-            <ReviewItem label="Date of Birth" value={formData.date_of_birth} />
-            <ReviewItem label="Gender" value={formData.gender} />
-            <ReviewItem label="Hair Color" value={formData.hair_color} />
-            <ReviewItem label="Marital Status" value={formData.marital_status} />
-            <ReviewItem label="Height" value={`${formData.height_feet}'${formData.height_inches}"`} />
-            <ReviewItem label="Eye Color" value={formData.eye_color} />
+            {editingSections.personal ? (
+              <div className="space-y-2">
+                <div className="relative">
+                  <Label htmlFor="applicationType" className="block text-sm font-medium mb-1 text-gray-700">
+                    Application Type
+                  </Label>
+                  <Select
+                    value={editBuffer.application_type}
+                    onValueChange={v => handleBufferChange({ application_type: v })}
+                  >
+                    <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
+                      <SelectValue placeholder="Select application type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New Passport</SelectItem>
+                      <SelectItem value="renewal">Passport Renewal</SelectItem>
+                      <SelectItem value="replacement">Replacement (Lost/Stolen)</SelectItem>
+                      <SelectItem value="name-change">Name Change</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <FormField id="lastName" label="Last Name" value={editBuffer.last_name} onChange={v => handleBufferChange({ last_name: v })} />
+                <FormField id="firstMiddleNames" label="First and Middle Names" value={editBuffer.first_middle_names} onChange={v => handleBufferChange({ first_middle_names: v })} />
+                <FormField id="ssn" label="SSN" value={editBuffer.social_security_number} onChange={v => handleBufferChange({ social_security_number: v })} />
+                <FormField id="cityOfBirth" label="City of Birth" value={editBuffer.city_of_birth} onChange={v => handleBufferChange({ city_of_birth: v })} />
+                <FormField id="stateOfBirth" label="State of Birth" value={editBuffer.state_of_birth} onChange={v => handleBufferChange({ state_of_birth: v })} />
+                <FormField id="countryOfBirth" label="Country of Birth" value={editBuffer.country_of_birth} onChange={v => handleBufferChange({ country_of_birth: v })} />
+                <div className="relative">
+                  <Label htmlFor="dateOfBirth" className="block text-sm font-medium mb-1 text-gray-700">
+                    Date of Birth
+                  </Label>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={editBuffer.date_of_birth}
+                    onChange={e => handleBufferChange({ date_of_birth: e.target.value })}
+                    className="w-full border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
+                  />
+                </div>
+                <div className="relative">
+                  <Label htmlFor="gender" className="block text-sm font-medium mb-1 text-gray-700">
+                    Gender
+                  </Label>
+                  <Select
+                    value={editBuffer.gender}
+                    onValueChange={v => handleBufferChange({ gender: v })}
+                  >
+                    <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="non-binary">Non-binary</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="relative">
+                  <Label htmlFor="hairColor" className="block text-sm font-medium mb-1 text-gray-700">
+                    Hair Color
+                  </Label>
+                  <Select
+                    value={editBuffer.hair_color}
+                    onValueChange={v => handleBufferChange({ hair_color: v })}
+                  >
+                    <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
+                      <SelectValue placeholder="Select hair color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="black">Black</SelectItem>
+                      <SelectItem value="brown">Brown</SelectItem>
+                      <SelectItem value="blonde">Blonde</SelectItem>
+                      <SelectItem value="red">Red</SelectItem>
+                      <SelectItem value="gray">Gray</SelectItem>
+                      <SelectItem value="white">White</SelectItem>
+                      <SelectItem value="bald">Bald/Shaved</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="relative">
+                  <Label htmlFor="maritalStatus" className="block text-sm font-medium mb-1 text-gray-700">
+                    Marital Status
+                  </Label>
+                  <Select
+                    value={editBuffer.marital_status}
+                    onValueChange={v => handleBufferChange({ marital_status: v })}
+                  >
+                    <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
+                      <SelectValue placeholder="Select marital status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="single">Single</SelectItem>
+                      <SelectItem value="married">Married</SelectItem>
+                      <SelectItem value="divorced">Divorced</SelectItem>
+                      <SelectItem value="widowed">Widowed</SelectItem>
+                      <SelectItem value="separated">Separated</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField id="heightFeet" label="Height (Feet)" value={editBuffer.height_feet} onChange={v => handleBufferChange({ height_feet: v })} type="number" />
+                  <FormField id="heightInches" label="Height (Inches)" value={editBuffer.height_inches} onChange={v => handleBufferChange({ height_inches: v })} type="number" />
+                </div>
+                <div className="relative">
+                  <Label htmlFor="eyeColor" className="block text-sm font-medium mb-1 text-gray-700">
+                    Eye Color
+                  </Label>
+                  <Select
+                    value={editBuffer.eye_color}
+                    onValueChange={v => handleBufferChange({ eye_color: v })}
+                  >
+                    <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
+                      <SelectValue placeholder="Select eye color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="brown">Brown</SelectItem>
+                      <SelectItem value="blue">Blue</SelectItem>
+                      <SelectItem value="green">Green</SelectItem>
+                      <SelectItem value="hazel">Hazel</SelectItem>
+                      <SelectItem value="gray">Gray</SelectItem>
+                      <SelectItem value="amber">Amber</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            ) : (
+              <>
+                <ReviewItem label="Application Type" value={formData.application_type} />
+                <ReviewItem label="Last Name" value={formData.last_name} />
+                <ReviewItem label="First and Middle Names" value={formData.first_middle_names} />
+                <ReviewItem label="SSN" value={formData.social_security_number} />
+                <ReviewItem label="City of Birth" value={formData.city_of_birth} />
+                <ReviewItem label="State of Birth" value={formData.state_of_birth} />
+                <ReviewItem label="Country of Birth" value={formData.country_of_birth} />
+                <ReviewItem label="Date of Birth" value={formData.date_of_birth} />
+                <ReviewItem label="Gender" value={formData.gender} />
+                <ReviewItem label="Hair Color" value={formData.hair_color} />
+                <ReviewItem label="Marital Status" value={formData.marital_status} />
+                <ReviewItem label="Height" value={`${formData.height_feet}'${formData.height_inches}"`} />
+                <ReviewItem label="Eye Color" value={formData.eye_color} />
+              </>
+            )}
           </CardContent>
         </Card>
-
         {/* Contact Information */}
         <Card className="overflow-hidden border-gray-200 shadow-sm">
-          <CardHeader className="bg-gray-50 py-3 px-6">
+          <CardHeader className="bg-gray-50 py-3 px-6 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-medium text-gray-800">Contact Information</CardTitle>
+            <div className="flex gap-2 items-center">
+              {editingSections.contact ? (
+                <>
+                  <Button variant="ghost" className="h-8 px-2 text-green-600 flex items-center" onClick={() => handleSave('contact')}>
+                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Save
+                  </Button>
+                  <Button variant="ghost" className="h-8 px-2 text-red-600 flex items-center" onClick={() => handleCancel('contact')}>
+                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <Button variant="ghost" className="h-8 px-2 text-blue-600 flex items-center" onClick={() => handleEdit('contact')}>
+                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
+                  Edit
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="p-6">
-            <ReviewItem label="House Number" value={formData.house_number} />
-            <ReviewItem label="Street Name" value={formData.street_name} />
-            <ReviewItem label="Phone Number" value={formData.phone_number} />
-            <ReviewItem label="City" value={formData.city} />
-            <ReviewItem label="State" value={formData.state} />
-            <ReviewItem label="Zip Code" value={formData.zip_code} />
-            <ReviewItem label="Email" value={formData.email} />
+            {editingSections.contact ? (
+              <div className="space-y-2">
+                <FormField id="houseNumber" label="House Number" value={editBuffer.house_number} onChange={v => handleBufferChange({ house_number: v })} />
+                <FormField id="streetName" label="Street Name" value={editBuffer.street_name} onChange={v => handleBufferChange({ street_name: v })} />
+                <FormField id="phoneNumber" label="Phone Number" value={editBuffer.phone_number} onChange={v => handleBufferChange({ phone_number: v })} />
+                <FormField id="city" label="City" value={editBuffer.city} onChange={v => handleBufferChange({ city: v })} />
+                <FormField id="state" label="State" value={editBuffer.state} onChange={v => handleBufferChange({ state: v })} />
+                <FormField id="zipCode" label="Zip Code" value={editBuffer.zip_code} onChange={v => handleBufferChange({ zip_code: v })} />
+                <FormField id="email" label="Email" value={editBuffer.email} onChange={v => handleBufferChange({ email: v })} />
+              </div>
+            ) : (
+              <>
+                <ReviewItem label="House Number" value={formData.house_number} />
+                <ReviewItem label="Street Name" value={formData.street_name} />
+                <ReviewItem label="Phone Number" value={formData.phone_number} />
+                <ReviewItem label="City" value={formData.city} />
+                <ReviewItem label="State" value={formData.state} />
+                <ReviewItem label="Zip Code" value={formData.zip_code} />
+                <ReviewItem label="Email" value={formData.email} />
+              </>
+            )}
           </CardContent>
         </Card>
-
         {/* Emergency Contact */}
         <Card className="overflow-hidden border-gray-200 shadow-sm">
-          <CardHeader className="bg-gray-50 py-3 px-6">
+          <CardHeader className="bg-gray-50 py-3 px-6 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-medium text-gray-800">Emergency Contact</CardTitle>
+            <div className="flex gap-2 items-center">
+              {editingSections.emergency ? (
+                <>
+                  <Button variant="ghost" className="h-8 px-2 text-green-600 flex items-center" onClick={() => handleSave('emergency')}>
+                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Save
+                  </Button>
+                  <Button variant="ghost" className="h-8 px-2 text-red-600 flex items-center" onClick={() => handleCancel('emergency')}>
+                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <Button variant="ghost" className="h-8 px-2 text-blue-600 flex items-center" onClick={() => handleEdit('emergency')}>
+                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
+                  Edit
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="p-6">
-            <ReviewItem label="Name" value={formData.emergency_contact_name} />
-            <ReviewItem label="Phone" value={formData.emergency_contact_phone} />
-            <ReviewItem label="House Number" value={formData.emergency_contact_house_number} />
-            <ReviewItem label="Street Name" value={formData.emergency_contact_street_name} />
-            <ReviewItem label="City" value={formData.emergency_contact_city} />
-            <ReviewItem label="State" value={formData.emergency_contact_state} />
-            <ReviewItem label="Postal Code" value={formData.emergency_contact_postal_code} />
+            {editingSections.emergency ? (
+              <div className="space-y-2">
+                <FormField id="emergencyName" label="Name" value={editBuffer.emergency_contact_name} onChange={v => handleBufferChange({ emergency_contact_name: v })} />
+                <FormField id="emergencyPhone" label="Phone" value={editBuffer.emergency_contact_phone} onChange={v => handleBufferChange({ emergency_contact_phone: v })} />
+                <FormField id="emergencyHouseNumber" label="House Number" value={editBuffer.emergency_contact_house_number} onChange={v => handleBufferChange({ emergency_contact_house_number: v })} />
+                <FormField id="emergencyStreetName" label="Street Name" value={editBuffer.emergency_contact_street_name} onChange={v => handleBufferChange({ emergency_contact_street_name: v })} />
+                <FormField id="emergencyCity" label="City" value={editBuffer.emergency_contact_city} onChange={v => handleBufferChange({ emergency_contact_city: v })} />
+                <FormField id="emergencyState" label="State" value={editBuffer.emergency_contact_state} onChange={v => handleBufferChange({ emergency_contact_state: v })} />
+                <FormField id="emergencyPostalCode" label="Postal Code" value={editBuffer.emergency_contact_postal_code} onChange={v => handleBufferChange({ emergency_contact_postal_code: v })} />
+              </div>
+            ) : (
+              <>
+                <ReviewItem label="Name" value={formData.emergency_contact_name} />
+                <ReviewItem label="Phone" value={formData.emergency_contact_phone} />
+                <ReviewItem label="House Number" value={formData.emergency_contact_house_number} />
+                <ReviewItem label="Street Name" value={formData.emergency_contact_street_name} />
+                <ReviewItem label="City" value={formData.emergency_contact_city} />
+                <ReviewItem label="State" value={formData.emergency_contact_state} />
+                <ReviewItem label="Postal Code" value={formData.emergency_contact_postal_code} />
+              </>
+            )}
           </CardContent>
         </Card>
-
         {/* Parental Details */}
         <Card className="overflow-hidden border-gray-200 shadow-sm">
-          <CardHeader className="bg-gray-50 py-3 px-6">
+          <CardHeader className="bg-gray-50 py-3 px-6 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-medium text-gray-800">Parental Details</CardTitle>
+            <div className="flex gap-2 items-center">
+              {editingSections.parental ? (
+                <>
+                  <Button variant="ghost" className="h-8 px-2 text-green-600 flex items-center" onClick={() => handleSave('parental')}>
+                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Save
+                  </Button>
+                  <Button variant="ghost" className="h-8 px-2 text-red-600 flex items-center" onClick={() => handleCancel('parental')}>
+                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <Button variant="ghost" className="h-8 px-2 text-blue-600 flex items-center" onClick={() => handleEdit('parental')}>
+                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
+                  Edit
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="mb-4">
-              <h4 className="font-medium text-gray-800 mb-2">Father</h4>
-              <div className="ml-4 space-y-2">
-                <ReviewItem label="Name" value={formData.father_name} />
-                <ReviewItem label="Date of Birth" value={formData.father_date_of_birth} />
-                <ReviewItem label="Nationality" value={formData.father_nationality} />
-                <ReviewItem label="City" value={formData.father_city} />
-                <ReviewItem label="State" value={formData.father_state} />
-                <ReviewItem label="Country" value={formData.father_country} />
+            {editingSections.parental ? (
+              <div className="space-y-2">
+                <FormField id="fatherName" label="Father's Name" value={editBuffer.father_name} onChange={v => handleBufferChange({ father_name: v })} />
+                <div className="relative">
+                  <Label htmlFor="fatherDob" className="block text-sm font-medium mb-1 text-gray-700">
+                    Father's Date of Birth
+                  </Label>
+                  <Input
+                    id="fatherDob"
+                    type="date"
+                    value={editBuffer.father_date_of_birth}
+                    onChange={e => handleBufferChange({ father_date_of_birth: e.target.value })}
+                    className="w-full border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
+                  />
+                </div>
+                <FormField id="fatherNationality" label="Father's Nationality" value={editBuffer.father_nationality} onChange={v => handleBufferChange({ father_nationality: v })} />
+                <FormField id="fatherCity" label="Father's City" value={editBuffer.father_city} onChange={v => handleBufferChange({ father_city: v })} />
+                <FormField id="fatherState" label="Father's State" value={editBuffer.father_state} onChange={v => handleBufferChange({ father_state: v })} />
+                <FormField id="fatherCountry" label="Father's Country" value={editBuffer.father_country} onChange={v => handleBufferChange({ father_country: v })} />
+                <FormField id="motherName" label="Mother's Name" value={editBuffer.mother_name} onChange={v => handleBufferChange({ mother_name: v })} />
+                <div className="relative">
+                  <Label htmlFor="motherDob" className="block text-sm font-medium mb-1 text-gray-700">
+                    Mother's Date of Birth
+                  </Label>
+                  <Input
+                    id="motherDob"
+                    type="date"
+                    value={editBuffer.mother_date_of_birth}
+                    onChange={e => handleBufferChange({ mother_date_of_birth: e.target.value })}
+                    className="w-full border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
+                  />
+                </div>
+                <FormField id="motherNationality" label="Mother's Nationality" value={editBuffer.mother_nationality} onChange={v => handleBufferChange({ mother_nationality: v })} />
+                <FormField id="motherCity" label="Mother's City" value={editBuffer.mother_city} onChange={v => handleBufferChange({ mother_city: v })} />
+                <FormField id="motherState" label="Mother's State" value={editBuffer.mother_state} onChange={v => handleBufferChange({ mother_state: v })} />
+                <FormField id="motherCountry" label="Mother's Country" value={editBuffer.mother_country} onChange={v => handleBufferChange({ mother_country: v })} />
               </div>
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-800 mb-2">Mother</h4>
-              <div className="ml-4 space-y-2">
-                <ReviewItem label="Name" value={formData.mother_name} />
-                <ReviewItem label="Date of Birth" value={formData.mother_date_of_birth} />
-                <ReviewItem label="Nationality" value={formData.mother_nationality} />
-                <ReviewItem label="City" value={formData.mother_city} />
-                <ReviewItem label="State" value={formData.mother_state} />
-                <ReviewItem label="Country" value={formData.mother_country} />
-              </div>
-            </div>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <h4 className="font-medium text-gray-800 mb-2">Father</h4>
+                  <div className="ml-4 space-y-2">
+                    <ReviewItem label="Name" value={formData.father_name} />
+                    <ReviewItem label="Date of Birth" value={formData.father_date_of_birth} />
+                    <ReviewItem label="Nationality" value={formData.father_nationality} />
+                    <ReviewItem label="City" value={formData.father_city} />
+                    <ReviewItem label="State" value={formData.father_state} />
+                    <ReviewItem label="Country" value={formData.father_country} />
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-800 mb-2">Mother</h4>
+                  <div className="ml-4 space-y-2">
+                    <ReviewItem label="Name" value={formData.mother_name} />
+                    <ReviewItem label="Date of Birth" value={formData.mother_date_of_birth} />
+                    <ReviewItem label="Nationality" value={formData.mother_nationality} />
+                    <ReviewItem label="City" value={formData.mother_city} />
+                    <ReviewItem label="State" value={formData.mother_state} />
+                    <ReviewItem label="Country" value={formData.mother_country} />
+                  </div>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
-
         {/* Uploaded Documents */}
         <Card className="overflow-hidden border-gray-200 shadow-sm">
           <CardHeader className="bg-gray-50 py-3 px-6">
