@@ -1125,21 +1125,21 @@ const Step6Review: React.FC<{
         <Card className="overflow-hidden border-gray-200 shadow-sm">
           <CardHeader className="bg-gray-50 py-3 px-6 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-medium text-gray-800">Personal Information</CardTitle>
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:gap-2 sm:items-center sm:justify-end mt-2 sm:mt-0">
               {editingSections.personal ? (
                 <>
-                  <Button variant="ghost" className="h-8 px-2 text-green-600 flex items-center" onClick={() => handleSave('personal')}>
-                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-green-600 flex items-center justify-center text-base" onClick={() => handleSave('personal')}>
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                     Save
                   </Button>
-                  <Button variant="ghost" className="h-8 px-2 text-red-600 flex items-center" onClick={() => handleCancel('personal')}>
-                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-red-600 flex items-center justify-center text-base" onClick={() => handleCancel('personal')}>
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     Cancel
                   </Button>
                 </>
               ) : (
-                <Button variant="ghost" className="h-8 px-2 text-blue-600 flex items-center" onClick={() => handleEdit('personal')}>
-                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
+                <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-blue-600 flex items-center justify-center text-base" onClick={() => handleEdit('personal')}>
+                  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
                   Edit
                 </Button>
               )}
@@ -1296,21 +1296,21 @@ const Step6Review: React.FC<{
         <Card className="overflow-hidden border-gray-200 shadow-sm">
           <CardHeader className="bg-gray-50 py-3 px-6 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-medium text-gray-800">Contact Information</CardTitle>
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:gap-2 sm:items-center sm:justify-end mt-2 sm:mt-0">
               {editingSections.contact ? (
                 <>
-                  <Button variant="ghost" className="h-8 px-2 text-green-600 flex items-center" onClick={() => handleSave('contact')}>
-                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-green-600 flex items-center justify-center text-base" onClick={() => handleSave('contact')}>
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                     Save
                   </Button>
-                  <Button variant="ghost" className="h-8 px-2 text-red-600 flex items-center" onClick={() => handleCancel('contact')}>
-                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-red-600 flex items-center justify-center text-base" onClick={() => handleCancel('contact')}>
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     Cancel
                   </Button>
                 </>
               ) : (
-                <Button variant="ghost" className="h-8 px-2 text-blue-600 flex items-center" onClick={() => handleEdit('contact')}>
-                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
+                <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-blue-600 flex items-center justify-center text-base" onClick={() => handleEdit('contact')}>
+                  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
                   Edit
                 </Button>
               )}
@@ -1344,21 +1344,21 @@ const Step6Review: React.FC<{
         <Card className="overflow-hidden border-gray-200 shadow-sm">
           <CardHeader className="bg-gray-50 py-3 px-6 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-medium text-gray-800">Emergency Contact</CardTitle>
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:gap-2 sm:items-center sm:justify-end mt-2 sm:mt-0">
               {editingSections.emergency ? (
                 <>
-                  <Button variant="ghost" className="h-8 px-2 text-green-600 flex items-center" onClick={() => handleSave('emergency')}>
-                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-green-600 flex items-center justify-center text-base" onClick={() => handleSave('emergency')}>
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                     Save
                   </Button>
-                  <Button variant="ghost" className="h-8 px-2 text-red-600 flex items-center" onClick={() => handleCancel('emergency')}>
-                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-red-600 flex items-center justify-center text-base" onClick={() => handleCancel('emergency')}>
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     Cancel
                   </Button>
                 </>
               ) : (
-                <Button variant="ghost" className="h-8 px-2 text-blue-600 flex items-center" onClick={() => handleEdit('emergency')}>
-                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
+                <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-blue-600 flex items-center justify-center text-base" onClick={() => handleEdit('emergency')}>
+                  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
                   Edit
                 </Button>
               )}
@@ -1392,21 +1392,21 @@ const Step6Review: React.FC<{
         <Card className="overflow-hidden border-gray-200 shadow-sm">
           <CardHeader className="bg-gray-50 py-3 px-6 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-medium text-gray-800">Parental Details</CardTitle>
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:gap-2 sm:items-center sm:justify-end mt-2 sm:mt-0">
               {editingSections.parental ? (
                 <>
-                  <Button variant="ghost" className="h-8 px-2 text-green-600 flex items-center" onClick={() => handleSave('parental')}>
-                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-green-600 flex items-center justify-center text-base" onClick={() => handleSave('parental')}>
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                     Save
                   </Button>
-                  <Button variant="ghost" className="h-8 px-2 text-red-600 flex items-center" onClick={() => handleCancel('parental')}>
-                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-red-600 flex items-center justify-center text-base" onClick={() => handleCancel('parental')}>
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     Cancel
                   </Button>
                 </>
               ) : (
-                <Button variant="ghost" className="h-8 px-2 text-blue-600 flex items-center" onClick={() => handleEdit('parental')}>
-                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
+                <Button variant="ghost" className="h-12 min-h-[44px] min-w-[120px] w-full sm:w-auto px-4 text-blue-600 flex items-center justify-center text-base" onClick={() => handleEdit('parental')}>
+                  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
                   Edit
                 </Button>
               )}
@@ -1465,7 +1465,7 @@ const Step6Review: React.FC<{
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-800 mb-2">Mother</h4>
-                  <div className="ml-4 space-y-2">
+                                   <div className="ml-4 space-y-2">
                     <ReviewItem label="Name" value={formData.mother_name} />
                     <ReviewItem label="Date of Birth" value={formData.mother_date_of_birth} />
                     <ReviewItem label="Nationality" value={formData.mother_nationality} />
@@ -1647,16 +1647,14 @@ export default function Apply() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-3xl">
         <Card className="bg-white shadow-2xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8" ref={formRef}>
-          <CardHeader className={`pb-2 ${isLandscape ? "mb-0" : ""}`}>
+          <CardHeader className={`pb-2 ${isLandscape ? "mb-0" : ""}`} >
             <ProgressBar currentStep={currentStep} totalSteps={totalSteps} isCompact={isSmallScreen || isLandscape} />
           </CardHeader>
 
           <CardContent className={`pt-0 ${isLandscape ? "py-2" : ""}`}>{renderStep()}</CardContent>
 
           <div
-            className={`flex border-t border-gray-100 pt-6 ${
-              currentStep === 1 ? "justify-center" : "justify-between"
-            } ${isLandscape ? "py-2" : ""}`}
+            className={`flex border-t border-gray-100 pt-6 ${currentStep === 1 ? "justify-center" : "justify-between"} ${isLandscape ? "py-2" : ""}`}
           >
             {currentStep > 1 && (
               <Button onClick={handleBack} className="bg-blue-900 text-white hover:bg-blue-800 w-24">
