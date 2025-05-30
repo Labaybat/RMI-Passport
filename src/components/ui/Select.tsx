@@ -7,7 +7,7 @@ import { cn } from "../../lib/utils"
 
 export const Select = RadixSelect.Root
 
-export const SelectTrigger = React.forwardRef(({ className, ...props }: any, ref) => (
+export const SelectTrigger = React.forwardRef(({ className, children, ...props }: any, ref) => (
   <RadixSelect.Trigger
     ref={ref}
     className={cn(
@@ -16,7 +16,7 @@ export const SelectTrigger = React.forwardRef(({ className, ...props }: any, ref
     )}
     {...props}
   >
-    <RadixSelect.Value placeholder="Select your gender" />
+    {children}
     <RadixSelect.Icon>
       <ChevronDown className="h-4 w-4 text-gray-500" />
     </RadixSelect.Icon>

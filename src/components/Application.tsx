@@ -8,64 +8,68 @@ import { Label } from "../components/ui/Label"
 import Button from "../components/ui/Button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/Select"
 import { useToast } from "../hooks/use-toast"
+import supabase from "../lib/supabase/client";
+import { useAuth } from "../contexts/AuthContext"
+import { useRouter } from '@tanstack/react-router';
 
 // Types
 interface FormData {
-  // Personal Information
-  application_type: string
-  last_name: string
-  first_middle_names: string
-  social_security_number: string
-  city_of_birth: string
-  state_of_birth: string
-  country_of_birth: string
-  date_of_birth: string
-  gender: string
-  hair_color: string
-  marital_status: string
-  height_feet: string
-  height_inches: string
-  eye_color: string
-
-  // Contact Information
-  house_number: string
-  street_name: string
-  phone_number: string
-  city: string
-  state: string
-  zip_code: string
-  email: string
-
-  // Emergency Contact
-  emergency_contact_name: string
-  emergency_contact_phone: string
-  emergency_contact_house_number: string
-  emergency_contact_street_name: string
-  emergency_contact_city: string
-  emergency_contact_state: string
-  emergency_contact_postal_code: string
-
-  // Parental Details
-  father_name: string
-  father_date_of_birth: string
-  father_nationality: string
-  father_city: string
-  father_state: string
-  father_country: string
-  mother_name: string
-  mother_date_of_birth: string
-  mother_nationality: string
-  mother_city: string
-  mother_state: string
-  mother_country: string
-
-  // Document Uploads
-  birth_certificate: File | null
-  consent_form: File | null
-  marriage_certificate: File | null
-  old_passport: File | null
-  signature: File | null
-  photo_id: File | null
+  id?: string;
+  user_id?: string;
+  application_type: string;
+  surname: string;
+  first_middle_names: string;
+  social_security_number: string;
+  place_of_birth_city: string;
+  place_of_birth_state: string;
+  country_of_birth: string;
+  date_of_birth: string;
+  gender: string;
+  hair_color: string;
+  marital_status: string;
+  height_feet: string;
+  height_inches: string;
+  eye_color: string;
+  address_unit: string;
+  street_name: string;
+  phone_number: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  emergency_full_name: string;
+  emergency_phone_number: string;
+  emergency_address_unit: string;
+  emergency_street_name: string;
+  emergency_city: string;
+  emergency_state: string;
+  emergency_postal_code: string;
+  father_full_name: string;
+  father_dob: string;
+  father_nationality: string;
+  father_birth_city: string;
+  father_birth_state: string;
+  father_birth_country: string;
+  mother_full_name: string;
+  mother_dob: string;
+  mother_nationality: string;
+  mother_birth_city: string;
+  mother_birth_state: string;
+  mother_birth_country: string;
+  birth_certificate: string;
+  consent_form: string;
+  marriage_or_divorce_certificate: string;
+  old_passport_copy: string;
+  signature: string;
+  photo_id: string;
+  // Add missing _url fields for document uploads
+  birth_certificate_url?: string;
+  consent_form_url?: string;
+  marriage_certificate_url?: string;
+  old_passport_url?: string;
+  signature_url?: string;
+  photo_id_url?: string;
+  status?: string;
+  submitted_at?: string;
 }
 
 // Utility Components
@@ -178,8 +182,8 @@ const FileUpload: React.FC<{
   id: string
   label: string
   accept?: string
-  onChange: (file: File | null) => void
-  value: File | null
+  onChange: (file: File | "") => void
+  value: string // This is now the signed URL
   required?: boolean
 }> = ({ id, label, accept, onChange, value, required = false }) => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -191,12 +195,12 @@ const FileUpload: React.FC<{
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
-    onChange(file)
+    onChange(file ? file : "")
   }
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onChange(null)
+    onChange("")
     if (inputRef.current) {
       inputRef.current.value = ""
     }
@@ -231,15 +235,7 @@ const FileUpload: React.FC<{
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Label htmlFor={id} className="text-sm font-medium text-gray-700">
-          {label}
-        </Label>
-        {required && <span className="text-red-500 text-sm">*</span>}
-      </div>
-
       <input type="file" id={id} ref={inputRef} accept={accept} onChange={handleChange} className="hidden" />
-
       {!value ? (
         <div
           onClick={handleClick}
@@ -292,8 +288,10 @@ const FileUpload: React.FC<{
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-green-900 truncate">{value.name}</p>
-                <p className="text-xs text-green-700">{formatFileSize(value.size)}</p>
+                <p className="text-sm font-medium text-green-900 truncate">Uploaded</p>
+                {value && (
+                  <a href={value} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 underline">View</a>
+                )}
               </div>
               <svg className="h-5 w-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path
@@ -324,108 +322,16 @@ const FileUpload: React.FC<{
   )
 }
 
-const ProgressBar: React.FC<{
-  currentStep: number
-  totalSteps: number
-  isCompact?: boolean
-}> = ({ currentStep, totalSteps, isCompact = false }) => {
-  const stepLabels = [
-    "Personal Info",
-    "Contact & Delivery",
-    "Emergency Contact",
-    "Parental Details",
-    "Documents",
-    "Review",
-  ]
-
-  if (isCompact) {
-    return (
-      <div className="w-full mb-2">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-xs font-medium text-gray-700">
-            Step {currentStep} of {totalSteps}
-          </span>
-          <span className="text-xs text-gray-500">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
-        </div>
-        <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
-          <div
-            className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
-            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="w-full mb-4">
-      <div className="flex justify-between items-center mb-4">
-        <span className="text-sm font-medium text-gray-700">
-          Step {currentStep} of {totalSteps}
-        </span>
-        <span className="text-sm text-gray-500">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
-      </div>
-
-      <div className="relative">
-        <div className="absolute top-5 left-0 w-full h-0.5 bg-gray-200" />
-        <div
-          className="absolute top-5 left-0 h-0.5 bg-gradient-to-r from-blue-600 to-blue-800 transition-all duration-500 ease-out"
-          style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
-        />
-
-        <div className="relative flex justify-between">
-          {Array.from({ length: totalSteps }, (_, index) => {
-            const stepNumber = index + 1
-            const isCompleted = stepNumber < currentStep
-            const isCurrent = stepNumber === currentStep
-
-            return (
-              <div key={stepNumber} className="flex flex-col items-center">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 relative z-10 ${
-                    isCompleted
-                      ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg"
-                      : isCurrent
-                        ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg ring-4 ring-blue-200"
-                        : "bg-gray-200 text-gray-500"
-                  }`}
-                >
-                  {isCompleted ? (
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  ) : (
-                    stepNumber
-                  )}
-                </div>
-                <span
-                  className={`mt-2 text-xs text-center max-w-20 leading-tight transition-colors duration-300 ${
-                    isCurrent
-                      ? "text-blue-800 font-semibold"
-                      : isCompleted
-                        ? "text-green-600 font-medium"
-                        : "text-gray-400"
-                  }`}
-                >
-                  {stepLabels[index]}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      <div className="mt-4 text-center hidden sm:block">
-        <p className="text-sm text-gray-600">
-          Currently on: <span className="font-semibold text-blue-800">{stepLabels[currentStep - 1]}</span>
-        </p>
-      </div>
-    </div>
-  )
+// Helper to upload file to Supabase Storage and get public URL
+async function uploadDocumentToSupabase(file: File, userId: string, docType: string) {
+  const fileExt = file.name.split('.').pop();
+  const filePath = `${userId}/${docType}_${Date.now()}.${fileExt}`; // Store directly under userId folder
+  const { error: uploadError } = await supabase.storage
+    .from("passport-documents")
+    .upload(filePath, file, { upsert: true });
+  if (uploadError) throw uploadError;
+  const { data: publicUrlData } = supabase.storage.from("passport-documents").getPublicUrl(filePath);
+  return publicUrlData?.publicUrl || "";
 }
 
 // Step Components
@@ -464,8 +370,8 @@ const Step1PersonalInfo: React.FC<{
         <FormField
           id="lastName"
           label="Surname or Family Name"
-          value={formData.last_name}
-          onChange={(value) => updateFormData({ last_name: value })}
+          value={formData.surname}
+          onChange={(value) => updateFormData({ surname: value })}
           required
         />
 
@@ -487,16 +393,16 @@ const Step1PersonalInfo: React.FC<{
         <FormField
           id="cityOfBirth"
           label="City of Birth"
-          value={formData.city_of_birth}
-          onChange={(value) => updateFormData({ city_of_birth: value })}
+          value={formData.place_of_birth_city}
+          onChange={(value) => updateFormData({ place_of_birth_city: value })}
           required
         />
 
         <FormField
           id="stateOfBirth"
           label="State (if in U.S.)"
-          value={formData.state_of_birth}
-          onChange={(value) => updateFormData({ state_of_birth: value })}
+          value={formData.place_of_birth_state}
+          onChange={(value) => updateFormData({ place_of_birth_state: value })}
         />
 
         <FormField
@@ -643,8 +549,8 @@ const Step2ContactInfo: React.FC<{
         <FormField
           id="houseNumber"
           label="Unit and/or House Number"
-          value={formData.house_number}
-          onChange={(value) => updateFormData({ house_number: value })}
+          value={formData.address_unit}
+          onChange={(value) => updateFormData({ address_unit: value })}
           required
         />
 
@@ -681,19 +587,10 @@ const Step2ContactInfo: React.FC<{
         />
 
         <FormField
-          id="zipCode"
+          id="postalCode"
           label="Postal Code"
-          value={formData.zip_code}
-          onChange={(value) => updateFormData({ zip_code: value })}
-          required
-        />
-
-        <FormField
-          id="email"
-          label="Email Address"
-          value={formData.email}
-          onChange={(value) => updateFormData({ email: value })}
-          type="email"
+          value={formData.postal_code}
+          onChange={(value) => updateFormData({ postal_code: value })}
           required
         />
       </div>
@@ -716,52 +613,52 @@ const Step3EmergencyContact: React.FC<{
         <FormField
           id="emergencyName"
           label="Full Name"
-          value={formData.emergency_contact_name}
-          onChange={(value) => updateFormData({ emergency_contact_name: value })}
+          value={formData.emergency_full_name}
+          onChange={(value) => updateFormData({ emergency_full_name: value })}
           required
         />
 
         <PhoneInput
           id="emergencyPhone"
           label="Phone Number"
-          value={formData.emergency_contact_phone}
-          onChange={(value) => updateFormData({ emergency_contact_phone: value })}
+          value={formData.emergency_phone_number}
+          onChange={(value) => updateFormData({ emergency_phone_number: value })}
           required
         />
 
         <FormField
           id="emergencyHouseNumber"
           label="Unit and/or House Number"
-          value={formData.emergency_contact_house_number}
-          onChange={(value) => updateFormData({ emergency_contact_house_number: value })}
+          value={formData.emergency_address_unit}
+          onChange={(value) => updateFormData({ emergency_address_unit: value })}
         />
 
         <FormField
           id="emergencyStreetName"
           label="Street Name"
-          value={formData.emergency_contact_street_name}
-          onChange={(value) => updateFormData({ emergency_contact_street_name: value })}
+          value={formData.emergency_street_name}
+          onChange={(value) => updateFormData({ emergency_street_name: value })}
         />
 
         <FormField
           id="emergencyCity"
           label="City or Town"
-          value={formData.emergency_contact_city}
-          onChange={(value) => updateFormData({ emergency_contact_city: value })}
+          value={formData.emergency_city}
+          onChange={(value) => updateFormData({ emergency_city: value })}
         />
 
         <FormField
           id="emergencyState"
           label="State"
-          value={formData.emergency_contact_state}
-          onChange={(value) => updateFormData({ emergency_contact_state: value })}
+          value={formData.emergency_state}
+          onChange={(value) => updateFormData({ emergency_state: value })}
         />
 
         <FormField
           id="emergencyPostalCode"
           label="Postal Code"
-          value={formData.emergency_contact_postal_code}
-          onChange={(value) => updateFormData({ emergency_contact_postal_code: value })}
+          value={formData.emergency_postal_code}
+          onChange={(value) => updateFormData({ emergency_postal_code: value })}
         />
       </div>
     </div>
@@ -787,8 +684,8 @@ const Step4ParentInfo: React.FC<{
           <FormField
             id="fatherName"
             label="Father's Full Name"
-            value={formData.father_name}
-            onChange={(value) => updateFormData({ father_name: value })}
+            value={formData.father_full_name}
+            onChange={(value) => updateFormData({ father_full_name: value })}
             required
           />
 
@@ -799,8 +696,8 @@ const Step4ParentInfo: React.FC<{
             <Input
               id="fatherDob"
               type="date"
-              value={formData.father_date_of_birth}
-              onChange={(e) => updateFormData({ father_date_of_birth: e.target.value })}
+              value={formData.father_dob}
+              onChange={(e) => updateFormData({ father_dob: e.target.value })}
               className="w-full border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
             />
           </div>
@@ -815,22 +712,22 @@ const Step4ParentInfo: React.FC<{
           <FormField
             id="fatherCity"
             label="City or Town"
-            value={formData.father_city}
-            onChange={(value) => updateFormData({ father_city: value })}
+            value={formData.father_birth_city}
+            onChange={(value) => updateFormData({ father_birth_city: value })}
           />
 
           <FormField
             id="fatherState"
             label="State"
-            value={formData.father_state}
-            onChange={(value) => updateFormData({ father_state: value })}
+            value={formData.father_birth_state}
+            onChange={(value) => updateFormData({ father_birth_state: value })}
           />
 
           <FormField
             id="fatherCountry"
             label="Country"
-            value={formData.father_country}
-            onChange={(value) => updateFormData({ father_country: value })}
+            value={formData.father_birth_country}
+            onChange={(value) => updateFormData({ father_birth_country: value })}
           />
         </div>
 
@@ -841,8 +738,8 @@ const Step4ParentInfo: React.FC<{
           <FormField
             id="motherName"
             label="Mother's Full Name"
-            value={formData.mother_name}
-            onChange={(value) => updateFormData({ mother_name: value })}
+            value={formData.mother_full_name}
+            onChange={(value) => updateFormData({ mother_full_name: value })}
             required
           />
 
@@ -853,8 +750,8 @@ const Step4ParentInfo: React.FC<{
             <Input
               id="motherDob"
               type="date"
-              value={formData.mother_date_of_birth}
-              onChange={(e) => updateFormData({ mother_date_of_birth: e.target.value })}
+              value={formData.mother_dob}
+              onChange={(e) => updateFormData({ mother_dob: e.target.value })}
               className="w-full border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
             />
           </div>
@@ -869,22 +766,22 @@ const Step4ParentInfo: React.FC<{
           <FormField
             id="motherCity"
             label="City or Town"
-            value={formData.mother_city}
-            onChange={(value) => updateFormData({ mother_city: value })}
+            value={formData.mother_birth_city}
+            onChange={(value) => updateFormData({ mother_birth_city: value })}
           />
 
           <FormField
             id="motherState"
             label="State"
-            value={formData.mother_state}
-            onChange={(value) => updateFormData({ mother_state: value })}
+            value={formData.mother_birth_state}
+            onChange={(value) => updateFormData({ mother_birth_state: value })}
           />
 
           <FormField
             id="motherCountry"
             label="Country"
-            value={formData.mother_country}
-            onChange={(value) => updateFormData({ mother_country: value })}
+            value={formData.mother_birth_country}
+            onChange={(value) => updateFormData({ mother_birth_country: value })}
           />
         </div>
       </div>
@@ -896,6 +793,12 @@ const Step5FileUploads: React.FC<{
   formData: FormData
   updateFormData: (data: Partial<FormData>) => void
 }> = ({ formData, updateFormData }) => {
+  const { user } = useAuth();
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  // Store signed URLs for each doc
+  const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
+
   const documentTypes = [
     {
       key: "birth_certificate" as keyof FormData,
@@ -903,6 +806,7 @@ const Step5FileUploads: React.FC<{
       description: "Official birth certificate or certified copy",
       accept: "image/*, application/pdf",
       required: true,
+      urlField: "birth_certificate_url"
     },
     {
       key: "consent_form" as keyof FormData,
@@ -910,20 +814,23 @@ const Step5FileUploads: React.FC<{
       description: "Parental consent form (if under 18)",
       accept: "image/*, application/pdf",
       required: true,
+      urlField: "consent_form_url"
     },
     {
-      key: "marriage_certificate" as keyof FormData,
+      key: "marriage_or_divorce_certificate" as keyof FormData,
       label: "Marriage/Divorce Certificate",
       description: "If applicable for name change verification",
       accept: "image/*, application/pdf",
       required: false,
+      urlField: "marriage_certificate_url"
     },
     {
-      key: "old_passport" as keyof FormData,
+      key: "old_passport_copy" as keyof FormData,
       label: "Previous Passport",
       description: "Copy of your most recent passport (if renewal)",
       accept: "image/*, application/pdf",
       required: false,
+      urlField: "old_passport_url"
     },
     {
       key: "signature" as keyof FormData,
@@ -931,6 +838,7 @@ const Step5FileUploads: React.FC<{
       description: "Clear image of your signature on white paper",
       accept: "image/*",
       required: true,
+      urlField: "signature_url"
     },
     {
       key: "photo_id" as keyof FormData,
@@ -938,112 +846,97 @@ const Step5FileUploads: React.FC<{
       description: "Driver's license, state ID, or other government-issued ID",
       accept: "image/*",
       required: true,
+      urlField: "photo_id_url"
     },
-  ]
+  ];
 
-  const handleFileChange = (field: keyof FormData, file: File | null) => {
-    updateFormData({ [field]: file } as Partial<FormData>)
-  }
+  // Generate signed URL for a file path
+  const getSignedUrl = async (urlField: string) => {
+    const url = formData[urlField as keyof FormData] as string;
+    if (!url) return "";
+    // Extract the file path from the public URL
+    const match = url.match(/passport-documents\/(.+)$/);
+    const filePath = match ? match[1] : null;
+    if (!filePath) return "";
+    const { data, error } = await supabase.storage.from("passport-documents").createSignedUrl(filePath, 300); // 300s expiry
+    if (error) return "";
+    return data.signedUrl;
+  };
 
-  const getUploadedCount = () => {
-    return documentTypes.filter((doc) => formData[doc.key] !== null).length
-  }
+  // When a file is uploaded or formData changes, update signed URLs
+  useEffect(() => {
+    (async () => {
+      const newUrls: { [key: string]: string } = {};
+      for (const doc of documentTypes) {
+        if (formData[doc.urlField as keyof FormData]) {
+          newUrls[doc.key] = await getSignedUrl(doc.urlField);
+        }
+      }
+      setSignedUrls(newUrls);
+    })();
+    // eslint-disable-next-line
+  }, [formData.birth_certificate_url, formData.consent_form_url, formData.marriage_certificate_url, formData.old_passport_url, formData.signature_url, formData.photo_id_url]);
 
-  const getRequiredCount = () => {
-    return documentTypes.filter((doc) => doc.required).length
-  }
+  const handleFileChange = async (field: keyof FormData, urlField: string, file: File | "") => {
+    if (!user) return;
+    setUploadError(null);
+    if (!file) {
+      updateFormData({ [field]: "", [urlField]: "" });
+      setSignedUrls((prev) => ({ ...prev, [field]: "" }));
+      return;
+    }
+    setUploading(field as string);
+    try {
+      const publicUrl = await uploadDocumentToSupabase(file as File, user.id, field as string);
+      updateFormData({ [field]: file.name, [urlField]: publicUrl });
+      // Signed URL will be generated by useEffect
+    } catch (error: any) {
+      setUploadError(error.message || "Could not upload file.");
+    } finally {
+      setUploading(null);
+    }
+  };
 
-  const getRequiredUploadedCount = () => {
-    return documentTypes.filter((doc) => doc.required && formData[doc.key] !== null).length
-  }
+  const getUploadedCount = () => documentTypes.filter(dt => formData[dt.urlField as keyof FormData]).length;
+  const getRequiredCount = () => documentTypes.filter(dt => dt.required).length;
+  const getRequiredUploadedCount = () => documentTypes.filter(dt => dt.required && formData[dt.urlField as keyof FormData]).length;
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       <div className="text-center space-y-1 sm:space-y-2">
         <h2 className="text-xl font-bold text-blue-900">Passport Application</h2>
-        <h3 className="text-lg font-semibold text-gray-800">Documents</h3>
-        <p className="text-xs sm:text-sm text-gray-600 max-w-2xl mx-auto">
-          Please upload the required documents. All files should be clear and legible.
-        </p>
+        <h3 className="text-lg font-semibold text-gray-800">Upload Required Documents</h3>
       </div>
-
-      {/* Progress Summary */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium text-blue-900 text-sm sm:text-base">Upload Progress</h4>
-              <p className="text-xs sm:text-sm text-blue-700">
-                {getUploadedCount()} of {documentTypes.length} documents uploaded
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-xl sm:text-2xl font-bold text-blue-900">
-                {getRequiredUploadedCount()}/{getRequiredCount()}
-              </div>
-              <p className="text-xs text-blue-700">Required</p>
-            </div>
-          </div>
-          <div className="mt-2 sm:mt-3 w-full bg-blue-200 rounded-full h-1.5 sm:h-2">
-            <div
-              className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-300"
-              style={{ width: `${(getUploadedCount() / documentTypes.length) * 100}%` }}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Document Upload Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {documentTypes.map((doc) => (
-          <Card key={doc.key} className="overflow-hidden border-gray-200 hover:shadow-md transition-shadow">
-            <CardContent className="p-3 sm:p-6">
-              <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4">
-                <div className="flex-shrink-0 p-1.5 sm:p-2 bg-blue-100 rounded-lg">
-                  <svg className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-medium text-gray-900 flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
-                    {doc.label}
-                    {doc.required && <span className="text-red-500 text-xs sm:text-sm">*</span>}
-                  </h4>
-                  <p className="text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1">{doc.description}</p>
-                </div>
-              </div>
-
-              <FileUpload
-                id={doc.key}
-                label=""
-                accept={doc.accept}
-                onChange={(file) => handleFileChange(doc.key, file)}
-                value={formData[doc.key] as File | null}
-                required={doc.required}
-              />
-            </CardContent>
-          </Card>
+          <div key={doc.key} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-gray-900">{doc.label}</span>
+            </div>
+            <p className="text-xs text-gray-500">{doc.description}</p>
+            <FileUpload
+              id={doc.key}
+              label={doc.label}
+              accept={doc.accept}
+              value={signedUrls[doc.key] || ""}
+              required={doc.required}
+              onChange={(file) => handleFileChange(doc.key, doc.urlField, file)}
+            />
+            {uploading === doc.key && (
+              <div className="text-xs text-blue-600 mt-1">Uploading...</div>
+            )}
+            {uploadError && uploading === doc.key && (
+              <div className="text-xs text-red-600 mt-1">{uploadError}</div>
+            )}
+          </div>
         ))}
       </div>
-
-      {/* Upload Tips */}
-      <Card className="bg-amber-50 border-amber-200">
-        <CardContent className="p-3 sm:p-4">
-          <h4 className="font-medium text-amber-900 mb-1 sm:mb-2 text-sm sm:text-base">📋 Upload Tips</h4>
-          <ul className="text-xs sm:text-sm text-amber-800 space-y-0.5 sm:space-y-1">
-            <li>• Ensure documents are clear and all text is readable</li>
-            <li>• File size should not exceed 10MB per document</li>
-            <li>• Accepted formats: PDF, JPG, PNG</li>
-            <li>• Scan or photograph documents in good lighting</li>
-          </ul>
-        </CardContent>
-      </Card>
+      <div className="text-sm text-gray-700 mt-4">
+        Uploaded: {getUploadedCount()} / {documentTypes.length} &nbsp;|
+        &nbsp;Required: {getRequiredUploadedCount()} / {getRequiredCount()}
+      </div>
     </div>
-  )
+  );
 }
 
 const Step6Review: React.FC<{
@@ -1084,36 +977,47 @@ const Step6Review: React.FC<{
     </div>
   )
 
-  const DocumentStatus: React.FC<{ name: string; file: File | null }> = ({ name, file }) => (
-    <div className="grid grid-cols-2 text-sm py-1.5 border-b border-gray-100 last:border-0">
-      <span className="text-gray-600 font-medium">{name}:</span>
-      <span className={`flex items-center ${file ? "text-green-600" : "text-red-500"}`}>
-        {file ? (
-          <>
-            <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Uploaded
-          </>
-        ) : (
-          <>
-            <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Not uploaded
-          </>
-        )}
-      </span>
+  // Use the same signedUrls logic as Step5FileUploads
+  const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
+  const documentTypes = [
+    { key: "birth_certificate", label: "Birth Certificate", urlField: "birth_certificate_url" },
+    { key: "consent_form", label: "Consent Form", urlField: "consent_form_url" },
+    { key: "marriage_or_divorce_certificate", label: "Marriage/Divorce Certificate", urlField: "marriage_certificate_url" },
+    { key: "old_passport_copy", label: "Old Passport Copy", urlField: "old_passport_url" },
+    { key: "signature", label: "Signature", urlField: "signature_url" },
+    { key: "photo_id", label: "Photo ID", urlField: "photo_id_url" },
+  ];
+
+  useEffect(() => {
+    (async () => {
+      const newUrls: { [key: string]: string } = {};
+      for (const doc of documentTypes) {
+        const url = formData[doc.urlField as keyof FormData] as string;
+        if (url && url.trim() !== "") {
+          // Extract the file path from the public URL
+          const match = url.match(/passport-documents\/(.+)$/) || url.match(/passport-documents\/(.+)$/);
+          const filePath = match ? match[1] : url;
+          if (filePath) {
+            const { data, error } = await supabase.storage.from("passport-documents").createSignedUrl(filePath, 300);
+            newUrls[doc.key] = error ? "" : data.signedUrl;
+          }
+        }
+      }
+      setSignedUrls(newUrls);
+    })();
+    // eslint-disable-next-line
+  }, [formData.birth_certificate_url, formData.consent_form_url, formData.marriage_certificate_url, formData.old_passport_url, formData.signature_url, formData.photo_id_url]);
+
+  const DocumentStatus: React.FC<{ name: string; url: string; docKey: string }> = ({ name, url, docKey }) => (
+    <div className="flex items-center gap-3 py-1.5">
+      <span className="text-gray-700 font-medium w-48">{name}:</span>
+      {signedUrls[docKey] ? (
+        <a href={signedUrls[docKey]} target="_blank" rel="noopener noreferrer" className="text-green-700 underline">View</a>
+      ) : (
+        <span className="text-gray-500">Not uploaded</span>
+      )}
     </div>
-  )
+  );
 
   return (
     <div className="space-y-6">
@@ -1167,11 +1071,11 @@ const Step6Review: React.FC<{
                     </SelectContent>
                   </Select>
                 </div>
-                <FormField id="lastName" label="Last Name" value={editBuffer.last_name} onChange={v => handleBufferChange({ last_name: v })} />
+                <FormField id="lastName" label="Last Name" value={editBuffer.surname} onChange={v => handleBufferChange({ surname: v })} />
                 <FormField id="firstMiddleNames" label="First and Middle Names" value={editBuffer.first_middle_names} onChange={v => handleBufferChange({ first_middle_names: v })} />
                 <FormField id="ssn" label="SSN" value={editBuffer.social_security_number} onChange={v => handleBufferChange({ social_security_number: v })} />
-                <FormField id="cityOfBirth" label="City of Birth" value={editBuffer.city_of_birth} onChange={v => handleBufferChange({ city_of_birth: v })} />
-                <FormField id="stateOfBirth" label="State of Birth" value={editBuffer.state_of_birth} onChange={v => handleBufferChange({ state_of_birth: v })} />
+                <FormField id="cityOfBirth" label="City of Birth" value={editBuffer.place_of_birth_city} onChange={v => handleBufferChange({ place_of_birth_city: v })} />
+                <FormField id="stateOfBirth" label="State of Birth" value={editBuffer.place_of_birth_state} onChange={v => handleBufferChange({ place_of_birth_state: v })} />
                 <FormField id="countryOfBirth" label="Country of Birth" value={editBuffer.country_of_birth} onChange={v => handleBufferChange({ country_of_birth: v })} />
                 <div className="relative">
                   <Label htmlFor="dateOfBirth" className="block text-sm font-medium mb-1 text-gray-700">
@@ -1276,11 +1180,11 @@ const Step6Review: React.FC<{
             ) : (
               <>
                 <ReviewItem label="Application Type" value={formData.application_type} />
-                <ReviewItem label="Last Name" value={formData.last_name} />
+                <ReviewItem label="Last Name" value={formData.surname} />
                 <ReviewItem label="First and Middle Names" value={formData.first_middle_names} />
                 <ReviewItem label="SSN" value={formData.social_security_number} />
-                <ReviewItem label="City of Birth" value={formData.city_of_birth} />
-                <ReviewItem label="State of Birth" value={formData.state_of_birth} />
+                <ReviewItem label="City of Birth" value={formData.place_of_birth_city} />
+                <ReviewItem label="State of Birth" value={formData.place_of_birth_state} />
                 <ReviewItem label="Country of Birth" value={formData.country_of_birth} />
                 <ReviewItem label="Date of Birth" value={formData.date_of_birth} />
                 <ReviewItem label="Gender" value={formData.gender} />
@@ -1319,23 +1223,21 @@ const Step6Review: React.FC<{
           <CardContent className="p-6">
             {editingSections.contact ? (
               <div className="space-y-2">
-                <FormField id="houseNumber" label="House Number" value={editBuffer.house_number} onChange={v => handleBufferChange({ house_number: v })} />
+                <FormField id="houseNumber" label="House Number" value={editBuffer.address_unit} onChange={v => handleBufferChange({ address_unit: v })} />
                 <FormField id="streetName" label="Street Name" value={editBuffer.street_name} onChange={v => handleBufferChange({ street_name: v })} />
-                <FormField id="phoneNumber" label="Phone Number" value={editBuffer.phone_number} onChange={v => handleBufferChange({ phone_number: v })} />
+                <PhoneInput id="phoneNumber" label="Phone Number" value={editBuffer.phone_number} onChange={v => handleBufferChange({ phone_number: v })} />
                 <FormField id="city" label="City" value={editBuffer.city} onChange={v => handleBufferChange({ city: v })} />
                 <FormField id="state" label="State" value={editBuffer.state} onChange={v => handleBufferChange({ state: v })} />
-                <FormField id="zipCode" label="Zip Code" value={editBuffer.zip_code} onChange={v => handleBufferChange({ zip_code: v })} />
-                <FormField id="email" label="Email" value={editBuffer.email} onChange={v => handleBufferChange({ email: v })} />
+                <FormField id="postalCode" label="Postal Code" value={editBuffer.postal_code} onChange={v => handleBufferChange({ postal_code: v })} />
               </div>
             ) : (
               <>
-                <ReviewItem label="House Number" value={formData.house_number} />
+                <ReviewItem label="House Number" value={formData.address_unit} />
                 <ReviewItem label="Street Name" value={formData.street_name} />
                 <ReviewItem label="Phone Number" value={formData.phone_number} />
                 <ReviewItem label="City" value={formData.city} />
                 <ReviewItem label="State" value={formData.state} />
-                <ReviewItem label="Zip Code" value={formData.zip_code} />
-                <ReviewItem label="Email" value={formData.email} />
+                <ReviewItem label="Postal Code" value={formData.postal_code} />
               </>
             )}
           </CardContent>
@@ -1367,23 +1269,23 @@ const Step6Review: React.FC<{
           <CardContent className="p-6">
             {editingSections.emergency ? (
               <div className="space-y-2">
-                <FormField id="emergencyName" label="Name" value={editBuffer.emergency_contact_name} onChange={v => handleBufferChange({ emergency_contact_name: v })} />
-                <FormField id="emergencyPhone" label="Phone" value={editBuffer.emergency_contact_phone} onChange={v => handleBufferChange({ emergency_contact_phone: v })} />
-                <FormField id="emergencyHouseNumber" label="House Number" value={editBuffer.emergency_contact_house_number} onChange={v => handleBufferChange({ emergency_contact_house_number: v })} />
-                <FormField id="emergencyStreetName" label="Street Name" value={editBuffer.emergency_contact_street_name} onChange={v => handleBufferChange({ emergency_contact_street_name: v })} />
-                <FormField id="emergencyCity" label="City" value={editBuffer.emergency_contact_city} onChange={v => handleBufferChange({ emergency_contact_city: v })} />
-                <FormField id="emergencyState" label="State" value={editBuffer.emergency_contact_state} onChange={v => handleBufferChange({ emergency_contact_state: v })} />
-                <FormField id="emergencyPostalCode" label="Postal Code" value={editBuffer.emergency_contact_postal_code} onChange={v => handleBufferChange({ emergency_contact_postal_code: v })} />
+                <FormField id="emergencyName" label="Name" value={editBuffer.emergency_full_name} onChange={v => handleBufferChange({ emergency_full_name: v })} />
+                <PhoneInput id="emergencyPhone" label="Phone" value={editBuffer.emergency_phone_number} onChange={v => handleBufferChange({ emergency_phone_number: v })} />
+                <FormField id="emergencyHouseNumber" label="House Number" value={editBuffer.emergency_address_unit} onChange={v => handleBufferChange({ emergency_address_unit: v })} />
+                <FormField id="emergencyStreetName" label="Street Name" value={editBuffer.emergency_street_name} onChange={v => handleBufferChange({ emergency_street_name: v })} />
+                <FormField id="emergencyCity" label="City" value={editBuffer.emergency_city} onChange={v => handleBufferChange({ emergency_city: v })} />
+                <FormField id="emergencyState" label="State" value={editBuffer.emergency_state} onChange={v => handleBufferChange({ emergency_state: v })} />
+                <FormField id="emergencyPostalCode" label="Postal Code" value={editBuffer.emergency_postal_code} onChange={v => handleBufferChange({ emergency_postal_code: v })} />
               </div>
             ) : (
               <>
-                <ReviewItem label="Name" value={formData.emergency_contact_name} />
-                <ReviewItem label="Phone" value={formData.emergency_contact_phone} />
-                <ReviewItem label="House Number" value={formData.emergency_contact_house_number} />
-                <ReviewItem label="Street Name" value={formData.emergency_contact_street_name} />
-                <ReviewItem label="City" value={formData.emergency_contact_city} />
-                <ReviewItem label="State" value={formData.emergency_contact_state} />
-                <ReviewItem label="Postal Code" value={formData.emergency_contact_postal_code} />
+                <ReviewItem label="Name" value={formData.emergency_full_name} />
+                <ReviewItem label="Phone" value={formData.emergency_phone_number} />
+                <ReviewItem label="House Number" value={formData.emergency_address_unit} />
+                <ReviewItem label="Street Name" value={formData.emergency_street_name} />
+                <ReviewItem label="City" value={formData.emergency_city} />
+                <ReviewItem label="State" value={formData.emergency_state} />
+                <ReviewItem label="Postal Code" value={formData.emergency_postal_code} />
               </>
             )}
           </CardContent>
@@ -1415,63 +1317,51 @@ const Step6Review: React.FC<{
           <CardContent className="p-6">
             {editingSections.parental ? (
               <div className="space-y-2">
-                <FormField id="fatherName" label="Father's Name" value={editBuffer.father_name} onChange={v => handleBufferChange({ father_name: v })} />
-                <div className="relative">
-                  <Label htmlFor="fatherDob" className="block text-sm font-medium mb-1 text-gray-700">
-                    Father's Date of Birth
-                  </Label>
-                  <Input
-                    id="fatherDob"
-                    type="date"
-                    value={editBuffer.father_date_of_birth}
-                    onChange={e => handleBufferChange({ father_date_of_birth: e.target.value })}
-                    className="w-full border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
-                  />
+                <FormField id="fatherName" label="Father's Name" value={editBuffer.father_full_name} onChange={v => handleBufferChange({ father_full_name: v })} />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField id="fatherDob" label="Father's Date of Birth" value={editBuffer.father_dob} onChange={v => handleBufferChange({ father_dob: v })} type="date" />
+                  <FormField id="fatherNationality" label="Father's Nationality" value={editBuffer.father_nationality} onChange={v => handleBufferChange({ father_nationality: v })} />
                 </div>
-                <FormField id="fatherNationality" label="Father's Nationality" value={editBuffer.father_nationality} onChange={v => handleBufferChange({ father_nationality: v })} />
-                <FormField id="fatherCity" label="Father's City" value={editBuffer.father_city} onChange={v => handleBufferChange({ father_city: v })} />
-                <FormField id="fatherState" label="Father's State" value={editBuffer.father_state} onChange={v => handleBufferChange({ father_state: v })} />
-                <FormField id="fatherCountry" label="Father's Country" value={editBuffer.father_country} onChange={v => handleBufferChange({ father_country: v })} />
-                <FormField id="motherName" label="Mother's Name" value={editBuffer.mother_name} onChange={v => handleBufferChange({ mother_name: v })} />
-                <div className="relative">
-                  <Label htmlFor="motherDob" className="block text-sm font-medium mb-1 text-gray-700">
-                    Mother's Date of Birth
-                  </Label>
-                  <Input
-                    id="motherDob"
-                    type="date"
-                    value={editBuffer.mother_date_of_birth}
-                    onChange={e => handleBufferChange({ mother_date_of_birth: e.target.value })}
-                    className="w-full border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField id="fatherCity" label="Father's City" value={editBuffer.father_birth_city} onChange={v => handleBufferChange({ father_birth_city: v })} />
+                  <FormField id="fatherState" label="Father's State" value={editBuffer.father_birth_state} onChange={v => handleBufferChange({ father_birth_state: v })} />
                 </div>
-                <FormField id="motherNationality" label="Mother's Nationality" value={editBuffer.mother_nationality} onChange={v => handleBufferChange({ mother_nationality: v })} />
-                <FormField id="motherCity" label="Mother's City" value={editBuffer.mother_city} onChange={v => handleBufferChange({ mother_city: v })} />
-                <FormField id="motherState" label="Mother's State" value={editBuffer.mother_state} onChange={v => handleBufferChange({ mother_state: v })} />
-                <FormField id="motherCountry" label="Mother's Country" value={editBuffer.mother_country} onChange={v => handleBufferChange({ mother_country: v })} />
+                <FormField id="fatherCountry" label="Father's Country" value={editBuffer.father_birth_country} onChange={v => handleBufferChange({ father_birth_country: v })} />
+
+                <FormField id="motherName" label="Mother's Name" value={editBuffer.mother_full_name} onChange={v => handleBufferChange({ mother_full_name: v })} />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField id="motherDob" label="Mother's Date of Birth" value={editBuffer.mother_dob} onChange={v => handleBufferChange({ mother_dob: v })} type="date" />
+                  <FormField id="motherNationality" label="Mother's Nationality" value={editBuffer.mother_nationality} onChange={v => handleBufferChange({ mother_nationality: v })} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField id="motherCity" label="Mother's City" value={editBuffer.mother_birth_city} onChange={v => handleBufferChange({ mother_birth_city: v })} />
+                  <FormField id="motherState" label="Mother's State" value={editBuffer.mother_birth_state} onChange={v => handleBufferChange({ mother_birth_state: v })} />
+                </div>
+                <FormField id="motherCountry" label="Mother's Country" value={editBuffer.mother_birth_country} onChange={v => handleBufferChange({ mother_birth_country: v })} />
               </div>
             ) : (
               <>
                 <div className="mb-4">
                   <h4 className="font-medium text-gray-800 mb-2">Father</h4>
                   <div className="ml-4 space-y-2">
-                    <ReviewItem label="Name" value={formData.father_name} />
-                    <ReviewItem label="Date of Birth" value={formData.father_date_of_birth} />
+                    <ReviewItem label="Name" value={formData.father_full_name} />
+                    <ReviewItem label="Date of Birth" value={formData.father_dob} />
                     <ReviewItem label="Nationality" value={formData.father_nationality} />
-                    <ReviewItem label="City" value={formData.father_city} />
-                    <ReviewItem label="State" value={formData.father_state} />
-                    <ReviewItem label="Country" value={formData.father_country} />
+                    <ReviewItem label="City" value={formData.father_birth_city} />
+                    <ReviewItem label="State" value={formData.father_birth_state} />
+                    <ReviewItem label="Country" value={formData.father_birth_country} />
                   </div>
                 </div>
                 <div>
+                 
                   <h4 className="font-medium text-gray-800 mb-2">Mother</h4>
-                                   <div className="ml-4 space-y-2">
-                    <ReviewItem label="Name" value={formData.mother_name} />
-                    <ReviewItem label="Date of Birth" value={formData.mother_date_of_birth} />
+                  <div className="ml-4 space-y-2">
+                    <ReviewItem label="Name" value={formData.mother_full_name} />
+                    <ReviewItem label="Date of Birth" value={formData.mother_dob} />
                     <ReviewItem label="Nationality" value={formData.mother_nationality} />
-                    <ReviewItem label="City" value={formData.mother_city} />
-                    <ReviewItem label="State" value={formData.mother_state} />
-                    <ReviewItem label="Country" value={formData.mother_country} />
+                    <ReviewItem label="City" value={formData.mother_birth_city} />
+                    <ReviewItem label="State" value={formData.mother_birth_state} />
+                    <ReviewItem label="Country" value={formData.mother_birth_country} />
                   </div>
                 </div>
               </>
@@ -1484,12 +1374,9 @@ const Step6Review: React.FC<{
             <CardTitle className="text-base font-medium text-gray-800">Uploaded Documents</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <DocumentStatus name="Birth Certificate" file={formData.birth_certificate} />
-            <DocumentStatus name="Consent Form" file={formData.consent_form} />
-            <DocumentStatus name="Marriage/Divorce Certificate" file={formData.marriage_certificate} />
-            <DocumentStatus name="Old Passport Copy" file={formData.old_passport} />
-            <DocumentStatus name="Signature" file={formData.signature} />
-            <DocumentStatus name="Photo ID" file={formData.photo_id} />
+            {documentTypes.map(doc => (
+              <DocumentStatus key={doc.key} name={doc.label} url={formData[doc.urlField as keyof FormData] as string} docKey={doc.key} />
+            ))}
           </CardContent>
         </Card>
       </div>
@@ -1497,17 +1384,36 @@ const Step6Review: React.FC<{
   )
 }
 
+// ProgressBar component for step navigation
+const ProgressBar: React.FC<{ currentStep: number; totalSteps: number; isCompact?: boolean }> = ({ currentStep, totalSteps, isCompact = false }) => {
+  const percent = Math.max(0, Math.min(100, Math.round((currentStep - 1) / (totalSteps - 1) * 100)))
+  return (
+    <div className={isCompact ? "py-2" : "py-4"}>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-medium text-blue-900">Step {currentStep} of {totalSteps}</span>
+        <span className="text-xs font-medium text-blue-700">{percent}%</span>
+      </div>
+      <div className={`w-full bg-blue-100 rounded-full h-2 ${isCompact ? 'h-1.5' : 'h-2'}`}> 
+        <div
+          className="bg-gradient-to-r from-blue-500 to-blue-700 h-full rounded-full transition-all duration-300"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 // Main Apply Component
 export default function Apply() {
-  const [currentStep, setCurrentStep] = useState(1)
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     // Personal Information
     application_type: "",
-    last_name: "",
+    surname: "",
     first_middle_names: "",
     social_security_number: "",
-    city_of_birth: "",
-    state_of_birth: "",
+    place_of_birth_city: "",
+    place_of_birth_state: "",
     country_of_birth: "",
     date_of_birth: "",
     gender: "",
@@ -1516,77 +1422,187 @@ export default function Apply() {
     height_feet: "",
     height_inches: "",
     eye_color: "",
-
     // Contact Information
-    house_number: "",
+    address_unit: "",
     street_name: "",
     phone_number: "",
     city: "",
     state: "",
-    zip_code: "",
-    email: "",
+    postal_code: "",
 
     // Emergency Contact
-    emergency_contact_name: "",
-    emergency_contact_phone: "",
-    emergency_contact_house_number: "",
-    emergency_contact_street_name: "",
-    emergency_contact_city: "",
-    emergency_contact_state: "",
-    emergency_contact_postal_code: "",
+    emergency_full_name: "",
+    emergency_phone_number: "",
+    emergency_address_unit: "",
+    emergency_street_name: "",
+    emergency_city: "",
+    emergency_state: "",
+    emergency_postal_code: "",
 
     // Parental Details
-    father_name: "",
-    father_date_of_birth: "",
+    father_full_name: "",
+    father_dob: "",
     father_nationality: "",
-    father_city: "",
-    father_state: "",
-    father_country: "",
-    mother_name: "",
-    mother_date_of_birth: "",
+    father_birth_city: "",
+    father_birth_state: "",
+    father_birth_country: "",
+    mother_full_name: "",
+    mother_dob: "",
     mother_nationality: "",
-    mother_city: "",
-    mother_state: "",
-    mother_country: "",
+    mother_birth_city: "",
+    mother_birth_state: "",
+    mother_birth_country: "",
 
-    // Document Uploads
-    birth_certificate: null,
-    consent_form: null,
-    marriage_certificate: null,
-    old_passport: null,
-    signature: null,
-    photo_id: null,
-  })
-
-  const formRef = useRef<HTMLDivElement>(null)
-  const totalSteps = 6
-  const { toast } = useToast()
-
+    // // Document Uploads
+    birth_certificate: "",
+    consent_form: "",
+    marriage_or_divorce_certificate: "",
+    old_passport_copy: "",
+    signature: "",
+    photo_id: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  const totalSteps = 6;
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const router = useRouter();
   // Media queries
-  const [isSmallScreen, setIsSmallScreen] = useState(false)
-  const [isLandscape, setIsLandscape] = useState(false)
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
 
+  // Check screen size and orientation
   useEffect(() => {
-    const checkScreenSize = () => {
-      setIsSmallScreen(window.innerWidth <= 640)
-      setIsLandscape(window.innerHeight <= 500 && window.innerWidth > window.innerHeight)
-    }
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth < 640);
+      setIsLandscape(window.innerHeight / window.innerWidth < 1);
+    };
 
-    checkScreenSize()
-    window.addEventListener("resize", checkScreenSize)
-    return () => window.removeEventListener("resize", checkScreenSize)
-  }, [])
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
-  // Reset view when changing steps
+  // Helper: Check if a form is incomplete (required fields null/empty)
+  const isIncomplete = (app: any) => {
+    // List of required fields (adjust as needed)
+    const required = [
+      "application_type",
+      "surname",
+      "first_middle_names",
+      "social_security_number",
+      "place_of_birth_city",
+      "place_of_birth_state",
+      "country_of_birth",
+      "date_of_birth",
+      "gender",
+      "hair_color",
+      "marital_status",
+      "height_feet",
+      "height_inches",
+      "eye_color",
+      "address_unit",
+      "street_name",
+      "phone_number",
+      "city",
+      "state",
+      "postal_code",
+      "emergency_full_name",
+      "emergency_phone_number",
+      "emergency_address_unit",
+      "emergency_street_name",
+      "emergency_city",
+      "emergency_state",
+      "emergency_postal_code",
+      "father_full_name",
+      "father_dob",
+      "father_nationality",
+      "mother_full_name",
+      "mother_dob",
+      "mother_nationality"
+    ];
+    return (
+      app.status === "draft" || required.some((f) => !app[f] || app[f] === "")
+    );
+  };
+
+  // On mount: check for existing draft or create new
   useEffect(() => {
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur()
-    }
+    const fetchOrCreateDraft = async () => {
+      if (!user?.id) return;
+      setLoading(true);
+      // 1. Check for existing draft (status = 'draft' or required fields missing)
+      const { data, error } = await supabase
+        .from("passport_applications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+      let draft = data && data.length > 0 ? data[0] : null;
+      // Required fields (all except marriage/divorce and previous passport)
+      const required = [
+        "application_type", "surname", "first_middle_names", "social_security_number", "place_of_birth_city", "place_of_birth_state", "country_of_birth", "date_of_birth", "gender", "hair_color", "marital_status", "height_feet", "height_inches", "eye_color", "address_unit", "street_name", "phone_number", "city", "state", "postal_code", "emergency_full_name", "emergency_phone_number", "emergency_address_unit", "emergency_street_name", "emergency_city", "emergency_state", "emergency_postal_code", "father_full_name", "father_dob", "father_nationality", "mother_full_name", "mother_dob", "mother_nationality"
+      ];
+      // 2. If draft exists, check if it's incomplete
+      if (draft) {
+        if (isIncomplete(draft)) {
+          setFormData((prev) => ({
+            ...prev,
+            ...Object.fromEntries(
+              Object.entries(draft).map(([k, v]) => [k, v === null ? "" : v])
+            ),
+          }));
+          setApplicationId(draft.id);
+          setLoading(false);
+          return;
+        }
+      }
+      // 3. If no draft or draft is complete, create a new one
+      const { data: newApp, error: insertError } = await supabase
+        .from("passport_applications")
+        .insert([
+          {
+            user_id: user.id,
+            status: "draft",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ])
+        .select();
+      if (insertError) {
+        setLoading(false);
+        return;
+      }
+      setFormData((prev) => ({
+        ...prev,
+        ...Object.fromEntries(
+          Object.entries(newApp[0]).map(([k, v]) => [k, v === null ? "" : v])
+        ),
+      }));
+      setApplicationId(newApp[0].id);
+      setLoading(false);
+    };
+    fetchOrCreateDraft();
+    // eslint-disable-next-line
+  }, [user?.id]);
 
-    if (formRef.current) {
-      formRef.current.scrollIntoView({ behavior: "smooth", block: "start" })
-    }
-  }, [currentStep])
+  // As user progresses, update the draft in Supabase
+  const updateFormData = (data: Partial<FormData>) => {
+    setFormData((prev) => {
+      const updated = { ...prev, ...data };
+      // Update Supabase draft if applicationId exists
+      if (applicationId) {
+        supabase
+          .from("passport_applications")
+          .update({ ...data, updated_at: new Date().toISOString() })
+          .eq("id", applicationId);
+      }
+      return updated;
+    });
+  };
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -1600,28 +1616,49 @@ export default function Apply() {
     }
   }
 
-  const updateFormData = (data: Partial<FormData>) => {
-    setFormData((prev) => ({ ...prev, ...data }))
-  }
-
+  // Submission handler
   const handleSubmit = async () => {
+    if (!applicationId) return;
+    setLoading(true);
     try {
-      // Here you would typically send the data to your Supabase backend
-      console.log("Form submitted:", formData)
+      // Prepare the update payload
+      const payload = {
+        ...formData,
+        status: "submitted",
+        submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      // Remove id from payload if present
+      delete (payload as any).id;
 
-      toast({
-        title: "Application Submitted",
-        description: "Your passport application has been submitted successfully!",
-      })
+      const { error } = await supabase
+        .from("passport_applications")
+        .update(payload)
+        .eq("id", applicationId);
 
-      // Reset form or redirect
-      // navigate('/success') // if using router
+      if (error) {
+        toast({
+          title: "Submission Error",
+          description: "There was an error submitting your application. Please try again."
+        });
+      } else {
+        // Show success toast
+        toast({
+          title: 'Application submitted!',
+          description: 'You can track your application status or progress anytime from your dashboard.'
+        });
+        // Redirect after short delay
+        setTimeout(() => {
+        router.navigate({ to: "/dashboard" });
+      }, 2000);
+      }
     } catch (error) {
       toast({
-        title: "Submission Error",
-        description: "There was an error submitting your application. Please try again.",
-      })
+        title: 'Submission failed',
+        description: 'There was an error submitting your application. Please try again.'
+      });
     }
+    setLoading(false);
   }
 
   const renderStep = () => {
@@ -1643,16 +1680,18 @@ export default function Apply() {
     }
   }
 
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">Loading application...</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-3xl">
-        <Card className="bg-white shadow-2xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8" ref={formRef}>
+        <Card className="bg-white shadow-2xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8">
           <CardHeader className={`pb-2 ${isLandscape ? "mb-0" : ""}`} >
             <ProgressBar currentStep={currentStep} totalSteps={totalSteps} isCompact={isSmallScreen || isLandscape} />
           </CardHeader>
-
           <CardContent className={`pt-0 ${isLandscape ? "py-2" : ""}`}>{renderStep()}</CardContent>
-
           <div
             className={`flex border-t border-gray-100 pt-6 ${currentStep === 1 ? "justify-center" : "justify-between"} ${isLandscape ? "py-2" : ""}`}
           >
