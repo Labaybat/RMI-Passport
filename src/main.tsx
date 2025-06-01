@@ -16,6 +16,7 @@ import PassportDashboard from "./components/Dashboard"
 import MyProfile from "./components/MyProfile"
 import Application from "./components/Application"
 import { AuthProvider } from "./contexts/AuthContext"
+import PhotoGuideline from "./components/photoguideline"
 
 // Root layout
 const rootRoute = createRootRoute({
@@ -63,6 +64,12 @@ const applicationRoute = createRoute({
   component: Application,
 })
 
+const photoGuidelineRoute = createRoute({
+  path: "/photo-guidelines",
+  getParentRoute: () => rootRoute,
+  component: PhotoGuideline,
+})
+
 // Router setup
 const router = createRouter({
   routeTree: rootRoute.addChildren([
@@ -72,6 +79,7 @@ const router = createRouter({
     dashboardRoute,
     myProfileRoute,
     applicationRoute,
+    photoGuidelineRoute,
   ]),
 })
 

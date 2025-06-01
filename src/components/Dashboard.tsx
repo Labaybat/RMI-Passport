@@ -834,7 +834,7 @@ const PassportDashboard: React.FC = () => {
 
               <Button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-rose-50 to-red-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
-                onClick={() => console.log("Photo Guidelines clicked")}
+                onClick={() => navigate({ to: "/photo-guidelines" })}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-rose-500/0 to-rose-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
                 <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm transition-all duration-300 group_hover:bg-rose-200 group_hover:text-rose-700 group-hover:shadow">
