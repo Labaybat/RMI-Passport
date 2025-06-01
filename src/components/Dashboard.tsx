@@ -6,6 +6,7 @@ import { useAuth } from "../contexts/AuthContext"
 import supabase from "../lib/supabase/client"
 import { createClient } from '@supabase/supabase-js'
 import { useNavigate } from "@tanstack/react-router"
+import Button from "./ui/Button"
 
 const supabaseClient = supabase // already imported
 
@@ -73,6 +74,13 @@ const PassportDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [hasAnyApplications, setHasAnyApplications] = useState<boolean | null>(null);
+  const [draft, setDraft] = useState(null);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [buttonLabel, setButtonLabel] = useState("Start Application");
+  const [buttonAction, setButtonAction] = useState(() => () => {});
+  const [draftName, setDraftName] = useState("");
+  const [draftSurname, setDraftSurname] = useState("");
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -260,6 +268,89 @@ const PassportDashboard: React.FC = () => {
       setLoading(false)
     }
   }
+
+  // Check for submitted applications for button label
+  useEffect(() => {
+    const fetchSubmittedApplications = async () => {
+      if (!session || !isConfigured) {
+        setHasAnyApplications(null);
+        return;
+      }
+      try {
+        const { count, error } = await supabase
+          .from("passport_applications")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", session.user.id)
+          .eq("status", "submitted");
+        if (error) {
+          console.error("Error checking submitted applications:", error);
+          setHasAnyApplications(false);
+          return;
+        }
+        setHasAnyApplications((count ?? 0) > 0);
+      } catch (err) {
+        console.error("Unexpected error checking submitted applications:", err);
+        setHasAnyApplications(false);
+      }
+    };
+    fetchSubmittedApplications();
+  }, [session, isConfigured]);
+
+  // --- Application Button Logic ---
+  useEffect(() => {
+    if (!session || !isConfigured) return;
+    const fetchAllApplications = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("passport_applications")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .order("updated_at", { ascending: false });
+        if (error) {
+          console.error("Error fetching applications for dashboard button:", error);
+          setLoading(false);
+          return;
+        }
+        // Find draft
+        const draftApp = data.find((app) => app.status === "draft");
+        setDraft(draftApp || null);
+        // Find if any submitted
+        const submitted = data.some((app) => app.status === "submitted");
+        setHasSubmitted(submitted);
+        // Set draft name/surname for label
+        if (draftApp) {
+          setDraftName(draftApp.first_middle_names || "");
+          setDraftSurname(draftApp.surname || "");
+        } else {
+          setDraftName("");
+          setDraftSurname("");
+        }
+        // Set button label and action
+        if (draftApp) {
+          if ((draftApp.surname && draftApp.surname.trim()) && (draftApp.first_middle_names && draftApp.first_middle_names.trim())) {
+            setButtonLabel(`Continue Application for ${draftApp.surname} ${draftApp.first_middle_names}`);
+          } else {
+            setButtonLabel("Continue Last Application");
+          }
+          setButtonAction(() => () => navigate({ to: "/apply" }));
+        } else if (submitted) {
+          setButtonLabel("Start Another Application");
+          setButtonAction(() => () => navigate({ to: "/apply" }));
+        } else {
+          setButtonLabel("Start Application");
+          setButtonAction(() => () => navigate({ to: "/apply" }));
+        }
+      } catch (err) {
+        console.error("Unexpected error fetching applications for dashboard button:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAllApplications();
+    // Only run when session.user.id or isConfigured changes
+    // eslint-disable-next-line
+  }, [session?.user?.id, isConfigured]);
 
   const getGreeting = (): string => {
     const hour = new Date().getHours()
@@ -595,9 +686,9 @@ const PassportDashboard: React.FC = () => {
           <div className="space-y-4 sm:space-y-6">
             {/* Action Buttons Grid */}
             <div className="grid w-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-              <button
+              <Button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                onClick={() => navigate({ to: "/apply" })} // Redirect to the new route
+                onClick={buttonAction}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
                 <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 shadow-sm transition-all duration-300 group-hover:bg-blue-200 group-hover:text-blue-700 group_hover:shadow">
@@ -618,16 +709,16 @@ const PassportDashboard: React.FC = () => {
                   </svg>
                 </div>
                 <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
-                  Start Application
+                  {buttonLabel}
                 </span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                 onClick={handleDownloadForm}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 to-purple-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
-                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-600 shadow-sm transition-all duration-300 group_hover:bg-purple-200 group-hover:text-purple-700 group_hover:shadow">
+                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-600 shadow-sm transition-all duration-300 group_hover:bg-purple-200 group_hover:text-purple-700 group_hover:shadow">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -653,9 +744,9 @@ const PassportDashboard: React.FC = () => {
                     Sign and upload later
                   </span>
                 </div>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-green-50 to-teal-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 onClick={() => console.log("Dashboard clicked")}
               >
@@ -681,14 +772,14 @@ const PassportDashboard: React.FC = () => {
                 <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
                   My Dashboard
                 </span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
                 onClick={() => window.open("/passport-act.pdf", "_blank")}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 to-amber-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
-                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 shadow-sm transition-all duration-300 group_hover:bg-amber-200 group-hover:text-amber-700 group-hover:shadow">
+                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 shadow-sm transition-all duration-300 group_hover:bg-amber-200 group_hover:text-amber-700 group_hover:shadow">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -711,9 +802,9 @@ const PassportDashboard: React.FC = () => {
                 <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
                   View Passport Act PDF
                 </span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-cyan-50 to-sky-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
                 onClick={() => console.log("Upload Documents clicked")}
               >
@@ -739,9 +830,9 @@ const PassportDashboard: React.FC = () => {
                 <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
                   Upload Documents
                 </span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-rose-50 to-red-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
                 onClick={() => console.log("Photo Guidelines clicked")}
               >
@@ -767,7 +858,7 @@ const PassportDashboard: React.FC = () => {
                 <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
                   Photo Guidelines
                 </span>
-              </button>
+              </Button>
             </div>
 
             {/* Application Status Card */}

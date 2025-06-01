@@ -105,6 +105,7 @@ const FormField: React.FC<{
         className={`absolute left-3 transition-all duration-200 pointer-events-none ${
           hasValue || focused ? "top-1 text-xs text-blue-600 font-medium" : "top-1/2 -translate-y-1/2 text-gray-500"
         }`}
+        required={required}
       >
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
@@ -170,9 +171,10 @@ const PhoneInput: React.FC<{
         className={`absolute left-3 transition-all duration-200 pointer-events-none ${
           hasValue || focused ? "top-1 text-xs text-blue-600 font-medium" : "top-1/2 -translate-y-1/2 text-gray-500"
         }`}
+        required={required}
       >
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        <span className="text-red-500 ml-1">*</span>
       </Label>
     </div>
   )
@@ -348,12 +350,14 @@ const Step1PersonalInfo: React.FC<{
 
       <div className="space-y-4">
         <div className="relative">
-          <Label htmlFor="applicationType" className="block text-sm font-medium mb-1 text-gray-700">
+          <Label htmlFor="applicationType" className="block text-sm font-medium mb-1 text-gray-700" required>
             Application Type
+            <span className="text-red-500 ml-1">*</span>
           </Label>
           <Select
             value={formData.application_type}
             onValueChange={(value) => updateFormData({ application_type: value })}
+            required
           >
             <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
               <SelectValue placeholder="Select application type" />
@@ -388,6 +392,7 @@ const Step1PersonalInfo: React.FC<{
           label="Social Security Number"
           value={formData.social_security_number}
           onChange={(value) => updateFormData({ social_security_number: value })}
+          required
         />
 
         <FormField
@@ -414,8 +419,9 @@ const Step1PersonalInfo: React.FC<{
         />
 
         <div className="relative">
-          <Label htmlFor="dateOfBirth" className="block text-sm font-medium mb-1 text-gray-700">
+          <Label htmlFor="dateOfBirth" className="block text-sm font-medium mb-1 text-gray-700" required>
             Date of Birth
+            <span className="text-red-500 ml-1">*</span>
           </Label>
           <Input
             id="dateOfBirth"
@@ -423,16 +429,19 @@ const Step1PersonalInfo: React.FC<{
             value={formData.date_of_birth}
             onChange={(e) => updateFormData({ date_of_birth: e.target.value })}
             className="w-full border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
+            required
           />
         </div>
 
         <div className="relative">
-          <Label htmlFor="gender" className="block text-sm font-medium mb-1 text-gray-700">
+          <Label htmlFor="gender" className="block text-sm font-medium mb-1 text-gray-700" required>
             Gender
+            <span className="text-red-500 ml-1">*</span>
           </Label>
           <Select
             value={formData.gender}
             onValueChange={(value) => updateFormData({ gender: value })}
+            required
           >
             <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
               <SelectValue placeholder="Select gender" />
@@ -447,12 +456,14 @@ const Step1PersonalInfo: React.FC<{
         </div>
 
         <div className="relative">
-          <Label htmlFor="hairColor" className="block text-sm font-medium mb-1 text-gray-700">
+          <Label htmlFor="hairColor" className="block text-sm font-medium mb-1 text-gray-700" required>
             Hair Color
+            <span className="text-red-500 ml-1">*</span>
           </Label>
           <Select
             value={formData.hair_color}
             onValueChange={(value) => updateFormData({ hair_color: value })}
+            required
           >
             <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
               <SelectValue placeholder="Select hair color" />
@@ -470,12 +481,14 @@ const Step1PersonalInfo: React.FC<{
         </div>
 
         <div className="relative">
-          <Label htmlFor="maritalStatus" className="block text-sm font-medium mb-1 text-gray-700">
+          <Label htmlFor="maritalStatus" className="block text-sm font-medium mb-1 text-gray-700" required>
             Marital Status
+            <span className="text-red-500 ml-1">*</span>
           </Label>
           <Select
             value={formData.marital_status}
             onValueChange={(value) => updateFormData({ marital_status: value })}
+            required
           >
             <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
               <SelectValue placeholder="Select marital status" />
@@ -497,6 +510,7 @@ const Step1PersonalInfo: React.FC<{
             value={formData.height_feet}
             onChange={(value) => updateFormData({ height_feet: value })}
             type="number"
+            required
           />
           <FormField
             id="heightInches"
@@ -504,16 +518,19 @@ const Step1PersonalInfo: React.FC<{
             value={formData.height_inches}
             onChange={(value) => updateFormData({ height_inches: value })}
             type="number"
+            required
           />
         </div>
 
         <div className="relative">
-          <Label htmlFor="eyeColor" className="block text-sm font-medium mb-1 text-gray-700">
+          <Label htmlFor="eyeColor" className="block text-sm font-medium mb-1 text-gray-700" required>
             Eye Color
+            <span className="text-red-500 ml-1">*</span>
           </Label>
           <Select
             value={formData.eye_color}
             onValueChange={(value) => updateFormData({ eye_color: value })}
+            required
           >
             <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
               <SelectValue placeholder="Select eye color" />
@@ -631,6 +648,7 @@ const Step3EmergencyContact: React.FC<{
           label="Unit and/or House Number"
           value={formData.emergency_address_unit}
           onChange={(value) => updateFormData({ emergency_address_unit: value })}
+          required
         />
 
         <FormField
@@ -638,6 +656,7 @@ const Step3EmergencyContact: React.FC<{
           label="Street Name"
           value={formData.emergency_street_name}
           onChange={(value) => updateFormData({ emergency_street_name: value })}
+          required
         />
 
         <FormField
@@ -645,6 +664,7 @@ const Step3EmergencyContact: React.FC<{
           label="City or Town"
           value={formData.emergency_city}
           onChange={(value) => updateFormData({ emergency_city: value })}
+          required
         />
 
         <FormField
@@ -652,6 +672,7 @@ const Step3EmergencyContact: React.FC<{
           label="State"
           value={formData.emergency_state}
           onChange={(value) => updateFormData({ emergency_state: value })}
+          required
         />
 
         <FormField
@@ -659,6 +680,7 @@ const Step3EmergencyContact: React.FC<{
           label="Postal Code"
           value={formData.emergency_postal_code}
           onChange={(value) => updateFormData({ emergency_postal_code: value })}
+          required
         />
       </div>
     </div>
@@ -690,8 +712,9 @@ const Step4ParentInfo: React.FC<{
           />
 
           <div className="relative">
-            <Label htmlFor="fatherDob" className="block text-sm font-medium mb-1 text-gray-700">
+            <Label htmlFor="fatherDob" className="block text-sm font-medium mb-1 text-gray-700" required>
               Father's Date of Birth
+              <span className="text-red-500 ml-1">*</span>
             </Label>
             <Input
               id="fatherDob"
@@ -699,6 +722,7 @@ const Step4ParentInfo: React.FC<{
               value={formData.father_dob}
               onChange={(e) => updateFormData({ father_dob: e.target.value })}
               className="w-full border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
+              required
             />
           </div>
 
@@ -707,6 +731,7 @@ const Step4ParentInfo: React.FC<{
             label="Nationality"
             value={formData.father_nationality}
             onChange={(value) => updateFormData({ father_nationality: value })}
+            required
           />
 
           <FormField
@@ -714,6 +739,7 @@ const Step4ParentInfo: React.FC<{
             label="City or Town"
             value={formData.father_birth_city}
             onChange={(value) => updateFormData({ father_birth_city: value })}
+            required
           />
 
           <FormField
@@ -721,6 +747,7 @@ const Step4ParentInfo: React.FC<{
             label="State"
             value={formData.father_birth_state}
             onChange={(value) => updateFormData({ father_birth_state: value })}
+            required
           />
 
           <FormField
@@ -728,6 +755,7 @@ const Step4ParentInfo: React.FC<{
             label="Country"
             value={formData.father_birth_country}
             onChange={(value) => updateFormData({ father_birth_country: value })}
+            required
           />
         </div>
 
@@ -744,8 +772,9 @@ const Step4ParentInfo: React.FC<{
           />
 
           <div className="relative">
-            <Label htmlFor="motherDob" className="block text-sm font-medium mb-1 text-gray-700">
+            <Label htmlFor="motherDob" className="block text-sm font-medium mb-1 text-gray-700" required>
               Mother's Date of Birth
+              <span className="text-red-500 ml-1">*</span>
             </Label>
             <Input
               id="motherDob"
@@ -753,6 +782,7 @@ const Step4ParentInfo: React.FC<{
               value={formData.mother_dob}
               onChange={(e) => updateFormData({ mother_dob: e.target.value })}
               className="w-full border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
+              required
             />
           </div>
 
@@ -761,6 +791,7 @@ const Step4ParentInfo: React.FC<{
             label="Nationality"
             value={formData.mother_nationality}
             onChange={(value) => updateFormData({ mother_nationality: value })}
+            required
           />
 
           <FormField
@@ -768,6 +799,7 @@ const Step4ParentInfo: React.FC<{
             label="City or Town"
             value={formData.mother_birth_city}
             onChange={(value) => updateFormData({ mother_birth_city: value })}
+            required
           />
 
           <FormField
@@ -775,6 +807,7 @@ const Step4ParentInfo: React.FC<{
             label="State"
             value={formData.mother_birth_state}
             onChange={(value) => updateFormData({ mother_birth_state: value })}
+            required
           />
 
           <FormField
@@ -782,6 +815,7 @@ const Step4ParentInfo: React.FC<{
             label="Country"
             value={formData.mother_birth_country}
             onChange={(value) => updateFormData({ mother_birth_country: value })}
+            required
           />
         </div>
       </div>
@@ -1053,12 +1087,14 @@ const Step6Review: React.FC<{
             {editingSections.personal ? (
               <div className="space-y-2">
                 <div className="relative">
-                  <Label htmlFor="applicationType" className="block text-sm font-medium mb-1 text-gray-700">
+                  <Label htmlFor="applicationType" className="block text-sm font-medium mb-1 text-gray-700" required>
                     Application Type
+                    <span className="text-red-500 ml-1">*</span>
                   </Label>
                   <Select
                     value={editBuffer.application_type}
                     onValueChange={v => handleBufferChange({ application_type: v })}
+                    required
                   >
                     <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
                       <SelectValue placeholder="Select application type" />
@@ -1071,15 +1107,16 @@ const Step6Review: React.FC<{
                     </SelectContent>
                   </Select>
                 </div>
-                <FormField id="lastName" label="Last Name" value={editBuffer.surname} onChange={v => handleBufferChange({ surname: v })} />
-                <FormField id="firstMiddleNames" label="First and Middle Names" value={editBuffer.first_middle_names} onChange={v => handleBufferChange({ first_middle_names: v })} />
-                <FormField id="ssn" label="SSN" value={editBuffer.social_security_number} onChange={v => handleBufferChange({ social_security_number: v })} />
-                <FormField id="cityOfBirth" label="City of Birth" value={editBuffer.place_of_birth_city} onChange={v => handleBufferChange({ place_of_birth_city: v })} />
+                <FormField id="lastName" label="Last Name" value={editBuffer.surname} onChange={v => handleBufferChange({ surname: v })} required />
+                <FormField id="firstMiddleNames" label="First and Middle Names" value={editBuffer.first_middle_names} onChange={v => handleBufferChange({ first_middle_names: v })} required />
+                <FormField id="ssn" label="SSN" value={editBuffer.social_security_number} onChange={v => handleBufferChange({ social_security_number: v })} required />
+                <FormField id="cityOfBirth" label="City of Birth" value={editBuffer.place_of_birth_city} onChange={v => handleBufferChange({ place_of_birth_city: v })} required />
                 <FormField id="stateOfBirth" label="State of Birth" value={editBuffer.place_of_birth_state} onChange={v => handleBufferChange({ place_of_birth_state: v })} />
-                <FormField id="countryOfBirth" label="Country of Birth" value={editBuffer.country_of_birth} onChange={v => handleBufferChange({ country_of_birth: v })} />
+                <FormField id="countryOfBirth" label="Country of Birth" value={editBuffer.country_of_birth} onChange={v => handleBufferChange({ country_of_birth: v })} required />
                 <div className="relative">
-                  <Label htmlFor="dateOfBirth" className="block text-sm font-medium mb-1 text-gray-700">
+                  <Label htmlFor="dateOfBirth" className="block text-sm font-medium mb-1 text-gray-700" required>
                     Date of Birth
+                    <span className="text-red-500 ml-1">*</span>
                   </Label>
                   <Input
                     id="dateOfBirth"
@@ -1087,15 +1124,18 @@ const Step6Review: React.FC<{
                     value={editBuffer.date_of_birth}
                     onChange={e => handleBufferChange({ date_of_birth: e.target.value })}
                     className="w-full border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
+                    required
                   />
                 </div>
                 <div className="relative">
-                  <Label htmlFor="gender" className="block text-sm font-medium mb-1 text-gray-700">
+                  <Label htmlFor="gender" className="block text-sm font-medium mb-1 text-gray-700" required>
                     Gender
+                    <span className="text-red-500 ml-1">*</span>
                   </Label>
                   <Select
                     value={editBuffer.gender}
                     onValueChange={v => handleBufferChange({ gender: v })}
+                    required
                   >
                     <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
                       <SelectValue placeholder="Select gender" />
@@ -1109,12 +1149,14 @@ const Step6Review: React.FC<{
                   </Select>
                 </div>
                 <div className="relative">
-                  <Label htmlFor="hairColor" className="block text-sm font-medium mb-1 text-gray-700">
+                  <Label htmlFor="hairColor" className="block text-sm font-medium mb-1 text-gray-700" required>
                     Hair Color
+                    <span className="text-red-500 ml-1">*</span>
                   </Label>
                   <Select
                     value={editBuffer.hair_color}
                     onValueChange={v => handleBufferChange({ hair_color: v })}
+                    required
                   >
                     <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
                       <SelectValue placeholder="Select hair color" />
@@ -1131,12 +1173,14 @@ const Step6Review: React.FC<{
                   </Select>
                 </div>
                 <div className="relative">
-                  <Label htmlFor="maritalStatus" className="block text-sm font-medium mb-1 text-gray-700">
+                  <Label htmlFor="maritalStatus" className="block text-sm font-medium mb-1 text-gray-700" required>
                     Marital Status
+                    <span className="text-red-500 ml-1">*</span>
                   </Label>
                   <Select
                     value={editBuffer.marital_status}
                     onValueChange={v => handleBufferChange({ marital_status: v })}
+                    required
                   >
                     <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
                       <SelectValue placeholder="Select marital status" />
@@ -1150,17 +1194,20 @@ const Step6Review: React.FC<{
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField id="heightFeet" label="Height (Feet)" value={editBuffer.height_feet} onChange={v => handleBufferChange({ height_feet: v })} type="number" />
-                  <FormField id="heightInches" label="Height (Inches)" value={editBuffer.height_inches} onChange={v => handleBufferChange({ height_inches: v })} type="number" />
+                  <FormField id="heightFeet" label="Height (Feet)" value={editBuffer.height_feet} onChange={v => handleBufferChange({ height_feet: v })} type="number" required />
+                  <FormField id="heightInches" label="Height (Inches)" value={editBuffer.height_inches} onChange={v => handleBufferChange({ height_inches: v })} type="number" required />
                 </div>
                 <div className="relative">
-                  <Label htmlFor="eyeColor" className="block text-sm font-medium mb-1 text-gray-700">
+                  <Label htmlFor="eyeColor" className="block text-sm font-medium mb-1 text-gray-700" required>
                     Eye Color
+                    <span className="text-red-500 ml-1">*</span>
                   </Label>
                   <Select
                     value={editBuffer.eye_color}
                     onValueChange={v => handleBufferChange({ eye_color: v })}
+                    required
                   >
                     <SelectTrigger className="w-full bg-white text-gray-900 placeholder-gray-400">
                       <SelectValue placeholder="Select eye color" />
@@ -1223,12 +1270,12 @@ const Step6Review: React.FC<{
           <CardContent className="p-6">
             {editingSections.contact ? (
               <div className="space-y-2">
-                <FormField id="houseNumber" label="House Number" value={editBuffer.address_unit} onChange={v => handleBufferChange({ address_unit: v })} />
-                <FormField id="streetName" label="Street Name" value={editBuffer.street_name} onChange={v => handleBufferChange({ street_name: v })} />
-                <PhoneInput id="phoneNumber" label="Phone Number" value={editBuffer.phone_number} onChange={v => handleBufferChange({ phone_number: v })} />
-                <FormField id="city" label="City" value={editBuffer.city} onChange={v => handleBufferChange({ city: v })} />
-                <FormField id="state" label="State" value={editBuffer.state} onChange={v => handleBufferChange({ state: v })} />
-                <FormField id="postalCode" label="Postal Code" value={editBuffer.postal_code} onChange={v => handleBufferChange({ postal_code: v })} />
+                <FormField id="houseNumber" label="House Number" value={editBuffer.address_unit} onChange={v => handleBufferChange({ address_unit: v })} required />
+                <FormField id="streetName" label="Street Name" value={editBuffer.street_name} onChange={v => handleBufferChange({ street_name: v })} required />
+                <PhoneInput id="phoneNumber" label="Phone Number" value={editBuffer.phone_number} onChange={v => handleBufferChange({ phone_number: v })} required />
+                <FormField id="city" label="City" value={editBuffer.city} onChange={v => handleBufferChange({ city: v })} required />
+                <FormField id="state" label="State" value={editBuffer.state} onChange={v => handleBufferChange({ state: v })} required />
+                <FormField id="postalCode" label="Postal Code" value={editBuffer.postal_code} onChange={v => handleBufferChange({ postal_code: v })} required />
               </div>
             ) : (
               <>
@@ -1269,13 +1316,13 @@ const Step6Review: React.FC<{
           <CardContent className="p-6">
             {editingSections.emergency ? (
               <div className="space-y-2">
-                <FormField id="emergencyName" label="Name" value={editBuffer.emergency_full_name} onChange={v => handleBufferChange({ emergency_full_name: v })} />
-                <PhoneInput id="emergencyPhone" label="Phone" value={editBuffer.emergency_phone_number} onChange={v => handleBufferChange({ emergency_phone_number: v })} />
-                <FormField id="emergencyHouseNumber" label="House Number" value={editBuffer.emergency_address_unit} onChange={v => handleBufferChange({ emergency_address_unit: v })} />
-                <FormField id="emergencyStreetName" label="Street Name" value={editBuffer.emergency_street_name} onChange={v => handleBufferChange({ emergency_street_name: v })} />
-                <FormField id="emergencyCity" label="City" value={editBuffer.emergency_city} onChange={v => handleBufferChange({ emergency_city: v })} />
-                <FormField id="emergencyState" label="State" value={editBuffer.emergency_state} onChange={v => handleBufferChange({ emergency_state: v })} />
-                <FormField id="emergencyPostalCode" label="Postal Code" value={editBuffer.emergency_postal_code} onChange={v => handleBufferChange({ emergency_postal_code: v })} />
+                <FormField id="emergencyName" label="Name" value={editBuffer.emergency_full_name} onChange={v => handleBufferChange({ emergency_full_name: v })} required />
+                <PhoneInput id="emergencyPhone" label="Phone" value={editBuffer.emergency_phone_number} onChange={v => handleBufferChange({ emergency_phone_number: v })} required />
+                <FormField id="emergencyHouseNumber" label="House Number" value={editBuffer.emergency_address_unit} onChange={v => handleBufferChange({ emergency_address_unit: v })} required />
+                <FormField id="emergencyStreetName" label="Street Name" value={editBuffer.emergency_street_name} onChange={v => handleBufferChange({ emergency_street_name: v })} required />
+                <FormField id="emergencyCity" label="City" value={editBuffer.emergency_city} onChange={v => handleBufferChange({ emergency_city: v })} required />
+                <FormField id="emergencyState" label="State" value={editBuffer.emergency_state} onChange={v => handleBufferChange({ emergency_state: v })} required />
+                <FormField id="emergencyPostalCode" label="Postal Code" value={editBuffer.emergency_postal_code} onChange={v => handleBufferChange({ emergency_postal_code: v })} required />
               </div>
             ) : (
               <>
@@ -1317,27 +1364,27 @@ const Step6Review: React.FC<{
           <CardContent className="p-6">
             {editingSections.parental ? (
               <div className="space-y-2">
-                <FormField id="fatherName" label="Father's Name" value={editBuffer.father_full_name} onChange={v => handleBufferChange({ father_full_name: v })} />
+                <FormField id="fatherName" label="Father's Name" value={editBuffer.father_full_name} onChange={v => handleBufferChange({ father_full_name: v })} required />
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField id="fatherDob" label="Father's Date of Birth" value={editBuffer.father_dob} onChange={v => handleBufferChange({ father_dob: v })} type="date" />
-                  <FormField id="fatherNationality" label="Father's Nationality" value={editBuffer.father_nationality} onChange={v => handleBufferChange({ father_nationality: v })} />
+                  <FormField id="fatherDob" label="Father's Date of Birth" value={editBuffer.father_dob} onChange={v => handleBufferChange({ father_dob: v })} type="date" required />
+                  <FormField id="fatherNationality" label="Father's Nationality" value={editBuffer.father_nationality} onChange={v => handleBufferChange({ father_nationality: v })} required />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField id="fatherCity" label="Father's City" value={editBuffer.father_birth_city} onChange={v => handleBufferChange({ father_birth_city: v })} />
-                  <FormField id="fatherState" label="Father's State" value={editBuffer.father_birth_state} onChange={v => handleBufferChange({ father_birth_state: v })} />
+                  <FormField id="fatherCity" label="Father's City" value={editBuffer.father_birth_city} onChange={v => handleBufferChange({ father_birth_city: v })} required />
+                  <FormField id="fatherState" label="Father's State" value={editBuffer.father_birth_state} onChange={v => handleBufferChange({ father_birth_state: v })} required />
                 </div>
-                <FormField id="fatherCountry" label="Father's Country" value={editBuffer.father_birth_country} onChange={v => handleBufferChange({ father_birth_country: v })} />
+                <FormField id="fatherCountry" label="Father's Country" value={editBuffer.father_birth_country} onChange={v => handleBufferChange({ father_birth_country: v })} required />
 
-                <FormField id="motherName" label="Mother's Name" value={editBuffer.mother_full_name} onChange={v => handleBufferChange({ mother_full_name: v })} />
+                <FormField id="motherName" label="Mother's Name" value={editBuffer.mother_full_name} onChange={v => handleBufferChange({ mother_full_name: v })} required />
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField id="motherDob" label="Mother's Date of Birth" value={editBuffer.mother_dob} onChange={v => handleBufferChange({ mother_dob: v })} type="date" />
-                  <FormField id="motherNationality" label="Mother's Nationality" value={editBuffer.mother_nationality} onChange={v => handleBufferChange({ mother_nationality: v })} />
+                  <FormField id="motherDob" label="Mother's Date of Birth" value={editBuffer.mother_dob} onChange={v => handleBufferChange({ mother_dob: v })} type="date" required />
+                  <FormField id="motherNationality" label="Mother's Nationality" value={editBuffer.mother_nationality} onChange={v => handleBufferChange({ mother_nationality: v })} required />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField id="motherCity" label="Mother's City" value={editBuffer.mother_birth_city} onChange={v => handleBufferChange({ mother_birth_city: v })} />
-                  <FormField id="motherState" label="Mother's State" value={editBuffer.mother_birth_state} onChange={v => handleBufferChange({ mother_birth_state: v })} />
+                  <FormField id="motherCity" label="Mother's City" value={editBuffer.mother_birth_city} onChange={v => handleBufferChange({ mother_birth_city: v })} required />
+                  <FormField id="motherState" label="Mother's State" value={editBuffer.mother_birth_state} onChange={v => handleBufferChange({ mother_birth_state: v })} required />
                 </div>
-                <FormField id="motherCountry" label="Mother's Country" value={editBuffer.mother_birth_country} onChange={v => handleBufferChange({ mother_birth_country: v })} />
+                <FormField id="motherCountry" label="Mother's Country" value={editBuffer.mother_birth_country} onChange={v => handleBufferChange({ mother_birth_country: v })} required />
               </div>
             ) : (
               <>
@@ -1430,6 +1477,7 @@ export default function Apply() {
     state: "",
     postal_code: "",
 
+   
     // Emergency Contact
     emergency_full_name: "",
     emergency_phone_number: "",
@@ -1531,61 +1579,59 @@ export default function Apply() {
 
   // On mount: check for existing draft or create new
   useEffect(() => {
+    let isMounted = true;
     const fetchOrCreateDraft = async () => {
       if (!user?.id) return;
       setLoading(true);
-      // 1. Check for existing draft (status = 'draft' or required fields missing)
+      // 1. Check for existing draft (status = 'draft' and not submitted)
       const { data, error } = await supabase
         .from("passport_applications")
         .select("*")
         .eq("user_id", user.id)
+        .eq("status", "draft")
         .order("updated_at", { ascending: false })
         .limit(1);
       let draft = data && data.length > 0 ? data[0] : null;
-      // Required fields (all except marriage/divorce and previous passport)
-      const required = [
-        "application_type", "surname", "first_middle_names", "social_security_number", "place_of_birth_city", "place_of_birth_state", "country_of_birth", "date_of_birth", "gender", "hair_color", "marital_status", "height_feet", "height_inches", "eye_color", "address_unit", "street_name", "phone_number", "city", "state", "postal_code", "emergency_full_name", "emergency_phone_number", "emergency_address_unit", "emergency_street_name", "emergency_city", "emergency_state", "emergency_postal_code", "father_full_name", "father_dob", "father_nationality", "mother_full_name", "mother_dob", "mother_nationality"
-      ];
-      // 2. If draft exists, check if it's incomplete
-      if (draft) {
-        if (isIncomplete(draft)) {
-          setFormData((prev) => ({
-            ...prev,
-            ...Object.fromEntries(
-              Object.entries(draft).map(([k, v]) => [k, v === null ? "" : v])
-            ),
-          }));
-          setApplicationId(draft.id);
-          setLoading(false);
-          return;
-        }
+      if (draft && isMounted) {
+        setFormData((prev) => ({
+          ...prev,
+          ...Object.fromEntries(
+            Object.entries(draft).map(([k, v]) => [k, v === null ? "" : v])
+          ),
+        }));
+        setApplicationId(draft.id);
+        setLoading(false);
+        return;
       }
-      // 3. If no draft or draft is complete, create a new one
+      // If no draft, create a new one
+      const insertPayload = {
+        user_id: user.id,
+        status: "draft",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        application_type: formData.application_type || "new", // Always include application_type
+      };
       const { data: newApp, error: insertError } = await supabase
         .from("passport_applications")
-        .insert([
-          {
-            user_id: user.id,
-            status: "draft",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ])
+        .insert([insertPayload])
         .select();
       if (insertError) {
         setLoading(false);
         return;
       }
-      setFormData((prev) => ({
-        ...prev,
-        ...Object.fromEntries(
-          Object.entries(newApp[0]).map(([k, v]) => [k, v === null ? "" : v])
-        ),
-      }));
-      setApplicationId(newApp[0].id);
+      if (isMounted && newApp && newApp[0]) {
+        setFormData((prev) => ({
+          ...prev,
+          ...Object.fromEntries(
+            Object.entries(newApp[0]).map(([k, v]) => [k, v === null ? "" : v])
+          ),
+        }));
+        setApplicationId(newApp[0].id);
+      }
       setLoading(false);
     };
     fetchOrCreateDraft();
+    return () => { isMounted = false; };
     // eslint-disable-next-line
   }, [user?.id]);
 
@@ -1593,12 +1639,14 @@ export default function Apply() {
   const updateFormData = (data: Partial<FormData>) => {
     setFormData((prev) => {
       const updated = { ...prev, ...data };
-      // Update Supabase draft if applicationId exists
-      if (applicationId) {
-        supabase
-          .from("passport_applications")
-          .update({ ...data, updated_at: new Date().toISOString() })
-          .eq("id", applicationId);
+      // Prevent update if loading (insert not finished)
+      if (applicationId && !loading) {
+        (async () => {
+          await supabase
+            .from("passport_applications")
+            .update({ ...data, updated_at: new Date().toISOString() })
+            .eq("id", applicationId);
+        })();
       }
       return updated;
     });
