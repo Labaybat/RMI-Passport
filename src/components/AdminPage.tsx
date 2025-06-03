@@ -1,0 +1,1203 @@
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "@tanstack/react-router";
+import { useAdminGuard } from "../hooks/useAdminGuard";
+import supabase from "../lib/supabase/client";
+import { useToast } from "../hooks/use-toast";
+import { CheckCircleIcon, XCircleIcon, ClockIcon, PencilIcon, EyeIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
+
+// Components for different sections
+const Dashboard = () => (
+  <div className="space-y-6">
+    <div className="flex items-center justify-between">
+      <h2 className="text-2xl font-semibold text-gray-800">Dashboard Overview</h2>
+      <div className="flex items-center gap-2">        <select className="border rounded-md px-3 py-2 text-sm bg-white text-gray-900">
+          <option value="">Last 7 Days</option>
+          <option value="30">Last 30 Days</option>
+          <option value="all">All Time</option>
+        </select>
+        <button className="bg-white px-3 py-2 rounded-md border hover:bg-gray-50">
+          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-none shadow-md hover:shadow-lg transition-shadow">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-blue-500 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-blue-900">152</p>
+              <p className="text-sm text-blue-700">Pending Applications</p>
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-1 text-blue-600">
+            <span className="text-xs">↑ 12% from last month</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gradient-to-br from-green-50 to-green-100 border-none shadow-md hover:shadow-lg transition-shadow">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-green-500 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-green-900">438</p>
+              <p className="text-sm text-green-700">Approved Applications</p>
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-1 text-green-600">
+            <span className="text-xs">↑ 8% from last month</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gradient-to-br from-red-50 to-red-100 border-none shadow-md hover:shadow-lg transition-shadow">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-red-500 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-red-900">24</p>
+              <p className="text-sm text-red-700">Rejected Applications</p>
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-1 text-red-600">
+            <span className="text-xs">↓ 5% from last month</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-none shadow-md hover:shadow-lg transition-shadow">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-purple-500 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-purple-900">1,284</p>
+              <p className="text-sm text-purple-700">Total Users</p>
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-1 text-purple-600">
+            <span className="text-xs">↑ 15% from last month</span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[
+              { action: "Application Submitted", user: "John D.", time: "5 minutes ago", status: "pending" },
+              { action: "Application Approved", user: "Sarah M.", time: "1 hour ago", status: "approved" },
+              { action: "New User Registration", user: "Robert K.", time: "2 hours ago", status: "info" },
+              { action: "Application Rejected", user: "Emma W.", time: "3 hours ago", status: "rejected" },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <div className={`p-2 rounded-full ${
+                  item.status === "pending" ? "bg-blue-100 text-blue-600" :
+                  item.status === "approved" ? "bg-green-100 text-green-600" :
+                  item.status === "rejected" ? "bg-red-100 text-red-600" :
+                  "bg-gray-100 text-gray-600"
+                }`}>
+                  {item.status === "pending" && (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                  {item.status === "approved" && (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                  {item.status === "rejected" && (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  )}
+                  {item.status === "info" && (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">{item.action}</p>
+                  <p className="text-xs text-gray-500">by {item.user}</p>
+                </div>
+                <span className="text-xs text-gray-400">{item.time}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Application Statistics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">New Applications</span>
+                <span className="font-medium text-gray-900">82%</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full">
+                <div className="h-full w-[82%] bg-blue-500 rounded-full"></div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Processing Time</span>
+                <span className="font-medium text-gray-900">65%</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full">
+                <div className="h-full w-[65%] bg-green-500 rounded-full"></div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Approval Rate</span>
+                <span className="font-medium text-gray-900">92%</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full">
+                <div className="h-full w-[92%] bg-purple-500 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+);
+
+const Applications: React.FC = () => {
+  const [applications, setApplications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [viewApp, setViewApp] = useState<any | null>(null);
+  const [editApp, setEditApp] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState<any>({});
+  const [saving, setSaving] = useState(false);
+  const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
+  const [statusApp, setStatusApp] = useState<any | null>(null);
+  const [statusValue, setStatusValue] = useState<string>("");
+  const [statusSaving, setStatusSaving] = useState(false);
+  const { toast } = useToast();
+
+  // List of document fields and their labels
+  const documentFields = [
+    { key: "birth_certificate_url", label: "Birth Certificate" },
+    { key: "consent_form_url", label: "Consent Form" },
+    { key: "marriage_certificate_url", label: "Marriage/Divorce Certificate" },
+    { key: "old_passport_url", label: "Old Passport Copy" },
+    { key: "signature_url", label: "Signature" },
+    { key: "photo_id_url", label: "Photo ID" },
+  ];
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      setLoading(true);
+      setError(null);
+      const { data, error } = await supabase
+        .from("passport_applications")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) {
+        setError("Failed to fetch applications");
+        setApplications([]);
+      } else {
+        setApplications(data || []);
+      }
+      setLoading(false);
+    };
+    fetchApplications();
+  }, []);
+
+  // Generate signed URLs for all document fields when viewApp changes
+  useEffect(() => {
+    if (!viewApp) return;
+    (async () => {
+      const newUrls: { [key: string]: string } = {};
+      for (const doc of documentFields) {
+        const url = viewApp[doc.key];
+        if (url && url.trim() !== "") {
+          // Extract the file path from the public URL
+          const match = url.match(/passport-documents\/(.+)$/);
+          const filePath = match ? match[1] : null;
+          if (filePath) {
+            const { data, error } = await supabase.storage.from("passport-documents").createSignedUrl(filePath, 300);
+            newUrls[doc.key] = error ? "" : data.signedUrl;
+          }
+        }
+      }
+      setSignedUrls(newUrls);
+    })();
+  }, [viewApp]);
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this application?")) return;
+    setDeletingId(id);
+    const { error } = await supabase
+      .from("passport_applications")
+      .delete()
+      .eq("id", id);
+    setDeletingId(null);
+    if (error) {
+      toast({ title: "Error", description: "Failed to delete application." });
+    } else {
+      setApplications(applications.filter(app => app.id !== id));
+      toast({ title: "Deleted", description: "Application deleted." });
+    }
+  };
+
+  const handleView = (id: string) => {
+    const app = applications.find(a => a.id === id);
+    setViewApp(app);
+  };
+  const handleEdit = (id: string) => {
+    const app = applications.find(a => a.id === id);
+    setEditApp(app);
+    setEditForm({ ...app });
+  };
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+  const handleEditSave = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("passport_applications")
+      .update(editForm)
+      .eq("id", editApp.id);
+    setSaving(false);
+    if (error) {
+      toast({ title: "Error", description: "Failed to update application." });
+    } else {
+      setApplications(applications.map(app => app.id === editApp.id ? { ...app, ...editForm } : app));
+      setEditApp(null);
+      toast({ title: "Updated", description: "Application updated." });
+    }
+  };
+
+  const handleStatus = (id: string) => {
+    const app = applications.find(a => a.id === id);
+    setStatusApp(app);
+    setStatusValue(app?.status || "");
+  };
+  const handleStatusClose = () => setStatusApp(null);
+  const handleStatusSave = async () => {
+    if (!statusApp) return;
+    setStatusSaving(true);
+    const { error } = await supabase
+      .from("passport_applications")
+      .update({ status: statusValue })
+      .eq("id", statusApp.id);
+    setStatusSaving(false);
+    if (error) {
+      toast({ title: "Error", description: "Failed to update status." });
+    } else {
+      setApplications(applications.map(app => app.id === statusApp.id ? { ...app, status: statusValue } : app));
+      setStatusApp(null);
+      toast({ title: "Status Updated", description: "Application status updated." });
+    }
+  };
+
+  const handleViewClose = () => setViewApp(null);
+  const handleEditClose = () => setEditApp(null);
+
+  // Print application details
+  const handlePrintApplication = () => {
+    const printContents = document.getElementById('application-modal-content')?.innerHTML;
+    if (!printContents) return;
+    const printWindow = window.open('', '', 'height=800,width=600');
+    if (printWindow) {
+      printWindow.document.write('<html><head><title>Print Application</title>');
+      printWindow.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">');
+      printWindow.document.write('</head><body>');
+      printWindow.document.write(printContents);
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 500);
+    }
+  };
+
+  // Status badge with icon
+  const statusBadge = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><CheckCircleIcon className="w-4 h-4" /> Approved</span>;
+      case 'pending':
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"><ClockIcon className="w-4 h-4" /> Pending</span>;
+      case 'rejected':
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><XCircleIcon className="w-4 h-4" /> Rejected</span>;
+      case 'submitted':
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><ArrowPathIcon className="w-4 h-4" /> Submitted</span>;
+      default:
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{status || 'N/A'}</span>;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold text-gray-800">Applications Management</h2>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Search applications..."
+              className="px-3 py-2 border rounded-md text-sm text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+            />
+            <button className="p-2 text-gray-400 hover:text-gray-600">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+          </div>
+          <select className="border rounded-md px-3 py-2 text-sm bg-white">
+            <option>Last 30 Days</option>
+            <option>Last 90 Days</option>
+            <option>All Time</option>
+          </select>
+          <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Export</span>
+          </button>
+        </div>
+      </div>
+      <div className="bg-white rounded-lg border shadow-sm">
+        <div className="border-b px-4 py-3 flex items-center gap-4">
+          <select className="border rounded-md px-3 py-1.5 text-sm bg-white text-gray-900">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <select className="border rounded-md px-3 py-1.5 text-sm bg-white text-gray-900">
+            <option value="all">All Types</option>
+            <option value="new">New Passport</option>
+            <option value="renewal">Renewal</option>
+            <option value="replacement">Replacement</option>
+          </select>
+        </div>
+        <div className="overflow-x-auto">
+          {loading ? (
+            <div className="p-6 text-center text-gray-500">Loading applications...</div>
+          ) : error ? (
+            <div className="p-6 text-center text-red-500">{error}</div>
+          ) : (
+            <table className="w-full text-sm text-left">
+              <thead>
+                <tr className="bg-gray-50 text-gray-600 text-xs">
+                  <th className="py-4 px-6 font-medium">APPLICATION ID</th>
+                  <th className="py-4 px-6 font-medium">APPLICANT</th>
+                  <th className="py-4 px-6 font-medium">TYPE</th>
+                  <th className="py-4 px-6 font-medium">SUBMISSION DATE</th>
+                  <th className="py-4 px-6 font-medium">STATUS</th>
+                  <th className="py-4 px-6 font-medium">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {applications.map((app) => (
+                  <tr key={app.id} className="hover:bg-gray-50">
+                    <td className="py-4 px-6 font-medium text-blue-600" style={{ maxWidth: 200, wordBreak: 'break-all' }}>{app.id}</td>
+                    <td className="py-4 px-6 whitespace-normal break-words max-w-xs text-gray-900">{[app.surname, app.first_middle_names].filter(Boolean).join(' ') || '—'}</td>
+                    <td className="py-4 px-6 whitespace-normal break-words max-w-xs text-gray-900">{formatApplicationType(app.application_type)}</td>
+                    <td className="py-4 px-6 text-gray-500">{app.submitted_at ? app.submitted_at.split("T")[0] : "-"}</td>
+                    <td className="py-4 px-6">
+                      {statusBadge(app.status)}
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-2">
+                        <button title="View" className="p-2 rounded-full hover:bg-blue-100 transition" onClick={() => handleView(app.id)}><EyeIcon className="w-5 h-5 text-blue-600" /></button>
+                        <button title="Edit" className="p-2 rounded-full hover:bg-gray-100 transition" onClick={() => handleEdit(app.id)}><PencilIcon className="w-5 h-5 text-gray-600" /></button>
+                        <button title="Delete" className="p-2 rounded-full hover:bg-red-100 transition" onClick={() => handleDelete(app.id)} disabled={deletingId === app.id}><TrashIcon className="w-5 h-5 text-red-600" /></button>
+                        <button title="Update Status" className="p-2 rounded-full hover:bg-indigo-100 transition" onClick={() => handleStatus(app.id)}><ArrowPathIcon className="w-5 h-5 text-indigo-600" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+        <div className="border-t px-4 py-3 flex items-center justify-between">
+          <div className="text-sm text-gray-500">
+            Showing {applications.length} application{applications.length !== 1 ? 's' : ''}
+          </div>
+          {/* Pagination controls could go here */}
+        </div>
+      </div>
+
+      {/* View Modal */}
+      {viewApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative text-gray-900 overflow-y-auto max-h-[90vh] animate-fadeIn">
+            <button className="absolute top-2 right-2 bg-gray-100 hover:bg-gray-200 rounded-full p-2 text-gray-400 hover:text-gray-600 text-2xl transition" onClick={handleViewClose}>&times;</button>
+            <button
+              className="absolute top-2 right-12 text-gray-400 hover:text-gray-600 text-xl"
+              onClick={handlePrintApplication}
+              title="Print Application"
+            >
+              🖨️
+            </button>
+            <h3 className="text-2xl font-bold mb-4">Application Details</h3>
+            <div id="application-modal-content" className="space-y-6">
+              {/* Applicant Info */}
+              <div>
+                <h4 className="font-semibold text-lg mb-2">Applicant Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                  <div><span className="font-medium">Surname:</span> {viewApp.surname}</div>
+                  <div><span className="font-medium">First & Middle Names:</span> {viewApp.first_middle_names}</div>
+                  <div><span className="font-medium">Social Security #:</span> {viewApp.social_security_number}</div>
+                  <div><span className="font-medium">Gender:</span> {viewApp.gender}</div>
+                  <div><span className="font-medium">Date of Birth:</span> {viewApp.date_of_birth}</div>
+                  <div><span className="font-medium">Place of Birth:</span> {[viewApp.place_of_birth_city, viewApp.place_of_birth_state, viewApp.country_of_birth].filter(Boolean).join(', ')}</div>
+                  <div><span className="font-medium">Hair Color:</span> {viewApp.hair_color}</div>
+                  <div><span className="font-medium">Eye Color:</span> {viewApp.eye_color}</div>
+                  <div><span className="font-medium">Height:</span> {viewApp.height_feet ? `${viewApp.height_feet} ft` : ''} {viewApp.height_inches ? `${viewApp.height_inches} in` : ''}</div>
+                  <div><span className="font-medium">Marital Status:</span> {viewApp.marital_status}</div>
+                </div>
+              </div>
+              <hr className="my-4" />
+              {/* Contact Info */}
+              <div>
+                <h4 className="font-semibold text-lg mb-2">Contact Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                  <div><span className="font-medium">Address:</span> {[viewApp.address_unit, viewApp.street_name, viewApp.city, viewApp.state, viewApp.postal_code].filter(Boolean).join(', ')}</div>
+                  <div><span className="font-medium">Phone Number:</span> {viewApp.phone_number}</div>
+                </div>
+              </div>
+              <hr className="my-4" />
+              {/* Emergency Contact */}
+              <div>
+                <h4 className="font-semibold text-lg mb-2">Emergency Contact</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                  <div><span className="font-medium">Full Name:</span> {viewApp.emergency_full_name}</div>
+                  <div><span className="font-medium">Phone Number:</span> {viewApp.emergency_phone_number}</div>
+                  <div><span className="font-medium">Address:</span> {[viewApp.emergency_address_unit, viewApp.emergency_street_name, viewApp.emergency_city, viewApp.emergency_state, viewApp.emergency_postal_code].filter(Boolean).join(', ')}</div>
+                </div>
+              </div>
+              <hr className="my-4" />
+              {/* Parents */}
+              <div>
+                <h4 className="font-semibold text-lg mb-2">Father's Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                  <div><span className="font-medium">Full Name:</span> {viewApp.father_full_name}</div>
+                  <div><span className="font-medium">DOB:</span> {viewApp.father_dob}</div>
+                  <div><span className="font-medium">Nationality:</span> {viewApp.father_nationality}</div>
+                  <div><span className="font-medium">Place of Birth:</span> {[viewApp.father_birth_city, viewApp.father_birth_state, viewApp.father_birth_country].filter(Boolean).join(', ')}</div>
+                </div>
+                <h4 className="font-semibold text-lg mt-4 mb-2">Mother's Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                  <div><span className="font-medium">Full Name:</span> {viewApp.mother_full_name}</div>
+                  <div><span className="font-medium">DOB:</span> {viewApp.mother_dob}</div>
+                  <div><span className="font-medium">Nationality:</span> {viewApp.mother_nationality}</div>
+                  <div><span className="font-medium">Place of Birth:</span> {[viewApp.mother_birth_city, viewApp.mother_birth_state, viewApp.mother_birth_country].filter(Boolean).join(', ')}</div>
+                </div>
+              </div>
+              <hr className="my-4" />
+              {/* Documents */}
+              <div>
+                <h4 className="font-semibold text-lg mb-2">Uploaded Documents</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                  {documentFields.map(doc => {
+                    const url = signedUrls[doc.key];
+                    if (!viewApp[doc.key]) return null;
+                    const isImage = url && /\.(jpg|jpeg|png|webp|gif)$/i.test(url);
+                    const isPDF = url && /\.pdf$/i.test(url);
+                    return (
+                      <div key={doc.key} className="flex flex-col gap-1">
+                        <span className="font-medium">{doc.label}:</span>
+                        {url ? (
+                          isImage ? (
+                            <img src={url} alt={doc.label} className="mt-1 mb-2 max-h-40 rounded shadow border object-contain" />
+                          ) : isPDF ? (
+                            <iframe src={url} title={doc.label} className="mt-1 mb-2 w-full h-40 border rounded" />
+                          ) : (
+                            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">View</a>
+                          )
+                        ) : (
+                          <span className="text-gray-400">Loading...</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <hr className="my-4" />
+              {/* Application Meta */}
+              <div>
+                <h4 className="font-semibold text-lg mb-2">Application Meta</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                  <div><span className="font-medium">Application Type:</span> {formatApplicationType(viewApp.application_type)}</div>
+                  <div><span className="font-medium">Status:</span> {viewApp.status}</div>
+                  <div><span className="font-medium">Progress:</span> {viewApp.progress}</div>
+                  <div><span className="font-medium">Submitted At:</span> {viewApp.submitted_at ? viewApp.submitted_at.split("T")[0] : '-'}</div>
+                  <div><span className="font-medium">Updated At:</span> {viewApp.updated_at ? viewApp.updated_at.split("T")[0] : '-'}</div>
+                  <div><span className="font-medium">Created At:</span> {viewApp.created_at ? viewApp.created_at.split("T")[0] : '-'}</div>
+                  <div><span className="font-medium">Application ID:</span> {viewApp.id}</div>
+                  <div><span className="font-medium">User ID:</span> {viewApp.user_id}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onClick={handleEditClose}>&times;</button>
+            <h3 className="text-xl font-semibold mb-4">Edit Application</h3>
+            <form className="space-y-4" onSubmit={e => { e.preventDefault(); handleEditSave(); }}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Surname</label>
+                <input name="surname" value={editForm.surname || ''} onChange={handleEditChange} className="mt-1 block w-full border rounded-md p-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">First & Middle Names</label>
+                <input name="first_middle_names" value={editForm.first_middle_names || ''} onChange={handleEditChange} className="mt-1 block w-full border rounded-md p-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Type</label>
+                <select name="application_type" value={editForm.application_type || ''} onChange={handleEditChange} className="mt-1 block w-full border rounded-md p-2">
+                  <option value="new">New Passport</option>
+                  <option value="renewal">Renewal</option>
+                  <option value="replacement">Replacement</option>
+                  <option value="name-change">Name Change</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Status</label>
+                <select name="status" value={editForm.status || ''} onChange={handleEditChange} className="mt-1 block w-full border rounded-md p-2">
+                  <option value="submitted">Submitted</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+              {/* Add more fields as needed */}
+              <div className="flex justify-end gap-2 mt-4">
+                <button type="button" className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700" onClick={handleEditClose}>Cancel</button>
+                <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Update Status Modal */}
+      {statusApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-xs p-6 relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl" onClick={handleStatusClose}>&times;</button>
+            <h3 className="text-lg font-semibold mb-4">Update Application Status</h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Status</label>
+              <select
+                className="w-full border rounded-md p-2 bg-white text-gray-900"
+                value={statusValue}
+                onChange={e => setStatusValue(e.target.value)}
+              >
+                <option className="bg-white text-gray-900" value="submitted">Submitted</option>
+                <option className="bg-white text-gray-900" value="pending">Pending</option>
+                <option className="bg-white text-gray-900" value="approved">Approved</option>
+                <option className="bg-white text-gray-900" value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700" onClick={handleStatusClose}>Cancel</button>
+              <button className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700" onClick={handleStatusSave} disabled={statusSaving}>{statusSaving ? 'Saving...' : 'Save'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const Users = () => (
+  <div className="space-y-6">
+    <div className="flex items-center justify-between">
+      <h2 className="text-2xl font-semibold text-gray-800">User Management</h2>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">          <input
+            type="text"
+            placeholder="Search users..."
+            className="px-3 py-2 border rounded-md text-sm text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+          />
+          <button className="p-2 text-gray-400 hover:text-gray-600">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </div>
+        <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Add User</span>
+        </button>
+      </div>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-none shadow-sm">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-blue-500 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-blue-900">1,284</p>
+              <p className="text-sm text-blue-700">Total Users</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gradient-to-br from-green-50 to-green-100 border-none shadow-sm">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-green-500 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-green-900">156</p>
+              <p className="text-sm text-green-700">Active Users</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-none shadow-sm">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-purple-500 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-purple-900">28</p>
+              <p className="text-sm text-purple-700">New Users</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-none shadow-sm">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-orange-500 rounded-xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-orange-900">5</p>
+              <p className="text-sm text-orange-700">Pending Approvals</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+
+    <div className="bg-white rounded-lg border shadow-sm">
+      <div className="border-b px-4 py-3 flex items-center gap-4">        <select className="border rounded-md px-3 py-1.5 text-sm bg-white text-gray-900">
+          <option value="all">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="user">User</option>
+          <option value="staff">Staff</option>
+        </select>
+        <select className="border rounded-md px-3 py-1.5 text-sm bg-white text-gray-900">
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="pending">Pending</option>
+        </select>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left">
+          <thead>
+            <tr className="bg-gray-50 text-gray-600 text-xs">
+              <th className="py-4 px-6 font-medium">USER</th>
+              <th className="py-4 px-6 font-medium">EMAIL</th>
+              <th className="py-4 px-6 font-medium">ROLE</th>
+              <th className="py-4 px-6 font-medium">STATUS</th>
+              <th className="py-4 px-6 font-medium">JOIN DATE</th>
+              <th className="py-4 px-6 font-medium">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {[
+              { name: "Admin User", email: "admin@rmi.gov", role: "Admin", status: "active", date: "2025-01-01" },
+              { name: "John Smith", email: "john@example.com", role: "User", status: "active", date: "2025-03-15" },
+              { name: "Sarah Johnson", email: "sarah@example.com", role: "Staff", status: "inactive", date: "2025-04-20" },
+              { name: "Michael Brown", email: "michael@example.com", role: "User", status: "pending", date: "2025-05-30" },
+              { name: "Emma Davis", email: "emma@example.com", role: "Staff", status: "active", date: "2025-06-01" },
+            ].map((user, i) => (
+              <tr key={i} className="hover:bg-gray-50">
+                <td className="py-4 px-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                      <span className="text-sm font-medium text-gray-600">
+                        {user.name.split(" ").map(n => n[0]).join("")}
+                      </span>
+                    </div>
+                    <span className="font-medium text-gray-900">{user.name}</span>
+                  </div>
+                </td>
+                <td className="py-4 px-6 text-gray-600">{user.email}</td>
+                <td className="py-4 px-6">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                    ${user.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
+                      user.role === 'Staff' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'}`}>
+                    {user.role}
+                  </span>
+                </td>
+                <td className="py-4 px-6">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                    ${user.status === 'active' ? 'bg-green-100 text-green-800' :
+                      user.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
+                      'bg-yellow-100 text-yellow-800'}`}>
+                    {user.status}
+                  </span>
+                </td>
+                <td className="py-4 px-6 text-gray-500">{user.date}</td>
+                <td className="py-4 px-6">
+                  <div className="flex items-center gap-3">
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="border-t px-4 py-3 flex items-center justify-between">
+        <div className="text-sm text-gray-500">
+          Showing 5 of 24 users
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50" disabled>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div className="flex items-center">
+            <button className="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded">1</button>
+            <button className="px-3 py-1 text-gray-600 hover:bg-gray-50 rounded">2</button>
+            <button className="px-3 py-1 text-gray-600 hover:bg-gray-50 rounded">3</button>
+            <span className="px-3 py-1 text-gray-400">...</span>
+            <button className="px-3 py-1 text-gray-600 hover:bg-gray-50 rounded">8</button>
+          </div>
+          <button className="p-2 text-gray-400 hover:text-gray-600">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const Settings = () => (
+  <div className="space-y-6">
+    <div className="flex items-center justify-between">
+      <h2 className="text-2xl font-semibold text-gray-800">System Settings</h2>
+      <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+        <span>Save Changes</span>
+      </button>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Application Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Allow New Applications</p>
+                <p className="text-sm text-gray-500">Enable or disable new passport applications</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Document Upload</p>
+                <p className="text-sm text-gray-500">Allow users to upload passport documents</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Maintenance Mode</p>
+                <p className="text-sm text-gray-500">Temporarily disable the portal for maintenance</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Application Processing Time</h4>            <select className="w-full border rounded-md p-2 text-sm bg-white text-gray-900">
+              <option value="1-2">1-2 weeks</option>
+              <option value="2-3">2-3 weeks</option>
+              <option value="3-4">3-4 weeks</option>
+              <option value="4-6">4-6 weeks</option>
+            </select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Notification Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Application Updates</p>
+                <p className="text-sm text-gray-500">Send notifications for application status changes</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">System Alerts</p>
+                <p className="text-sm text-gray-500">Receive notifications about system updates</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Email Reports</p>
+                <p className="text-sm text-gray-500">Receive daily summary reports</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Notification Frequency</h4>
+            <select className="w-full border rounded-md p-2 text-sm">
+              <option>Immediately</option>
+              <option>Daily Digest</option>
+              <option>Weekly Summary</option>
+            </select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Security Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Two-Factor Authentication</p>
+                <p className="text-sm text-gray-500">Require 2FA for admin accounts</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Session Timeout</p>
+                <p className="text-sm text-gray-500">Automatically log out inactive users</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Session Timeout Duration</h4>
+            <select className="w-full border rounded-md p-2 text-sm">
+              <option>15 minutes</option>
+              <option>30 minutes</option>
+              <option>1 hour</option>
+              <option>4 hours</option>
+            </select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">System Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-gray-600">Version</span>
+              <span className="font-medium">2.1.0</span>
+            </div>
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-gray-600">Last Updated</span>
+              <span className="font-medium">June 3, 2025</span>
+            </div>
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-gray-600">Server Status</span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Operational
+              </span>
+            </div>
+            <div className="flex justify-between py-2">
+              <span className="text-gray-600">Database Status</span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Connected
+              </span>
+            </div>
+          </div>
+          <button className="w-full mt-4 bg-gray-100 text-gray-600 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors">
+            Check for Updates
+          </button>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+);
+
+// Modernized Sidebar and Topbar
+const sidebarItems = [
+  { id: 'dashboard', label: 'Dashboard', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6m-6 0v6m0 0H7m6 0h6" /></svg> },
+  { id: 'applications', label: 'Applications', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2v-5a2 2 0 00-2-2h-2a2 2 0 00-2 2v5a2 2 0 002 2z" /></svg> },
+  { id: 'users', label: 'Users', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M16 3.13a4 4 0 010 7.75M8 3.13a4 4 0 010 7.75" /></svg> },
+  { id: 'settings', label: 'Settings', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+];
+
+const Sidebar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) => (
+  <aside className="h-screen w-64 bg-gradient-to-b from-blue-900 to-blue-700 text-white flex flex-col shadow-lg">
+    <div className="flex items-center gap-2 px-6 py-6 border-b border-blue-800">
+      <img src="/seal.png" alt="Logo" className="w-10 h-10 rounded-full border-2 border-blue-200" />
+      <span className="font-bold text-lg tracking-wide">Admin Portal</span>
+    </div>
+    <nav className="flex-1 py-6 space-y-2">
+      {sidebarItems.map(item => (
+        <button
+          key={item.id}
+          className={`w-full flex items-center gap-3 px-6 py-3 rounded-lg transition font-medium text-base hover:bg-blue-800 focus:bg-blue-800 ${activeTab === item.id ? 'bg-blue-800 shadow' : ''}`}
+          onClick={() => setActiveTab(item.id)}
+        >
+          {item.icon}
+          {item.label}
+        </button>
+      ))}
+    </nav>
+    <div className="px-6 py-4 border-t border-blue-800">
+      <button className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition text-white font-semibold shadow" onClick={signOut}>
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" /></svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+);
+
+const Topbar = ({ title }: { title: string }) => (
+  <header className="w-full bg-white shadow flex items-center justify-between px-8 py-4 sticky top-0 z-30">
+    <h1 className="text-2xl font-bold text-blue-900 tracking-wide">RMI Passport Administration</h1>
+    <div className="flex items-center gap-4">
+      <span className="text-gray-700 font-medium">{title}</span>
+      <img src="/seal.png" alt="Seal" className="w-8 h-8 rounded-full border border-blue-200" />
+    </div>
+  </header>
+);
+
+// Helper function for formatting application type
+function formatApplicationType(type: string) {
+  switch (type) {
+    case 'new': return 'New Passport';
+    case 'renewal': return 'Renewal';
+    case 'replacement': return 'Replacement';
+    case 'name-change': return 'Name Change';
+    default: return type || '—';
+  }
+}
+
+// Main Admin Page Component
+export default function AdminPage() {
+  useAdminGuard();
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate({ to: "/login" });
+  };
+
+  const menuItems = [
+    { id: "dashboard", label: "Dashboard", icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    )},
+    { id: "applications", label: "Applications", icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    )},
+    { id: "users", label: "Users", icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    )},
+    { id: "settings", label: "Settings", icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    )}
+  ];
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return <Dashboard />;
+      case "applications":
+        return <Applications />;
+      case "users":
+        return <Users />;
+      case "settings":
+        return <Settings />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex h-screen">
+        {/* Sidebar */}
+        <div className="w-64 bg-gradient-to-b from-blue-900 to-blue-700 text-white flex flex-col shadow-lg">
+          <div className="flex items-center gap-2 px-6 py-6 border-b border-blue-800">
+            <img src="/seal.png" alt="Logo" className="w-10 h-10 rounded-full border-2 border-blue-200" />
+            <span className="font-bold text-lg tracking-wide">Admin Portal</span>
+          </div>
+          <nav className="flex-1 py-6 space-y-2">
+            {sidebarItems.map(item => (
+              <button
+                key={item.id}
+                className={`w-full flex items-center gap-3 px-6 py-3 rounded-lg transition font-medium text-base hover:bg-blue-800 focus:bg-blue-800 ${activeTab === item.id ? 'bg-blue-800 shadow' : ''}`}
+                onClick={() => setActiveTab(item.id)}
+              >
+                {item.icon}
+                {item.label}
+              </button>
+            ))}
+          </nav>
+          <div className="px-6 py-4 border-t border-blue-800">
+            <button className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition text-white font-semibold shadow" onClick={signOut}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" /></svg>
+              Logout
+            </button>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-auto">
+          <header className="w-full bg-white shadow flex items-center justify-between px-8 py-4 sticky top-0 z-30">
+            <h1 className="text-2xl font-bold text-blue-900 tracking-wide">RMI Passport Administration</h1>
+            <div className="flex items-center gap-4">
+              <span className="text-gray-700 font-medium">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</span>
+              <img src="/seal.png" alt="Seal" className="w-8 h-8 rounded-full border border-blue-200" />
+            </div>
+          </header>
+
+          <main className="p-8">
+            {renderContent()}
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -11,7 +11,7 @@ export const SelectTrigger = React.forwardRef(({ className, children, ...props }
   <RadixSelect.Trigger
     ref={ref}
     className={cn(
-      "flex h-12 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-4 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500",
+      "flex h-12 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
       className
     )}
     {...props}

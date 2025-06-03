@@ -6,19 +6,20 @@ import { useAuth } from "../contexts/AuthContext"
 
 export function LoginPage() {
   const navigate = useNavigate()
-  const { user, loading: authLoading } = useAuth()
+  const { user, profile, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
-  // Correct the navigate function usage
-  const navigateToDashboard = () => navigate({ to: "/dashboard" })
-
   useEffect(() => {
-    if (!authLoading && user) {
-      navigateToDashboard()
+    if (!authLoading && user && profile) {
+      if (profile.role === "admin") {
+        navigate({ to: "/admin" })
+      } else {
+        navigate({ to: "/dashboard" })
+      }
     }
-  }, [authLoading, user, navigateToDashboard])
+  }, [authLoading, user, profile, navigate])
 
   // Fix implicit 'any' type for 'e'
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -125,15 +126,11 @@ export function LoginPage() {
       // Success! Set states and redirect
       console.log("[Login] Success, preparing to redirect...")
       toast.success("Login successful! Redirecting...")
-      
-      // Ensure loading is set to false before redirect
       setLoading(false)
-      
-      // Add a short delay before redirect to ensure UI updates
       await new Promise(res => setTimeout(res, 500))
-      console.log("[Login] Redirecting to dashboard...")
-      navigateToDashboard()
-
+      console.log("[Login] Redirecting based on role...")
+      // Remove any redirect or navigation here
+      setLoading(false)
     } catch (error) {
       console.error("[Login] Unexpected error:", error)
       toast.error("An unexpected error occurred")

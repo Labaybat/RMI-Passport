@@ -3,7 +3,7 @@ import supabase from '../lib/supabase/client';
 
 interface AuthContextType {
   user: { id: string; email: string } | null
-  profile: { first_name?: string; last_name?: string; full_name?: string; email?: string } | null
+  profile: { first_name?: string; last_name?: string; full_name?: string; email?: string; role?: string } | null
   signOut: () => Promise<{ error: Error | null }>
   isConfigured: boolean
   loading: boolean
@@ -25,7 +25,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("first_name, last_name")
+          .select("first_name, last_name, role")
           .eq("id", data.user.id)
           .single()
 
@@ -66,6 +66,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
     setIsConfigured(isSupabaseConfigured);
   }, []);
+
+  useEffect(() => {
+    // Fetch profile whenever user changes and is not null
+    if (user) {
+      (async () => {
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("first_name, last_name, role")
+          .eq("id", user.id)
+          .single();
+        if (profileError) {
+          console.error("Error fetching profile (on user change):", profileError.message);
+        }
+        setProfile(profileData || null);
+      })();
+    }
+  }, [user]);
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()

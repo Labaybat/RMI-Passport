@@ -84,7 +84,6 @@ const FormField: React.FC<{
 }> = ({ id, label, value, onChange, type = "text", required = false, className = "" }) => {
   const [focused, setFocused] = useState(false)
   const hasValue = value !== ""
-
   return (
     <div className={`relative ${className}`}>
       <Input
@@ -96,7 +95,7 @@ const FormField: React.FC<{
         onBlur={() => setFocused(false)}
         placeholder=" "
         required={required}
-        className={`transition-all duration-200 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400 ${
+        className={`transition-all duration-200 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400 font-medium ${
           hasValue || focused ? "pt-6" : ""
         }`}
       />
@@ -160,10 +159,9 @@ const PhoneInput: React.FC<{
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         placeholder=" "
-        required={required}
-        className={`transition-all duration-200 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400 ${
+        required={required}        className={`transition-all duration-200 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400 font-medium ${
           hasValue || focused ? "pt-6" : ""
-        }`}
+          }`}
         inputMode="tel"
       />
       <Label
