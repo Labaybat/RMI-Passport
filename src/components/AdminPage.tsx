@@ -618,10 +618,13 @@ const Applications: React.FC = () => {
       ? [profile.first_name, profile.last_name].filter(Boolean).join(' ')
       : 'Admin User';
     
+    // Always set progress based on status
+    const progress = getProgressForStatus(editForm.status);
     const { error } = await supabase
       .from("passport_applications")
       .update({
         ...editForm,
+        progress,
         updated_at: new Date().toISOString(),
         last_modified_by_admin_id: user?.id || null,
         last_modified_by_admin_name: adminName
@@ -634,6 +637,7 @@ const Applications: React.FC = () => {
       setApplications(applications.map(app => app.id === editApp.id ? { 
         ...app, 
         ...editForm,
+        progress,
         updated_at: new Date().toISOString(),
         last_modified_by_admin_id: user?.id || null,
         last_modified_by_admin_name: adminName
@@ -657,10 +661,13 @@ const Applications: React.FC = () => {
       ? [profile.first_name, profile.last_name].filter(Boolean).join(' ')
       : 'Admin User';
     
+    // Always set progress based on status
+    const progress = getProgressForStatus(statusValue);
     const { error } = await supabase
       .from("passport_applications")
       .update({ 
         status: statusValue,
+        progress,
         updated_at: new Date().toISOString(),
         last_modified_by_admin_id: user?.id || null,
         last_modified_by_admin_name: adminName
@@ -669,9 +676,11 @@ const Applications: React.FC = () => {
     setStatusSaving(false);
     if (error) {
       toast({ title: "Error", description: "Failed to update status." });
-    } else {      setApplications(applications.map(app => app.id === statusApp.id ? { 
+    } else {
+      setApplications(applications.map(app => app.id === statusApp.id ? { 
         ...app, 
         status: statusValue,
+        progress,
         updated_at: new Date().toISOString(),
         last_modified_by_admin_id: user?.id || null,
         last_modified_by_admin_name: adminName
@@ -1679,6 +1688,18 @@ function formatApplicationType(type: string) {
     case 'replacement': return 'Replacement';
     case 'name-change': return 'Name Change';
     default: return type || '—';
+  }
+}
+
+// Helper: Map status to progress
+function getProgressForStatus(status: string) {
+  switch (status) {
+    case 'draft': return 10;
+    case 'submitted': return 33;
+    case 'pending': return 66;
+    case 'approved':
+    case 'rejected': return 100;
+    default: return 0;
   }
 }
 

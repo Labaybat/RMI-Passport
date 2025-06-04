@@ -84,6 +84,7 @@ const PassportDashboard: React.FC = () => {
   const [buttonAction, setButtonAction] = useState(() => () => {});
   const [draftName, setDraftName] = useState("");
   const [draftSurname, setDraftSurname] = useState("");
+  const [applications, setApplications] = useState<PassportApplication[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -245,6 +246,83 @@ const PassportDashboard: React.FC = () => {
   // Utility: Validate UUID format
   const isValidUUID = (id: string) => /^[0-9a-fA-F-]{36}$/.test(id)
 
+  // Replace the main application fetching logic with fetching all applications and subscribing to real-time updates
+  useEffect(() => {
+    if (!session || !isConfigured) return;
+    let subscription: any = null;
+    const fetchAndSubscribe = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("passport_applications")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .order("updated_at", { ascending: false });
+        if (!error && data) {
+          setApplications(data);
+        }
+        // Real-time subscription
+        subscription = supabase
+          .channel('passport_applications_changes')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'passport_applications',
+              filter: `user_id=eq.${session.user.id}`,
+            },
+            (payload: any) => {
+              // Refetch all applications on any change
+              supabase
+                .from("passport_applications")
+                .select("*")
+                .eq("user_id", session.user.id)
+                .order("updated_at", { ascending: false })
+                .then(({ data }) => {
+                  if (data) setApplications(data);
+                });
+            }
+          )
+          .subscribe();
+      } catch (err) {
+        setApplications([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAndSubscribe();
+    return () => {
+      if (subscription) supabase.removeChannel(subscription);
+    };
+  }, [session?.user?.id, isConfigured]);
+
+  // Utility: Map status to progress if progress is missing
+  const getProgress = (app: PassportApplication) => {
+    if (typeof app.progress === 'number') return app.progress;
+    switch (app.status) {
+      case 'draft': return 10;
+      case 'submitted': return 33;
+      case 'pending': return 66;
+      case 'approved': return 100;
+      case 'rejected': return 100;
+      default: return 0;
+    }
+  };
+
+  // Utility: Dynamic status message
+  const getStatusMessage = (app: PassportApplication) => {
+    const name = [app.surname, app.first_middle_names].filter(Boolean).join(' ');
+    switch (app.status) {
+      case 'draft': return `Continue application for ${name || 'Unnamed'}`;
+      case 'submitted': return `Application for ${name || 'Unnamed'} submitted`;
+      case 'pending': return `Application for ${name || 'Unnamed'} is in review`;
+      case 'approved': return `Application for ${name || 'Unnamed'} has been approved`;
+      case 'rejected': return `Application for ${name || 'Unnamed'} has been rejected`;
+      default: return `Application for ${name || 'Unnamed'}`;
+    }
+  };
+
   const fetchApplication = async () => {
     if (!session || !isConfigured) return
     console.log("[fetchApplication] Current user.id:", session.user.id, "Type:", typeof session.user.id)
@@ -349,11 +427,13 @@ const PassportDashboard: React.FC = () => {
             newButtonLabel = "Start Application";
             console.log("[Dashboard] Set button for user with NO applications:", newButtonLabel);
           }
-          
-          console.log("[Dashboard] Final button label decision:", newButtonLabel, "- Draft:", !!draftApp, "HasNonDraft:", hasSubmittedApps);
+            console.log("[Dashboard] Final button label decision:", newButtonLabel, "- Draft:", !!draftApp, "HasNonDraft:", hasSubmittedApps);
           console.log("[Dashboard] About to call setButtonLabel with:", newButtonLabel);
           setButtonLabel(newButtonLabel);
-          setButtonAction(() => () => navigate({ to: "/apply" }));
+          setButtonAction(() => () => {
+            // Just navigate to apply - don't create application here since Application.tsx will handle that
+            navigate({ to: "/apply", search: { new: true } });
+          });
           
           // Add a timeout to verify the state actually updated
           setTimeout(() => {
@@ -382,13 +462,11 @@ const PassportDashboard: React.FC = () => {
             .select("*")
             .eq("user_id", session.user.id)
             .order("updated_at", { ascending: false });
-          
-          if (error) {
+            if (error) {
             console.error("[Dashboard] DIRECT: Error fetching applications:", error);
             // Fall back to mock
-            console.log("[Dashboard] Falling back to mock environment");
-            setButtonLabel("Start Application");
-            setButtonAction(() => () => navigate({ to: "/apply" }));
+            console.log("[Dashboard] Falling back to mock environment");            setButtonLabel("Start Application");
+            setButtonAction(() => () => navigate({ to: "/apply", search: { new: true } }));
             setHasAnyApplications(null);
             setLoading(false);
             return;
@@ -427,17 +505,18 @@ const PassportDashboard: React.FC = () => {
             } else {
               newButtonLabel = "Continue Last Application";
             }
-            console.log("[Dashboard] DIRECT: Set button for DRAFT application:", newButtonLabel);
-          } else if (hasSubmittedApps) {
+            console.log("[Dashboard] DIRECT: Set button for DRAFT application:", newButtonLabel);          } else if (hasSubmittedApps) {
             newButtonLabel = "Start Another Application";
             console.log("[Dashboard] DIRECT: Set button for user with NON-DRAFT applications:", newButtonLabel);
           } else {
             newButtonLabel = "Start Application";
             console.log("[Dashboard] DIRECT: Set button for user with NO applications:", newButtonLabel);
-          }
-            console.log("[Dashboard] DIRECT: Final button label decision:", newButtonLabel);
+          }            console.log("[Dashboard] DIRECT: Final button label decision:", newButtonLabel);
           setButtonLabel(newButtonLabel);
-          setButtonAction(() => () => navigate({ to: "/apply" }));
+          setButtonAction(() => () => {
+            // Just navigate to apply - don't create application here since Application.tsx will handle that
+            navigate({ to: "/apply", search: { new: true } });
+          });
           
           // Force a re-render to ensure button updates
           setTimeout(() => {
@@ -446,10 +525,8 @@ const PassportDashboard: React.FC = () => {
           }, 100);
           
         } catch (err) {
-          console.error("[Dashboard] DIRECT: Unexpected error:", err);
-          // Fall back to mock
-          setButtonLabel("Start Application");
-          setButtonAction(() => () => navigate({ to: "/apply" }));
+          console.error("[Dashboard] DIRECT: Unexpected error:", err);          // Fall back to mock          setButtonLabel("Start Application");
+          setButtonAction(() => () => navigate({ to: "/apply", search: { new: true } }));
           setHasAnyApplications(null);
         } finally {
           setLoading(false);
@@ -946,7 +1023,7 @@ const PassportDashboard: React.FC = () => {
                 onClick={() => navigate({ to: "/photo-guidelines" })}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-rose-500/0 to-rose-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
-                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm transition-all duration-300 group_hover:bg-rose-200 group_hover:text-rose-700 group-hover:shadow">
+                <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm transition-all duration-300 group_hover:bg-rose-200 group_hover:text-rose-700 group_hover:shadow">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -994,48 +1071,60 @@ const PassportDashboard: React.FC = () => {
                   <h2 className="text-base sm:text-lg font-medium text-gray-800">Application Status</h2>
                 </div>
                 <div className="rounded-full bg-blue-100 px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-medium text-blue-700 self-start sm:self-auto">
-                  {application && application.status
-                    ? application.status.replace("_", " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
-                    : "Not Started"}
+                  {applications.length > 0 ? `${applications.length} Application${applications.length > 1 ? 's' : ''}` : 'No Applications'}
                 </div>
               </div>
-
-              <div className="mb-2 flex justify-between text-[10px] sm:text-xs font-medium text-gray-500">
-                <span>Application Started</span>
-                <span>Review</span>
-                <span>Approval</span>
-              </div>
-
-              <div className="relative mb-3 sm:mb-4 h-2 sm:h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
-                <div
-                  className="absolute h-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-500 ease-out"
-                  style={{ width: `${applicationProgress}%` }}
-                ></div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 text-[10px] sm:text-xs text-gray-500"></div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 text-[10px] sm:text-xs text-gray-500">
-                <div className="flex items-center gap-1.5">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-gray-400 sm:w-3.5 sm:h-3.5"
-                  >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                  <span>Last Updated: {lastUpdated}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span>{applicationProgress}% Complete</span>
-                </div>
+              {applications.length === 0 && (
+                <div className="text-gray-500 text-sm py-4 text-center">No applications found. Start a new application to see status here.</div>
+              )}
+              <div className="space-y-6">
+                {applications.map((app) => {
+                  const progress = getProgress(app);
+                  const statusMsg = getStatusMessage(app);
+                  const lastUpdated = app.updated_at ? new Date(app.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "N/A";
+                  return (
+                    <div key={app.id} className="bg-white/80 rounded-lg shadow p-4 mb-2 border border-blue-100">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-2">
+                        <div className="font-semibold text-gray-700 text-sm sm:text-base">{statusMsg}</div>
+                        <div className={`rounded-full px-2 py-0.5 text-xs font-medium ${app.status === 'approved' ? 'bg-green-100 text-green-700' : app.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{app.status ? app.status.charAt(0).toUpperCase() + app.status.slice(1) : 'Unknown'}</div>
+                      </div>
+                      <div className="mb-2 flex justify-between text-[10px] sm:text-xs font-medium text-gray-500">
+                        <span>Application Started</span>
+                        <span>Review</span>
+                        <span>Approval</span>
+                      </div>
+                      <div className="relative mb-2 h-2 sm:h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
+                        <div
+                          className={`absolute h-full rounded-full ${app.status === 'approved' ? 'bg-gradient-to-r from-green-400 to-green-600' : app.status === 'rejected' ? 'bg-gradient-to-r from-red-400 to-red-600' : 'bg-gradient-to-r from-blue-400 to-blue-600'} transition-all duration-500 ease-out`}
+                          style={{ width: `${progress}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 text-[10px] sm:text-xs text-gray-500">
+                        <div className="flex items-center gap-1.5">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-gray-400 sm:w-3.5 sm:h-3.5"
+                          >
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                          </svg>
+                          <span>Last Updated: {lastUpdated}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span>{progress}% Complete</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

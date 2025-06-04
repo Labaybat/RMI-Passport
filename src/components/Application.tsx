@@ -1512,11 +1512,29 @@ export default function Apply() {
   const formRef = useRef<HTMLDivElement>(null);
   const totalSteps = 6;
   const { toast } = useToast();
-  const { user } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();  const router = useRouter();
   // Media queries
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
+  const [hasParsedUrl, setHasParsedUrl] = useState(false); // Track if we've already parsed the URL
+  const [shouldCreateDraft, setShouldCreateDraft] = useState(false); // Control draft creation
+
+  // Parse URL search params once when component mounts
+  useEffect(() => {
+    if (hasParsedUrl) return;
+    setHasParsedUrl(true);
+      // Get search parameters from URL
+    const searchParams = new URLSearchParams(window.location.search);
+    const newParam = searchParams.get('new');
+    
+    // Check for both string 'true' and boolean true (from react-router)
+    const isNewParam = newParam === 'true' || newParam === true || newParam === 'true"' || newParam === '"true"' || newParam === '"true';
+    
+    // Only set to create draft if explicitly requested
+    setShouldCreateDraft(isNewParam);
+    
+    console.log("[Application] URL parameters parsed, new=", newParam, "shouldCreateDraft=", isNewParam);
+  }, [hasParsedUrl]);
 
   // Check screen size and orientation
   useEffect(() => {
@@ -1573,35 +1591,66 @@ export default function Apply() {
     return (
       app.status === "draft" || required.some((f) => !app[f] || app[f] === "")
     );
-  };
-
-  // On mount: check for existing draft or create new
+  };  // On mount: check for existing draft or create new - with double-check logic
   useEffect(() => {
     let isMounted = true;
+    let alreadyCreatedDraft = false; // Flag to prevent duplicate creation
+    
     const fetchOrCreateDraft = async () => {
       if (!user?.id) return;
       setLoading(true);
-      // 1. Check for existing draft (status = 'draft' and not submitted)
+      console.log("[Application] Starting fetchOrCreateDraft, checking for draft applications");
+      
+      // Check if we already have a draft - this must run first
       const { data, error } = await supabase
         .from("passport_applications")
         .select("*")
         .eq("user_id", user.id)
         .eq("status", "draft")
-        .order("updated_at", { ascending: false })
-        .limit(1);
-      let draft = data && data.length > 0 ? data[0] : null;
-      if (draft && isMounted) {
-        setFormData((prev) => ({
-          ...prev,
-          ...Object.fromEntries(
-            Object.entries(draft).map(([k, v]) => [k, v === null ? "" : v])
-          ),
-        }));
-        setApplicationId(draft.id);
+        .order("updated_at", { ascending: false });
+
+      // If we found ANY drafts, use the most recent one
+      if (!error && data && data.length > 0) {
+        const draft = data[0];
+        console.log("[Application] Found existing draft(s):", data.length, "- Using most recent:", draft.id);
+        
+        if (isMounted) {
+          setFormData((prev) => ({
+            ...prev,
+            ...Object.fromEntries(
+              Object.entries(draft).map(([k, v]) => [k, v === null ? "" : v])
+            ),
+          }));
+          setApplicationId(draft.id);
+        }
         setLoading(false);
         return;
       }
-      // If no draft, create a new one
+      
+      // We got here, so no draft exists - create one, but only if we haven't already AND we should create one
+      if (alreadyCreatedDraft) {
+        console.log("[Application] Preventing duplicate draft creation");
+        setLoading(false);
+        return;
+      }
+      
+      // Only create a new draft if URL param indicates we should, or if there are no drafts yet
+      // This prevents auto-creation when navigating directly to /apply
+      if (!shouldCreateDraft && !hasParsedUrl) {
+        console.log("[Application] Waiting for URL parameters to be parsed before creating draft");
+        setLoading(false);
+        return;
+      }
+      
+      if (!shouldCreateDraft) {
+        console.log("[Application] URL parameter 'new' is not 'true', skipping draft creation");
+        setLoading(false);
+        return;
+      }
+      
+      console.log("[Application] No existing draft found, creating new draft application");
+      alreadyCreatedDraft = true; // Set flag to prevent duplicate creation
+      
       const insertPayload = {
         user_id: user.id,
         status: "draft",
@@ -1609,15 +1658,32 @@ export default function Apply() {
         updated_at: new Date().toISOString(),
         application_type: formData.application_type || "new", // Always include application_type
       };
+      
       const { data: newApp, error: insertError } = await supabase
         .from("passport_applications")
         .insert([insertPayload])
         .select();
+        
       if (insertError) {
+        console.error("[Application] Error creating new draft:", insertError);
         setLoading(false);
         return;
       }
+      
       if (isMounted && newApp && newApp[0]) {
+        console.log("[Application] Successfully created new draft:", newApp[0].id);
+        // Double-check that we don't have other drafts
+        const { data: checkData } = await supabase
+          .from("passport_applications")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("status", "draft")
+          .order("updated_at", { ascending: false });
+          
+        if (checkData && checkData.length > 1) {
+          console.warn("[Application] WARNING: Multiple drafts exist after creation:", checkData.length);
+        }
+        
         setFormData((prev) => ({
           ...prev,
           ...Object.fromEntries(
@@ -1628,22 +1694,99 @@ export default function Apply() {
       }
       setLoading(false);
     };
-    fetchOrCreateDraft();
+      fetchOrCreateDraft();
     return () => { isMounted = false; };
     // eslint-disable-next-line
-  }, [user?.id]);
+  }, [user?.id, shouldCreateDraft, hasParsedUrl]);
 
-  // As user progresses, update the draft in Supabase
+  // As user progresses, update the draft in Supabase  // Define valid columns once, outside of functions for reuse
+  const validColumns = [
+    "user_id",
+    "application_type",
+    "surname",
+    "first_middle_names",
+    "social_security_number",
+    "place_of_birth_city",
+    "place_of_birth_state",
+    "country_of_birth",
+    "date_of_birth",
+    "gender",
+    "hair_color",
+    "marital_status",
+    "height_feet",
+    "height_inches",
+    "eye_color",
+    "address_unit",
+    "street_name",
+    "phone_number",
+    "city",
+    "state",
+    "postal_code",
+    "emergency_full_name",
+    "emergency_phone_number",
+    "emergency_address_unit",
+    "emergency_street_name",
+    "emergency_city",
+    "emergency_state",
+    "emergency_postal_code",
+    "father_full_name",
+    "father_dob",
+    "father_nationality",
+    "father_birth_city",
+    "father_birth_state",
+    "father_birth_country",
+    "mother_full_name",
+    "mother_dob",
+    "mother_nationality",
+    "mother_birth_city",
+    "mother_birth_state",
+    "mother_birth_country",
+    "birth_certificate",
+    "consent_form",
+    "marriage_or_divorce_certificate",
+    "old_passport_copy",
+    "signature",
+    "photo_id",
+    "birth_certificate_url",
+    "consent_form_url",
+    "marriage_certificate_url",
+    "old_passport_url",
+    "signature_url",
+    "photo_id_url"
+  ];
+
   const updateFormData = (data: Partial<FormData>) => {
     setFormData((prev) => {
       const updated = { ...prev, ...data };
       // Prevent update if loading (insert not finished)
       if (applicationId && !loading) {
         (async () => {
-          await supabase
+          // Create a clean update object with only valid columns
+          const cleanUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
+          
+          // Only include fields from data that are in our valid columns list
+          Object.keys(data).forEach(key => {
+            if (validColumns.includes(key)) {
+              cleanUpdate[key] = data[key as keyof typeof data];
+            }
+          });
+          
+          // Convert height fields to integers if they exist in this update
+          if (cleanUpdate.height_feet !== undefined) {
+            cleanUpdate.height_feet = parseInt(cleanUpdate.height_feet, 10) || 0;
+          }
+          
+          if (cleanUpdate.height_inches !== undefined) {
+            cleanUpdate.height_inches = parseInt(cleanUpdate.height_inches, 10) || 0;
+          }
+            const { error } = await supabase
             .from("passport_applications")
-            .update({ ...data, updated_at: new Date().toISOString() })
+            .update(cleanUpdate)
             .eq("id", applicationId);
+            
+          if (error) {
+            console.error("[Application] Error updating form data:", error);
+          }
         })();
       }
       return updated;
@@ -1660,32 +1803,48 @@ export default function Apply() {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
     }
-  }
-
-  // Submission handler
+  }  // Submission handler
   const handleSubmit = async () => {
     if (!applicationId) return;
     setLoading(true);
     try {
-      // Prepare the update payload
-      const payload = {
-        ...formData,
-        status: "submitted",
-        submitted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      // Remove id from payload if present
-      delete (payload as any).id;
+      // Prepare the update payload with only valid columns
+      // (using the validColumns array defined above)
+      
+      // Build a clean payload with only valid columns
+      const cleanPayload: Record<string, any> = {};
+      
+      // Copy only valid fields from formData to cleanPayload
+      validColumns.forEach(column => {
+        if (formData.hasOwnProperty(column)) {
+          cleanPayload[column] = formData[column as keyof FormData];
+        }
+      });
+      
+      // Convert height fields to integers
+      if (cleanPayload.height_feet) {
+        cleanPayload.height_feet = parseInt(cleanPayload.height_feet, 10);
+      }
+      
+      if (cleanPayload.height_inches) {
+        cleanPayload.height_inches = parseInt(cleanPayload.height_inches, 10);
+      }
+      
+      // Add required status fields
+      cleanPayload.status = "submitted";
+      cleanPayload.submitted_at = new Date().toISOString();
+      cleanPayload.updated_at = new Date().toISOString();
+      
+      console.log("[Application] Submitting application with clean payload:", cleanPayload);
 
       const { error } = await supabase
         .from("passport_applications")
-        .update(payload)
-        .eq("id", applicationId);
-
-      if (error) {
+        .update(cleanPayload)
+        .eq("id", applicationId);      if (error) {
+        console.error("[Application] Submission error:", error);
         toast({
           title: "Submission Error",
-          description: "There was an error submitting your application. Please try again."
+          description: `Error: ${error.message || "There was an error submitting your application."}`
         });
       } else {
         // Show success toast
