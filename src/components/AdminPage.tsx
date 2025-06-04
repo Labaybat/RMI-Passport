@@ -6,6 +6,9 @@ import { useAdminGuard } from "../hooks/useAdminGuard";
 import supabase from "../lib/supabase/client";
 import { useToast } from "../hooks/use-toast";
 import { CheckCircleIcon, XCircleIcon, ClockIcon, PencilIcon, EyeIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
+import AdminComments from "./AdminComments";
+
+// Components for different sections
 
 // Components for different sections
 const Dashboard = () => (
@@ -329,21 +332,80 @@ const Applications: React.FC = () => {
 
   const handleViewClose = () => setViewApp(null);
   const handleEditClose = () => setEditApp(null);
-
   // Print application details
   const handlePrintApplication = () => {
-    const printContents = document.getElementById('application-modal-content')?.innerHTML;
+    const printContents = document.getElementById('application-print-content')?.innerHTML;
     if (!printContents) return;
-    const printWindow = window.open('', '', 'height=800,width=600');
+    
+    const printWindow = window.open('', '', 'height=800,width=1000');
     if (printWindow) {
-      printWindow.document.write('<html><head><title>Print Application</title>');
-      printWindow.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">');
-      printWindow.document.write('</head><body>');
-      printWindow.document.write(printContents);
-      printWindow.document.write('</body></html>');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Application Details - ${viewApp ? [viewApp.surname, viewApp.first_middle_names].filter(Boolean).join(' ') : 'Unknown'}</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 20px; 
+                color: #111827; 
+                line-height: 1.5;
+              }
+              .hidden { display: none !important; }
+              .print\\:hidden { display: none !important; }
+              .print\\:block { display: block !important; }
+              .print\\:inline { display: inline !important; }
+              .grid { display: grid; }
+              .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+              .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+              .gap-6 { gap: 1.5rem; }
+              .gap-x-8 { column-gap: 2rem; }
+              .gap-y-2\\.5 { row-gap: 0.625rem; }
+              .space-y-2\\.5 > * + * { margin-top: 0.625rem; }
+              .space-y-6 > * + * { margin-top: 1.5rem; }
+              .bg-gray-50 { background-color: #f9fafb; }
+              .rounded-lg { border-radius: 0.5rem; }
+              .p-4 { padding: 1rem; }
+              .border { border: 1px solid #d1d5db; }
+              .font-semibold { font-weight: 600; }
+              .font-medium { font-weight: 500; }
+              .text-lg { font-size: 1.125rem; }
+              .text-sm { font-size: 0.875rem; }
+              .text-xs { font-size: 0.75rem; }
+              .text-gray-900 { color: #111827; }
+              .text-gray-800 { color: #1f2937; }
+              .text-gray-700 { color: #374151; }
+              .mb-2 { margin-bottom: 0.5rem; }
+              .mb-3 { margin-bottom: 0.75rem; }
+              .mb-4 { margin-bottom: 1rem; }
+              .mb-6 { margin-bottom: 1.5rem; }
+              .mt-4 { margin-top: 1rem; }
+              .w-32 { width: 8rem; }
+              .shrink-0 { flex-shrink: 0; }
+              .flex { display: flex; }
+              .font-mono { font-family: ui-monospace, monospace; }
+              .whitespace-pre-wrap { white-space: pre-wrap; }
+              .bg-white { background-color: white; }
+              .col-span-2 { grid-column: span 2 / span 2; }
+              @media print {
+                body { margin: 0; }
+                .print\\:bg-transparent { background-color: transparent !important; }
+                .print\\:text-black { color: black !important; }
+                .print\\:px-0 { padding-left: 0 !important; padding-right: 0 !important; }
+                .print\\:py-0 { padding-top: 0 !important; padding-bottom: 0 !important; }
+              }
+            </style>
+          </head>
+          <body>
+            ${printContents}
+          </body>
+        </html>
+      `);
       printWindow.document.close();
       printWindow.focus();
-      setTimeout(() => printWindow.print(), 500);
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
     }
   };
 
@@ -455,118 +517,284 @@ const Applications: React.FC = () => {
           </div>
           {/* Pagination controls could go here */}
         </div>
-      </div>
-
-      {/* View Modal */}
+      </div>      {/* View Modal */}
       {viewApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative text-gray-900 overflow-y-auto max-h-[90vh] animate-fadeIn">
-            <button className="absolute top-2 right-2 bg-gray-100 hover:bg-gray-200 rounded-full p-2 text-gray-400 hover:text-gray-600 text-2xl transition" onClick={handleViewClose}>&times;</button>
-            <button
-              className="absolute top-2 right-12 text-gray-400 hover:text-gray-600 text-xl"
-              onClick={handlePrintApplication}
-              title="Print Application"
-            >
-              🖨️
-            </button>
-            <h3 className="text-2xl font-bold mb-4">Application Details</h3>
-            <div id="application-modal-content" className="space-y-6">
-              {/* Applicant Info */}
-              <div>
-                <h4 className="font-semibold text-lg mb-2">Applicant Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                  <div><span className="font-medium">Surname:</span> {viewApp.surname}</div>
-                  <div><span className="font-medium">First & Middle Names:</span> {viewApp.first_middle_names}</div>
-                  <div><span className="font-medium">Social Security #:</span> {viewApp.social_security_number}</div>
-                  <div><span className="font-medium">Gender:</span> {viewApp.gender}</div>
-                  <div><span className="font-medium">Date of Birth:</span> {viewApp.date_of_birth}</div>
-                  <div><span className="font-medium">Place of Birth:</span> {[viewApp.place_of_birth_city, viewApp.place_of_birth_state, viewApp.country_of_birth].filter(Boolean).join(', ')}</div>
-                  <div><span className="font-medium">Hair Color:</span> {viewApp.hair_color}</div>
-                  <div><span className="font-medium">Eye Color:</span> {viewApp.eye_color}</div>
-                  <div><span className="font-medium">Height:</span> {viewApp.height_feet ? `${viewApp.height_feet} ft` : ''} {viewApp.height_inches ? `${viewApp.height_inches} in` : ''}</div>
-                  <div><span className="font-medium">Marital Status:</span> {viewApp.marital_status}</div>
-                </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 relative text-gray-900 max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Application Details - {viewApp.id.split('-')[0].toUpperCase()}
+              </h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrintApplication}
+                  className="print:hidden px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  Print
+                </button>
+                <button 
+                  className="print:hidden p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                  onClick={handleViewClose}
+                >
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-              <hr className="my-4" />
-              {/* Contact Info */}
-              <div>
-                <h4 className="font-semibold text-lg mb-2">Contact Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                  <div><span className="font-medium">Address:</span> {[viewApp.address_unit, viewApp.street_name, viewApp.city, viewApp.state, viewApp.postal_code].filter(Boolean).join(', ')}</div>
-                  <div><span className="font-medium">Phone Number:</span> {viewApp.phone_number}</div>
-                </div>
+            </div>
+
+            {/* Modal Content */}
+            <div id="application-print-content" className="flex-1 overflow-y-auto p-6">
+              {/* Applicant Name for Print */}
+              <div className="hidden print:block mb-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  {[viewApp.surname, viewApp.first_middle_names].filter(Boolean).join(' ')}
+                </h1>
+                <p className="text-gray-600">Application ID: {viewApp.id}</p>
               </div>
-              <hr className="my-4" />
-              {/* Emergency Contact */}
-              <div>
-                <h4 className="font-semibold text-lg mb-2">Emergency Contact</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                  <div><span className="font-medium">Full Name:</span> {viewApp.emergency_full_name}</div>
-                  <div><span className="font-medium">Phone Number:</span> {viewApp.emergency_phone_number}</div>
-                  <div><span className="font-medium">Address:</span> {[viewApp.emergency_address_unit, viewApp.emergency_street_name, viewApp.emergency_city, viewApp.emergency_state, viewApp.emergency_postal_code].filter(Boolean).join(', ')}</div>
-                </div>
-              </div>
-              <hr className="my-4" />
-              {/* Parents */}
-              <div>
-                <h4 className="font-semibold text-lg mb-2">Father's Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                  <div><span className="font-medium">Full Name:</span> {viewApp.father_full_name}</div>
-                  <div><span className="font-medium">DOB:</span> {viewApp.father_dob}</div>
-                  <div><span className="font-medium">Nationality:</span> {viewApp.father_nationality}</div>
-                  <div><span className="font-medium">Place of Birth:</span> {[viewApp.father_birth_city, viewApp.father_birth_state, viewApp.father_birth_country].filter(Boolean).join(', ')}</div>
-                </div>
-                <h4 className="font-semibold text-lg mt-4 mb-2">Mother's Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                  <div><span className="font-medium">Full Name:</span> {viewApp.mother_full_name}</div>
-                  <div><span className="font-medium">DOB:</span> {viewApp.mother_dob}</div>
-                  <div><span className="font-medium">Nationality:</span> {viewApp.mother_nationality}</div>
-                  <div><span className="font-medium">Place of Birth:</span> {[viewApp.mother_birth_city, viewApp.mother_birth_state, viewApp.mother_birth_country].filter(Boolean).join(', ')}</div>
-                </div>
-              </div>
-              <hr className="my-4" />
-              {/* Documents */}
-              <div>
-                <h4 className="font-semibold text-lg mb-2">Uploaded Documents</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                  {documentFields.map(doc => {
-                    const url = signedUrls[doc.key];
-                    if (!viewApp[doc.key]) return null;
-                    const isImage = url && /\.(jpg|jpeg|png|webp|gif)$/i.test(url);
-                    const isPDF = url && /\.pdf$/i.test(url);
-                    return (
-                      <div key={doc.key} className="flex flex-col gap-1">
-                        <span className="font-medium">{doc.label}:</span>
-                        {url ? (
-                          isImage ? (
-                            <img src={url} alt={doc.label} className="mt-1 mb-2 max-h-40 rounded shadow border object-contain" />
-                          ) : isPDF ? (
-                            <iframe src={url} title={doc.label} className="mt-1 mb-2 w-full h-40 border rounded" />
-                          ) : (
-                            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">View</a>
-                          )
-                        ) : (
-                          <span className="text-gray-400">Loading...</span>
-                        )}
+
+              {/* Two Column Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column: Applicant Information */}
+                <div className="space-y-6">
+                  <div className="bg-gray-50 rounded-lg p-4 border">
+                    <h4 className="font-semibold text-lg text-gray-900 mb-3">Applicant Information</h4>
+                    <div className="space-y-2.5 text-sm">
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Full Name:</span>
+                        <span className="text-gray-900">{[viewApp.surname, viewApp.first_middle_names].filter(Boolean).join(' ') || '—'}</span>
                       </div>
-                    );
-                  })}
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Email:</span>
+                        <span className="text-gray-900">{viewApp.email || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Phone:</span>
+                        <span className="text-gray-900">{viewApp.phone_number || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Address:</span>
+                        <span className="text-gray-900">{[viewApp.address_unit, viewApp.street_name, viewApp.city, viewApp.state, viewApp.postal_code].filter(Boolean).join(', ') || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Application Type:</span>
+                        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded print:bg-transparent print:text-black print:px-0 print:py-0">
+                          {formatApplicationType(viewApp.application_type)}
+                        </span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Current Status:</span>
+                        <span className="print:text-black">
+                          <span className="print:hidden">{statusBadge(viewApp.status)}</span>
+                          <span className="hidden print:inline">{viewApp.status}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Personal Details */}
+                  <div className="bg-gray-50 rounded-lg p-4 border">
+                    <h4 className="font-semibold text-lg text-gray-900 mb-3">Personal Details</h4>
+                    <div className="space-y-2.5 text-sm">
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Gender:</span>
+                        <span className="text-gray-900">{viewApp.gender || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Date of Birth:</span>
+                        <span className="text-gray-900">{viewApp.date_of_birth || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Place of Birth:</span>
+                        <span className="text-gray-900">{[viewApp.place_of_birth_city, viewApp.place_of_birth_state, viewApp.country_of_birth].filter(Boolean).join(', ') || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Hair Color:</span>
+                        <span className="text-gray-900">{viewApp.hair_color || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Eye Color:</span>
+                        <span className="text-gray-900">{viewApp.eye_color || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Height:</span>
+                        <span className="text-gray-900">
+                          {viewApp.height_feet && viewApp.height_inches ? `${viewApp.height_feet}' ${viewApp.height_inches}"` : '—'}
+                        </span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Marital Status:</span>
+                        <span className="text-gray-900">{viewApp.marital_status || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">SSN:</span>
+                        <span className="text-gray-900">{viewApp.social_security_number || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Uploaded Documents */}
+                <div className="print:hidden">
+                  <div className="bg-gray-50 rounded-lg p-4 border">
+                    <h4 className="font-semibold text-lg text-gray-900 mb-3">Uploaded Documents</h4>
+                    <div className="space-y-2">
+                      {documentFields.map(doc => {
+                        const url = signedUrls[doc.key];
+                        if (!viewApp[doc.key]) return null;
+                        return (
+                          <div key={doc.key} className="flex items-center justify-between p-3 bg-white border rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                              </div>
+                              <span className="font-medium text-gray-900">{doc.label}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <a 
+                                href={url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
+                                title={`View ${doc.label}`}
+                              >
+                                <EyeIcon className="w-4 h-4 text-blue-600" />
+                              </a>
+                              <a 
+                                href={url} 
+                                download 
+                                className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
+                                title={`Download ${doc.label}`}
+                              >
+                                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                </svg>
+                              </a>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {documentFields.filter(doc => viewApp[doc.key]).length === 0 && (
+                        <p className="text-gray-500 text-sm italic">No documents uploaded</p>
+                      )}
+                    </div>
+                  </div>
+                </div>              </div>
+
+              {/* Emergency Contact - Full Width */}
+              <div className="col-span-1 lg:col-span-2 mt-6">
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Emergency Contact</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2.5 text-sm">
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Full Name:</span>
+                      <span className="text-gray-900">{viewApp.emergency_full_name || '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Phone Number:</span>
+                      <span className="text-gray-900">{viewApp.emergency_phone_number || '—'}</span>
+                    </div>
+                    <div className="flex md:col-span-2">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Address:</span>
+                      <span className="text-gray-900">{[viewApp.emergency_address_unit, viewApp.emergency_street_name, viewApp.emergency_city, viewApp.emergency_state, viewApp.emergency_postal_code].filter(Boolean).join(', ') || '—'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <hr className="my-4" />
-              {/* Application Meta */}
-              <div>
-                <h4 className="font-semibold text-lg mb-2">Application Meta</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                  <div><span className="font-medium">Application Type:</span> {formatApplicationType(viewApp.application_type)}</div>
-                  <div><span className="font-medium">Status:</span> {viewApp.status}</div>
-                  <div><span className="font-medium">Progress:</span> {viewApp.progress}</div>
-                  <div><span className="font-medium">Submitted At:</span> {viewApp.submitted_at ? viewApp.submitted_at.split("T")[0] : '-'}</div>
-                  <div><span className="font-medium">Updated At:</span> {viewApp.updated_at ? viewApp.updated_at.split("T")[0] : '-'}</div>
-                  <div><span className="font-medium">Created At:</span> {viewApp.created_at ? viewApp.created_at.split("T")[0] : '-'}</div>
-                  <div><span className="font-medium">Application ID:</span> {viewApp.id}</div>
-                  <div><span className="font-medium">User ID:</span> {viewApp.user_id}</div>
+
+              {/* Parents Information - Full Width */}
+              <div className="col-span-1 lg:col-span-2">
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Parental Information</h4>
+                  
+                  {/* Father's Information */}
+                  <div className="mb-4">
+                    <h5 className="font-medium text-gray-800 mb-2">Father's Information</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2.5 text-sm">
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Full Name:</span>
+                        <span className="text-gray-900">{viewApp.father_full_name || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Date of Birth:</span>
+                        <span className="text-gray-900">{viewApp.father_dob || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Nationality:</span>
+                        <span className="text-gray-900">{viewApp.father_nationality || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Place of Birth:</span>
+                        <span className="text-gray-900">{[viewApp.father_birth_city, viewApp.father_birth_state, viewApp.father_birth_country].filter(Boolean).join(', ') || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mother's Information */}
+                  <div>
+                    <h5 className="font-medium text-gray-800 mb-2">Mother's Information</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2.5 text-sm">
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Full Name:</span>
+                        <span className="text-gray-900">{viewApp.mother_full_name || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Date of Birth:</span>
+                        <span className="text-gray-900">{viewApp.mother_dob || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Nationality:</span>
+                        <span className="text-gray-900">{viewApp.mother_nationality || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Place of Birth:</span>
+                        <span className="text-gray-900">{[viewApp.mother_birth_city, viewApp.mother_birth_state, viewApp.mother_birth_country].filter(Boolean).join(', ') || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              {/* Application Meta - Full Width */}
+              <div className="col-span-1 lg:col-span-2">
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Application Meta</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2.5 text-sm">
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Progress:</span>
+                      <span className="text-gray-900">{viewApp.progress ? `${viewApp.progress}%` : '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Submitted At:</span>
+                      <span className="text-gray-900">{viewApp.submitted_at ? new Date(viewApp.submitted_at).toLocaleDateString() : '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Updated At:</span>
+                      <span className="text-gray-900">{viewApp.updated_at ? new Date(viewApp.updated_at).toLocaleDateString() : '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Created At:</span>
+                      <span className="text-gray-900">{viewApp.created_at ? new Date(viewApp.created_at).toLocaleDateString() : '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Application ID:</span>
+                      <span className="text-gray-900 font-mono text-xs">{viewApp.id}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">User ID:</span>
+                      <span className="text-gray-900 font-mono text-xs">{viewApp.user_id}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>              {/* Admin Comments - Full Width */}
+              <div className="col-span-1 lg:col-span-2">
+                <AdminComments applicationId={viewApp.id} />
               </div>
             </div>
           </div>
@@ -1050,12 +1278,12 @@ const Settings = () => (
 // Modernized Sidebar and Topbar
 const sidebarItems = [
   { id: 'dashboard', label: 'Dashboard', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6m-6 0v6m0 0H7m6 0h6" /></svg> },
-  { id: 'applications', label: 'Applications', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2v-5a2 2 0 00-2-2h-2a2 2 0 00-2 2v5a2 2 0 002 2z" /></svg> },
+  { id: 'applications', label: 'Applications', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2v-5a2 2 0 00-2-2h-2a2 2 0 00-2 2v5a2 2 0 002 2z" /></svg> },
   { id: 'users', label: 'Users', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M16 3.13a4 4 0 010 7.75M8 3.13a4 4 0 010 7.75" /></svg> },
-  { id: 'settings', label: 'Settings', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+  { id: 'settings', label: 'Settings', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
 ];
 
-const Sidebar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) => (
+const Sidebar = ({ activeTab, setActiveTab, onLogout }: { activeTab: string, setActiveTab: (tab: string) => void, onLogout: () => void }) => (
   <aside className="h-screen w-64 bg-gradient-to-b from-blue-900 to-blue-700 text-white flex flex-col shadow-lg">
     <div className="flex items-center gap-2 px-6 py-6 border-b border-blue-800">
       <img src="/seal.png" alt="Logo" className="w-10 h-10 rounded-full border-2 border-blue-200" />
@@ -1074,7 +1302,7 @@ const Sidebar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab:
       ))}
     </nav>
     <div className="px-6 py-4 border-t border-blue-800">
-      <button className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition text-white font-semibold shadow" onClick={signOut}>
+      <button className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition text-white font-semibold shadow" onClick={onLogout}>
         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" /></svg>
         Logout
       </button>
@@ -1084,7 +1312,7 @@ const Sidebar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab:
 
 const Topbar = ({ title }: { title: string }) => (
   <header className="w-full bg-white shadow flex items-center justify-between px-8 py-4 sticky top-0 z-30">
-    <h1 className="text-2xl font-bold text-blue-900 tracking-wide">RMI Passport Administration</h1>
+       <h1 className="text-2xl font-bold text-blue-900 tracking-wide">RMI Passport Administration</h1>
     <div className="flex items-center gap-4">
       <span className="text-gray-700 font-medium">{title}</span>
       <img src="/seal.png" alt="Seal" className="w-8 h-8 rounded-full border border-blue-200" />
@@ -1115,30 +1343,6 @@ export default function AdminPage() {
     navigate({ to: "/login" });
   };
 
-  const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-      </svg>
-    )},
-    { id: "applications", label: "Applications", icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    )},
-    { id: "users", label: "Users", icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-      </svg>
-    )},
-    { id: "settings", label: "Settings", icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    )}
-  ];
-
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
@@ -1153,36 +1357,10 @@ export default function AdminPage() {
         return <Dashboard />;
     }
   };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
-        {/* Sidebar */}
-        <div className="w-64 bg-gradient-to-b from-blue-900 to-blue-700 text-white flex flex-col shadow-lg">
-          <div className="flex items-center gap-2 px-6 py-6 border-b border-blue-800">
-            <img src="/seal.png" alt="Logo" className="w-10 h-10 rounded-full border-2 border-blue-200" />
-            <span className="font-bold text-lg tracking-wide">Admin Portal</span>
-          </div>
-          <nav className="flex-1 py-6 space-y-2">
-            {sidebarItems.map(item => (
-              <button
-                key={item.id}
-                className={`w-full flex items-center gap-3 px-6 py-3 rounded-lg transition font-medium text-base hover:bg-blue-800 focus:bg-blue-800 ${activeTab === item.id ? 'bg-blue-800 shadow' : ''}`}
-                onClick={() => setActiveTab(item.id)}
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            ))}
-          </nav>
-          <div className="px-6 py-4 border-t border-blue-800">
-            <button className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition text-white font-semibold shadow" onClick={signOut}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" /></svg>
-              Logout
-            </button>
-          </div>
-        </div>
-
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
         {/* Main Content */}
         <div className="flex-1 overflow-auto">
           <header className="w-full bg-white shadow flex items-center justify-between px-8 py-4 sticky top-0 z-30">
