@@ -49,22 +49,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setUser({ id: session.user.id, email: session.user.email || "" })
         } else {
           setUser(null)
-          setProfile(null)
-        }
+          setProfile(null)        }
       }
-    )
+    );
 
     return () => {
       listener?.subscription.unsubscribe()
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     // Check if environment variables are configured
+    console.log("[AuthContext] Environment variables check:");
+    console.log("VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
+    console.log("VITE_SUPABASE_ANON_KEY:", import.meta.env.VITE_SUPABASE_ANON_KEY);
+    
     const isSupabaseConfigured = Boolean(
-      import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+      import.meta.env.VITE_SUPABASE_URL && 
+      import.meta.env.VITE_SUPABASE_ANON_KEY &&
+      import.meta.env.VITE_SUPABASE_URL.trim() !== '' &&
+      import.meta.env.VITE_SUPABASE_ANON_KEY.trim() !== ''
     );
-    setIsConfigured(isSupabaseConfigured);
+    console.log("[AuthContext] isSupabaseConfigured:", isSupabaseConfigured);
+    
+    // Force to true if we have valid-looking URLs
+    const hasValidUrl = import.meta.env.VITE_SUPABASE_URL && 
+                       import.meta.env.VITE_SUPABASE_URL.includes('supabase.co');
+    const hasValidKey = import.meta.env.VITE_SUPABASE_ANON_KEY && 
+                       import.meta.env.VITE_SUPABASE_ANON_KEY.length > 50;
+    
+    const finalConfigured = hasValidUrl && hasValidKey;
+    console.log("[AuthContext] Final isConfigured decision:", finalConfigured);
+    setIsConfigured(finalConfigured);
   }, []);
 
   useEffect(() => {

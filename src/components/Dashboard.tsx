@@ -69,6 +69,9 @@ type PassportApplication = {
 
 const PassportDashboard: React.FC = () => {
   const { signOut, isConfigured } = useAuth(); // Only use signOut and isConfigured from context
+  
+  console.log("[Dashboard] isConfigured from useAuth:", isConfigured);
+  
   const [application, setApplication] = useState<PassportApplication | null>(null);
   const [isPopupVisible, setIsPopupVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
@@ -84,6 +87,8 @@ const PassportDashboard: React.FC = () => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  console.log("[Dashboard] Component render - current buttonLabel:", buttonLabel);
 
   // Explicitly fetch session and profile
   useEffect(() => {
@@ -128,69 +133,69 @@ const PassportDashboard: React.FC = () => {
     fetchSessionAndProfile();
     // eslint-disable-next-line
   }, []);
-
-  useEffect(() => {
-    if (session && isConfigured) {
-      fetchApplication()
-    } else if (session && !isConfigured) {
-      // Create mock application for development
-      setApplication({
-        id: "mock-app-id",
-        user_id: session.user.id,
-        application_type: null,
-        surname: null,
-        first_middle_names: null,
-        social_security_number: null,
-        place_of_birth_city: null,
-        place_of_birth_state: null,
-        country_of_birth: null,
-        date_of_birth: null,
-        gender: null,
-        hair_color: null,
-        marital_status: null,
-        height_feet: null,
-        height_inches: null,
-        eye_color: null,
-        address_unit: null,
-        street_name: null,
-        phone_number: null,
-        city: null,
-        state: null,
-        postal_code: null,
-        emergency_full_name: null,
-        emergency_phone_number: null,
-        emergency_address_unit: null,
-        emergency_street_name: null,
-        emergency_city: null,
-        emergency_state: null,
-        emergency_postal_code: null,
-        father_full_name: null,
-        father_dob: null,
-        father_nationality: null,
-        father_birth_city: null,
-        father_birth_state: null,
-        father_birth_country: null,
-        mother_full_name: null,
-        mother_dob: null,
-        mother_nationality: null,
-        mother_birth_city: null,
-        mother_birth_state: null,
-        mother_birth_country: null,
-        birth_certificate: null,
-        consent_form: null,
-        marriage_or_divorce_certificate: null,
-        old_passport_copy: null,
-        signature: null,
-        photo_id: null,
-        status: "draft",
-        progress: 33,
-        submitted_at: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      setLoading(false)
-    }
-  }, [session, isConfigured])
+  // DISABLED: This useEffect was causing conflicts with the consolidated button logic
+  // useEffect(() => {
+  //   if (session && isConfigured) {
+  //     fetchApplication()
+  //   } else if (session && !isConfigured) {
+  //     // Create mock application for development
+  //     setApplication({
+  //       id: "mock-app-id",
+  //       user_id: session.user.id,
+  //       application_type: null,
+  //       surname: null,
+  //       first_middle_names: null,
+  //       social_security_number: null,
+  //       place_of_birth_city: null,
+  //       place_of_birth_state: null,
+  //       country_of_birth: null,
+  //       date_of_birth: null,
+  //       gender: null,
+  //       hair_color: null,
+  //       marital_status: null,
+  //       height_feet: null,
+  //       height_inches: null,
+  //       eye_color: null,
+  //       address_unit: null,
+  //       street_name: null,
+  //       phone_number: null,
+  //       city: null,
+  //       state: null,
+  //       postal_code: null,
+  //       emergency_full_name: null,
+  //       emergency_phone_number: null,
+  //       emergency_address_unit: null,
+  //       emergency_street_name: null,
+  //       emergency_city: null,
+  //       emergency_state: null,
+  //       emergency_postal_code: null,
+  //       father_full_name: null,
+  //       father_dob: null,
+  //       father_nationality: null,
+  //       father_birth_city: null,
+  //       father_birth_state: null,
+  //       father_birth_country: null,
+  //       mother_full_name: null,
+  //       mother_dob: null,
+  //       mother_nationality: null,
+  //       mother_birth_city: null,
+  //       mother_birth_state: null,
+  //       mother_birth_country: null,
+  //       birth_certificate: null,
+  //       consent_form: null,
+  //       marriage_or_divorce_certificate: null,
+  //       old_passport_copy: null,
+  //       signature: null,
+  //       photo_id: null,
+  //       status: "draft",
+  //       progress: 33,
+  //       submitted_at: null,
+  //       created_at: new Date().toISOString(),
+  //       updated_at: new Date().toISOString(),
+  //     })
+  //     setLoading(false)
+  //   }
+  // }, [session, isConfigured])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -267,90 +272,193 @@ const PassportDashboard: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }
-
-  // Check for submitted applications for button label
+  }  // Consolidated Application Logic - handles both submitted count and button logic
   useEffect(() => {
-    const fetchSubmittedApplications = async () => {
-      if (!session || !isConfigured) {
-        setHasAnyApplications(null);
-        return;
-      }
-      try {
-        const { count, error } = await supabase
-          .from("passport_applications")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", session.user.id)
-          .eq("status", "submitted");
-        if (error) {
-          console.error("Error checking submitted applications:", error);
-          setHasAnyApplications(false);
-          return;
-        }
-        setHasAnyApplications((count ?? 0) > 0);
-      } catch (err) {
-        console.error("Unexpected error checking submitted applications:", err);
-        setHasAnyApplications(false);
-      }
-    };
-    fetchSubmittedApplications();
-  }, [session, isConfigured]);
-
-  // --- Application Button Logic ---
-  useEffect(() => {
-    if (!session || !isConfigured) return;
-    const fetchAllApplications = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("passport_applications")
-          .select("*")
-          .eq("user_id", session.user.id)
-          .order("updated_at", { ascending: false });
-        if (error) {
-          console.error("Error fetching applications for dashboard button:", error);
-          setLoading(false);
-          return;
-        }
-        // Find draft
-        const draftApp = data.find((app) => app.status === "draft");
-        setDraft(draftApp || null);
-        // Find if any submitted
-        const submitted = data.some((app) => app.status === "submitted");
-        setHasSubmitted(submitted);
-        // Set draft name/surname for label
-        if (draftApp) {
-          setDraftName(draftApp.first_middle_names || "");
-          setDraftSurname(draftApp.surname || "");
-        } else {
-          setDraftName("");
-          setDraftSurname("");
-        }
-        // Set button label and action
-        if (draftApp) {
-          if ((draftApp.surname && draftApp.surname.trim()) && (draftApp.first_middle_names && draftApp.first_middle_names.trim())) {
-            setButtonLabel(`Continue Application for ${draftApp.surname} ${draftApp.first_middle_names}`);
-          } else {
-            setButtonLabel("Continue Last Application");
+    if (!session) {
+      console.log("[Dashboard] No session, returning early");
+      setHasAnyApplications(null);
+      return;
+    }
+    
+    console.log("[Dashboard] Environment Check:");
+    console.log("VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
+    console.log("VITE_SUPABASE_ANON_KEY:", import.meta.env.VITE_SUPABASE_ANON_KEY ? "SET" : "NOT SET");
+    console.log("[Dashboard] Consolidated logic START - isConfigured:", isConfigured, "session.user.id:", session.user.id);
+    console.log("[Dashboard] Current buttonLabel before logic:", buttonLabel);
+      if (isConfigured) {
+      // Real Supabase environment
+      const fetchAllApplications = async () => {
+        setLoading(true);
+        try {
+          console.log("[Dashboard] Fetching applications for user:", session.user.id);
+          const { data, error } = await supabase
+            .from("passport_applications")
+            .select("*")
+            .eq("user_id", session.user.id)
+            .order("updated_at", { ascending: false });
+          
+          if (error) {
+            console.error("Error fetching applications for dashboard:", error);
+            setLoading(false);
+            setHasAnyApplications(false);
+            return;
           }
+            console.log("[Dashboard] Applications found:", data);
+          console.log("[Dashboard] Applications data length:", data ? data.length : 0);
+          console.log("[Dashboard] Raw applications data:", JSON.stringify(data, null, 2));
+          
+          // Find draft
+          const draftApp = data.find((app) => app.status === "draft");
+          setDraft(draftApp || null);          // Find submitted, pending, approved, or rejected applications (treat as non-draft completed applications)
+          const submittedApps = data.filter((app) => 
+            app.status === "submitted" || 
+            app.status === "pending" || 
+            app.status === "approved" || 
+            app.status === "rejected"
+          );
+          const hasSubmittedApps = submittedApps.length > 0;
+          setHasSubmitted(hasSubmittedApps);
+          setHasAnyApplications(hasSubmittedApps);
+          
+          console.log("[Dashboard] Draft app:", draftApp);
+          console.log("[Dashboard] Non-draft apps count:", submittedApps.length);
+          console.log("[Dashboard] Non-draft apps:", submittedApps);
+          console.log("[Dashboard] Has non-draft apps:", hasSubmittedApps);
+          
+          // Set draft name/surname for label
+          if (draftApp) {
+            setDraftName(draftApp.first_middle_names || "");
+            setDraftSurname(draftApp.surname || "");
+          } else {
+            setDraftName("");
+            setDraftSurname("");
+          }          // Set button label and action - this is the critical part
+          let newButtonLabel = "";
+          console.log("[Dashboard] Button logic starting - draftApp exists:", !!draftApp, "hasSubmittedApps:", hasSubmittedApps);
+          
+          if (draftApp) {
+            if ((draftApp.surname && draftApp.surname.trim()) && (draftApp.first_middle_names && draftApp.first_middle_names.trim())) {
+              newButtonLabel = `Continue Application for ${draftApp.surname} ${draftApp.first_middle_names}`;
+            } else {
+              newButtonLabel = "Continue Last Application";
+            }
+            console.log("[Dashboard] Set button for DRAFT application:", newButtonLabel);          } else if (hasSubmittedApps) {
+            newButtonLabel = "Start Another Application";
+            console.log("[Dashboard] Set button for user with NON-DRAFT applications:", newButtonLabel);
+          } else {
+            newButtonLabel = "Start Application";
+            console.log("[Dashboard] Set button for user with NO applications:", newButtonLabel);
+          }
+          
+          console.log("[Dashboard] Final button label decision:", newButtonLabel, "- Draft:", !!draftApp, "HasNonDraft:", hasSubmittedApps);
+          console.log("[Dashboard] About to call setButtonLabel with:", newButtonLabel);
+          setButtonLabel(newButtonLabel);
           setButtonAction(() => () => navigate({ to: "/apply" }));
-        } else if (submitted) {
-          setButtonLabel("Start Another Application");
+          
+          // Add a timeout to verify the state actually updated
+          setTimeout(() => {
+            console.log("[Dashboard] Button label after state update - expected:", newButtonLabel, "actual buttonLabel state:", buttonLabel);
+          }, 100);
+          
+        } catch (err) {
+          console.error("Unexpected error fetching applications for dashboard:", err);
+          setHasAnyApplications(false);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchAllApplications();
+    } else {
+      // Mock environment OR try anyway if environment variables exist
+      console.log("[Dashboard] isConfigured is false, but let's try direct Supabase call anyway");
+      
+      // Try direct Supabase call even if isConfigured is false
+      const tryDirectSupabaseCall = async () => {
+        setLoading(true);
+        try {
+          console.log("[Dashboard] DIRECT: Fetching applications for user:", session.user.id);
+          const { data, error } = await supabase
+            .from("passport_applications")
+            .select("*")
+            .eq("user_id", session.user.id)
+            .order("updated_at", { ascending: false });
+          
+          if (error) {
+            console.error("[Dashboard] DIRECT: Error fetching applications:", error);
+            // Fall back to mock
+            console.log("[Dashboard] Falling back to mock environment");
+            setButtonLabel("Start Application");
+            setButtonAction(() => () => navigate({ to: "/apply" }));
+            setHasAnyApplications(null);
+            setLoading(false);
+            return;
+          }
+          
+          console.log("[Dashboard] DIRECT: Applications found:", data);
+          
+          // Process results same as configured environment
+          const draftApp = data.find((app) => app.status === "draft");
+          setDraft(draftApp || null);
+          
+          const submittedApps = data.filter((app) => 
+            app.status === "submitted" || 
+            app.status === "pending" || 
+            app.status === "approved" || 
+            app.status === "rejected"
+          );
+          const hasSubmittedApps = submittedApps.length > 0;
+          setHasSubmitted(hasSubmittedApps);
+          setHasAnyApplications(hasSubmittedApps);
+          
+          console.log("[Dashboard] DIRECT: Draft app:", draftApp, "Non-draft apps:", submittedApps.length, "Has non-draft:", hasSubmittedApps);
+          
+          if (draftApp) {
+            setDraftName(draftApp.first_middle_names || "");
+            setDraftSurname(draftApp.surname || "");
+          } else {
+            setDraftName("");
+            setDraftSurname("");
+          }
+          
+          let newButtonLabel = "";
+          if (draftApp) {
+            if ((draftApp.surname && draftApp.surname.trim()) && (draftApp.first_middle_names && draftApp.first_middle_names.trim())) {
+              newButtonLabel = `Continue Application for ${draftApp.surname} ${draftApp.first_middle_names}`;
+            } else {
+              newButtonLabel = "Continue Last Application";
+            }
+            console.log("[Dashboard] DIRECT: Set button for DRAFT application:", newButtonLabel);
+          } else if (hasSubmittedApps) {
+            newButtonLabel = "Start Another Application";
+            console.log("[Dashboard] DIRECT: Set button for user with NON-DRAFT applications:", newButtonLabel);
+          } else {
+            newButtonLabel = "Start Application";
+            console.log("[Dashboard] DIRECT: Set button for user with NO applications:", newButtonLabel);
+          }
+            console.log("[Dashboard] DIRECT: Final button label decision:", newButtonLabel);
+          setButtonLabel(newButtonLabel);
           setButtonAction(() => () => navigate({ to: "/apply" }));
-        } else {
+          
+          // Force a re-render to ensure button updates
+          setTimeout(() => {
+            console.log("[Dashboard] DIRECT: Button label after state update:", newButtonLabel);
+            console.log("[Dashboard] DIRECT: Current buttonLabel state:", buttonLabel);
+          }, 100);
+          
+        } catch (err) {
+          console.error("[Dashboard] DIRECT: Unexpected error:", err);
+          // Fall back to mock
           setButtonLabel("Start Application");
           setButtonAction(() => () => navigate({ to: "/apply" }));
+          setHasAnyApplications(null);
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        console.error("Unexpected error fetching applications for dashboard button:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAllApplications();
-    // Only run when session.user.id or isConfigured changes
-    // eslint-disable-next-line
-  }, [session?.user?.id, isConfigured]);
+      };
+      
+      tryDirectSupabaseCall();
+    }
+  }, [session?.user?.id, isConfigured, navigate]);
 
   const getGreeting = (): string => {
     const hour = new Date().getHours()
@@ -685,10 +793,12 @@ const PassportDashboard: React.FC = () => {
           {/* Main Content */}
           <div className="space-y-4 sm:space-y-6">
             {/* Action Buttons Grid */}
-            <div className="grid w-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-              <Button
+            <div className="grid w-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">              <Button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                onClick={buttonAction}
+                onClick={() => {
+                  console.log("[Dashboard] Button clicked! Current label:", buttonLabel);
+                  buttonAction();
+                }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
                 <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 shadow-sm transition-all duration-300 group-hover:bg-blue-200 group-hover:text-blue-700 group_hover:shadow">
@@ -707,9 +817,8 @@ const PassportDashboard: React.FC = () => {
                     <path d="M5 12h14"></path>
                     <path d="M12 5v14"></path>
                   </svg>
-                </div>
-                <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
-                  {buttonLabel}
+                </div>                <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
+                  {(() => { console.log("[Dashboard] Rendering button with label:", buttonLabel); return buttonLabel; })()}
                 </span>
               </Button>
 
