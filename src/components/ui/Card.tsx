@@ -21,7 +21,7 @@ export function CardContent({ children, className = "", ...props }) {
 }
 
 export function CardTitle({ children, className = "", ...props }) {
-  return <h3 className={`text-xl font-bold ${className}`} {...props}>{children}</h3>
+  return <h3 className={`text-xl font-bold text-gray-900 ${className}`} {...props}>{children}</h3>
 }
 
 export function CardDescription({ children, className = "", ...props }) {

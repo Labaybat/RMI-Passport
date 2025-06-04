@@ -75,3 +75,18 @@ CREATE TRIGGER update_application_comments_updated_at
     BEFORE UPDATE ON public.application_comments 
     FOR EACH ROW 
     EXECUTE FUNCTION public.update_updated_at_column();
+
+-- Trigger to automatically update updated_at on passport_applications
+CREATE TRIGGER update_passport_applications_updated_at 
+    BEFORE UPDATE ON public.passport_applications 
+    FOR EACH ROW 
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+-- Add column to track last admin who modified the application
+ALTER TABLE public.passport_applications 
+ADD COLUMN IF NOT EXISTS last_modified_by_admin_id UUID REFERENCES public.profiles(id),
+ADD COLUMN IF NOT EXISTS last_modified_by_admin_name TEXT;
+
+-- Create index for better performance
+CREATE INDEX IF NOT EXISTS idx_passport_applications_last_modified_by_admin_id 
+ON public.passport_applications(last_modified_by_admin_id);
