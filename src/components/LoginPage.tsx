@@ -149,62 +149,102 @@ export function LoginPage() {
     </>
   ) : "Login"
 
+  // Important points from the Passport Act, 2020
+  const passportActPoints = [
+    "The Passport Act, 2020 regulates passport application and issuance in the Republic of the Marshall Islands.",
+    "Three types of passports: Regular (blue), Official (black), and Diplomatic (red).",
+    "Only lawful citizens of the Republic are eligible to receive passports.",
+    "Applications require proof of citizenship through birth certificates or court decrees.",
+    "Regular passports are valid for 10 years; Official and Diplomatic for 5 years.",
+    "Incompetents and minors require legal guardian consent for passport applications.",
+    "Passports can be revoked for false information, criminal activity, or if lost/stolen.",
+    "Sale, forgery, or solicitation of passports is prohibited with penalties up to $10,000 and 10 years imprisonment.",
+    "Temporary identification documents may be issued in emergencies when passport books are unavailable."
+  ]
+
   return (
-    <div className="min-h-[100dvh] min-h-screen w-full overflow-y-auto flex items-center justify-center bg-gradient-to-br from-blue-50 to-white text-gray-800 px-4 py-10">
-      <div className="bg-white p-8 sm:p-10 rounded-3xl w-full max-w-lg border border-gray-200 flex flex-col items-center backdrop-blur-sm shadow-md hover:shadow-2xl transition-shadow duration-500">
-        <img src="/seal.png" alt="Marshall Islands Seal" className="w-24 h-24 mb-6 drop-shadow-lg" />
-        <h2 className="text-3xl font-bold mb-2 text-center text-[#1e3a8a]">RMI Passport Portal</h2>
-        <p className="mb-6 text-sm text-gray-500 text-center">
-          Enter your email below to login to your account
-        </p>
-        <form className="w-full flex flex-col space-y-4" onSubmit={handleLogin}>
-          <div className="relative">
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder=" "
-              className="peer w-full px-4 pt-6 pb-2 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent"
-            />
-            <label
-              htmlFor="email"
-              className="absolute left-4 top-2 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-sm peer-focus:text-gray-500"
-            >
-              Email address
-            </label>
+    <div className="min-h-screen w-full flex items-center justify-center bg-white py-8 px-4">
+      <div className="w-full max-w-6xl flex flex-col md:flex-row rounded-2xl overflow-hidden shadow-xl border border-gray-200">
+        {/* Left Column - Login Form - Made Smaller */}
+        <div className="md:w-2/5 bg-gray-50 p-6 md:p-8 flex flex-col items-center justify-center">
+          {/* Square-shaped Login Card */}
+          <div className="w-full max-w-sm bg-white rounded-xl shadow-lg border border-gray-100 p-8 transition-shadow hover:shadow-xl">
+            {/* Seal Image styled like SignUp page */}
+            <img src="/seal.png" alt="Marshall Islands Seal" className="w-24 h-24 mx-auto mb-6 drop-shadow-lg" />
+            <h2 className="text-3xl font-bold mb-2 text-center text-[#1e3a8a]">RMI Passport Portal</h2>
+            <p className="mb-4 text-sm text-gray-500 text-center">
+              Enter your credentials to access your account
+            </p>
+            <form className="w-full flex flex-col space-y-3" onSubmit={handleLogin}>
+              <div className="relative">
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder=" "
+                  className="peer w-full px-4 pt-6 pb-2 text-sm bg-gray-50 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent"
+                />
+                <label
+                  htmlFor="email"
+                  className="absolute left-4 top-2 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-sm peer-focus:text-gray-500"
+                >
+                  Email address
+                </label>
+              </div>
+
+              <div className="relative">
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder=" "
+                  className="peer w-full px-4 pt-6 pb-2 text-sm bg-gray-50 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent"
+                />
+                <label
+                  htmlFor="password"
+                  className="absolute left-4 top-2 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-sm peer-focus:text-gray-500"
+                >
+                  Password
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white py-2.5 px-4 rounded-lg hover:from-blue-700 hover:to-blue-900 transition flex items-center justify-center gap-2 shadow-lg"
+              >
+                {buttonText}
+              </button>
+
+              <p className="text-center text-sm text-gray-500">
+                Don't have an account?{" "}
+                <Link to="/signup" className="text-blue-600 hover:underline">Sign up</Link>
+              </p>
+            </form>
           </div>
+        </div>
 
-          <div className="relative">
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder=" "
-              className="peer w-full px-4 pt-6 pb-2 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent"
-            />
-            <label
-              htmlFor="password"
-              className="absolute left-4 top-2 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-sm peer-focus:text-gray-500"
-            >
-              Password
-            </label>
+        {/* Right Column - Passport Act Information */}
+        <div className="md:w-3/5 bg-gradient-to-br from-blue-800 via-blue-700 to-blue-600 text-white p-8 md:p-12">
+          <h3 className="text-2xl font-bold mb-6 border-b border-blue-400 pb-3">Passport Act, 2020 Highlights</h3>
+          <ul className="space-y-4">
+            {passportActPoints.map((point, index) => (
+              <li key={index} className="flex items-start">
+                <div className="mt-1 mr-3 flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
+                  </svg>
+                </div>
+                <p className="text-sm md:text-base text-blue-100">{point}</p>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-6 text-sm text-blue-300 italic border-t border-blue-400 pt-4">
+            Passport Act, 2020 (43MIRCCh.11) - Republic of the Marshall Islands
           </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center justify-center gap-2"
-          >
-            {buttonText}
-          </button>
-
-          <p className="text-center text-sm text-gray-500">
-            Don’t have an account?{" "}
-            <Link to="/signup" className="text-blue-600 hover:underline">Sign up</Link>
-          </p>
-        </form>
+        </div>
       </div>
     </div>
   )
