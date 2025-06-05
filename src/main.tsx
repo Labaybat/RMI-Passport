@@ -18,6 +18,7 @@ import Application from "./components/Application"
 import { AuthProvider } from "./contexts/AuthContext"
 import PhotoGuideline from "./components/photoguideline"
 import AdminPage from "./components/AdminPage"
+import MyApplicationsPage from "./components/MyApplicationsPage"
 
 // Root layout
 const rootRoute = createRootRoute({
@@ -77,6 +78,12 @@ const adminRoute = createRoute({
   component: AdminPage,
 })
 
+const myApplicationsRoute = createRoute({
+  path: "/my-applications",
+  getParentRoute: () => rootRoute,
+  component: MyApplicationsPage,
+})
+
 // Router setup
 const router = createRouter({
   routeTree: rootRoute.addChildren([
@@ -88,6 +95,7 @@ const router = createRouter({
     applicationRoute,
     photoGuidelineRoute,
     adminRoute,
+    myApplicationsRoute,
   ]),
 })
 

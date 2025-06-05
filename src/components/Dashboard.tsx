@@ -930,11 +930,9 @@ const PassportDashboard: React.FC = () => {
                     Sign and upload later
                   </span>
                 </div>
-              </Button>
-
-              <Button
+              </Button>              <Button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-green-50 to-teal-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                onClick={() => console.log("Dashboard clicked")}
+                onClick={() => navigate({ to: "/my-applications" })}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 to-green-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
                 <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 shadow-sm transition-all duration-300 group_hover:bg-green-200 group_hover:text-green-700 group-hover:shadow">
@@ -956,7 +954,7 @@ const PassportDashboard: React.FC = () => {
                   </svg>
                 </div>
                 <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
-                  My Dashboard
+                  All Applications
                 </span>
               </Button>
 
@@ -1047,8 +1045,7 @@ const PassportDashboard: React.FC = () => {
               </Button>
             </div>
 
-            {/* Application Status Card */}
-            <div className="w-full rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6 shadow-md">
+            {/* Application Status Card */}            <div className="w-full rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6 shadow-md">
               <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 shadow-sm">
@@ -1070,61 +1067,156 @@ const PassportDashboard: React.FC = () => {
                   </div>
                   <h2 className="text-base sm:text-lg font-medium text-gray-800">Application Status</h2>
                 </div>
-                <div className="rounded-full bg-blue-100 px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-medium text-blue-700 self-start sm:self-auto">
-                  {applications.length > 0 ? `${applications.length} Application${applications.length > 1 ? 's' : ''}` : 'No Applications'}
+                <div className="flex items-center gap-2">
+                  <div className="rounded-full bg-blue-100 px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-medium text-blue-700 self-start sm:self-auto">
+                    {applications.length > 0 ? `${applications.length} Application${applications.length > 1 ? 's' : ''}` : 'No Applications'}
+                  </div>
+                  {applications.length > 0 && (
+                    <button 
+                      className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium flex items-center"
+                      onClick={() => navigate({ to: "/my-applications" })}
+                    >
+                      View All
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        className="ml-1"
+                      >
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
-              </div>
-              {applications.length === 0 && (
+              </div>              {applications.length === 0 && (
                 <div className="text-gray-500 text-sm py-4 text-center">No applications found. Start a new application to see status here.</div>
               )}
               <div className="space-y-6">
-                {applications.map((app) => {
-                  const progress = getProgress(app);
-                  const statusMsg = getStatusMessage(app);
-                  const lastUpdated = app.updated_at ? new Date(app.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "N/A";
-                  return (
-                    <div key={app.id} className="bg-white/80 rounded-lg shadow p-4 mb-2 border border-blue-100">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-2">
-                        <div className="font-semibold text-gray-700 text-sm sm:text-base">{statusMsg}</div>
-                        <div className={`rounded-full px-2 py-0.5 text-xs font-medium ${app.status === 'approved' ? 'bg-green-100 text-green-700' : app.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{app.status ? app.status.charAt(0).toUpperCase() + app.status.slice(1) : 'Unknown'}</div>
-                      </div>
-                      <div className="mb-2 flex justify-between text-[10px] sm:text-xs font-medium text-gray-500">
-                        <span>Application Started</span>
-                        <span>Review</span>
-                        <span>Approval</span>
-                      </div>
-                      <div className="relative mb-2 h-2 sm:h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
-                        <div
-                          className={`absolute h-full rounded-full ${app.status === 'approved' ? 'bg-gradient-to-r from-green-400 to-green-600' : app.status === 'rejected' ? 'bg-gradient-to-r from-red-400 to-red-600' : 'bg-gradient-to-r from-blue-400 to-blue-600'} transition-all duration-500 ease-out`}
-                          style={{ width: `${progress}%` }}
-                        ></div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 text-[10px] sm:text-xs text-gray-500">
-                        <div className="flex items-center gap-1.5">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-gray-400 sm:w-3.5 sm:h-3.5"
-                          >
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                          </svg>
-                          <span>Last Updated: {lastUpdated}</span>
+                {/* If there are more than 3 applications, only show the first 3 and add a "View More" link */}
+                {applications.length > 3 ? (
+                  <>
+                    {applications.slice(0, 3).map((app) => {
+                      const progress = getProgress(app);
+                      const statusMsg = getStatusMessage(app);
+                      const lastUpdated = app.updated_at ? new Date(app.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "N/A";                      return (
+                        <div key={app.id} className="bg-white/80 rounded-lg shadow p-4 mb-2 border border-blue-100">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-2">
+                            <div className="font-semibold text-gray-700 text-sm sm:text-base">{statusMsg}</div>
+                            <div className={`rounded-full px-2 py-0.5 text-xs font-medium ${app.status === 'approved' ? 'bg-green-100 text-green-700' : app.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{app.status ? app.status.charAt(0).toUpperCase() + app.status.slice(1) : 'Unknown'}</div>
+                          </div>
+                          <div className="mb-2 flex justify-between text-[10px] sm:text-xs font-medium text-gray-500">
+                            <span>Application Started</span>
+                            <span>Review</span>
+                            <span>Approval</span>
+                          </div>
+                          <div className="relative mb-2 h-2 sm:h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
+                            <div
+                              className={`absolute h-full rounded-full ${app.status === 'approved' ? 'bg-gradient-to-r from-green-400 to-green-600' : app.status === 'rejected' ? 'bg-gradient-to-r from-red-400 to-red-600' : 'bg-gradient-to-r from-blue-400 to-blue-600'} transition-all duration-500 ease-out`}
+                              style={{ width: `${progress}%` }}
+                            ></div>
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 text-[10px] sm:text-xs text-gray-500">
+                            <div className="flex items-center gap-1.5">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-gray-400 sm:w-3.5 sm:h-3.5"
+                              >
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                              </svg>
+                              <span>Last Updated: {lastUpdated}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span>{progress}% Complete</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <span>{progress}% Complete</span>
-                        </div>
-                      </div>
+                      );
+                    })}
+                    <div className="text-center pt-2">
+                      <button 
+                        onClick={() => navigate({ to: "/my-applications" })}
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium inline-flex items-center"
+                      >
+                        View All {applications.length} Applications
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="16" 
+                          height="16" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          className="ml-1"
+                        >
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                      </button>
                     </div>
-                  );
-                })}
+                  </>
+                ) : (
+                  applications.map((app) => {
+                    const progress = getProgress(app);
+                    const statusMsg = getStatusMessage(app);
+                    const lastUpdated = app.updated_at ? new Date(app.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "N/A";                    return (
+                      <div key={app.id} className="bg-white/80 rounded-lg shadow p-4 mb-2 border border-blue-100">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-2">
+                          <div className="font-semibold text-gray-700 text-sm sm:text-base">{statusMsg}</div>
+                          <div className={`rounded-full px-2 py-0.5 text-xs font-medium ${app.status === 'approved' ? 'bg-green-100 text-green-700' : app.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{app.status ? app.status.charAt(0).toUpperCase() + app.status.slice(1) : 'Unknown'}</div>
+                        </div>
+                        <div className="mb-2 flex justify-between text-[10px] sm:text-xs font-medium text-gray-500">
+                          <span>Application Started</span>
+                          <span>Review</span>
+                          <span>Approval</span>
+                        </div>
+                        <div className="relative mb-2 h-2 sm:h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
+                          <div
+                            className={`absolute h-full rounded-full ${app.status === 'approved' ? 'bg-gradient-to-r from-green-400 to-green-600' : app.status === 'rejected' ? 'bg-gradient-to-r from-red-400 to-red-600' : 'bg-gradient-to-r from-blue-400 to-blue-600'} transition-all duration-500 ease-out`}
+                            style={{ width: `${progress}%` }}
+                          ></div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 text-[10px] sm:text-xs text-gray-500">
+                          <div className="flex items-center gap-1.5">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-gray-400 sm:w-3.5 sm:h-3.5"
+                            >
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>Last Updated: {lastUpdated}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span>{progress}% Complete</span>                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
