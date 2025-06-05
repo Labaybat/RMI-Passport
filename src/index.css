@@ -34,4 +34,9 @@
       transform: translateY(-10px);
     }
   }
+
+  /* Ensure dropdown options are visible */
+  select option {
+    @apply text-gray-900 bg-white;
+  }
 }

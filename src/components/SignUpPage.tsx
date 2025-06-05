@@ -221,10 +221,13 @@ export function SignUpPage() {
                       value={formData.gender}
                       onChange={handleChange}
                       className="block w-full rounded-md border border-white/20 bg-white/10 px-4 py-2 text-sm text-white focus:border-white/50 focus:outline-none focus:ring-1 focus:ring-white/50"
+                      style={{ color: 'white' }}
                     >
-                      <option value="">Select</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
+                      <option value="" className="text-gray-900">Select</option>
+                      <option value="male" className="text-gray-900">Male</option>
+                      <option value="female" className="text-gray-900">Female</option>
+                      <option value="non-binary" className="text-gray-900">Non-binary</option>
+                      <option value="prefer_not_to_say" className="text-gray-900">Prefer not to say</option>
                     </select>
                   </div>
                   <div className="flex-1">
