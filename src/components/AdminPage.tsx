@@ -7,6 +7,10 @@ import supabase from "../lib/supabase/client";
 import { useToast } from "../hooks/use-toast";
 import { CheckCircleIcon, XCircleIcon, ClockIcon, PencilIcon, EyeIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 import AdminComments from "./AdminComments";
+// 1. Import for map
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
 // Components for different sections
 
@@ -28,11 +32,24 @@ interface DashboardStats {
     rejected: string;
     users: string;
   };
+  processingTimeMetrics: {
+    averageProcessingHours: number;
+    fastestApprovalHours: number;
+    slowestApprovalHours: number;
+    totalProcessed: number;
+    processingDistribution: {
+      lessThan24h: number;
+      between24And48h: number;
+      between48And72h: number;
+      moreThan72h: number;
+    };
+  };
 }
 
 // Components for different sections
 const Dashboard: React.FC = () => {
   const { user, profile } = useAuth(); // Get current admin user info
+  
   const [stats, setStats] = useState<DashboardStats>({
     pendingApplications: 0,
     approvedApplications: 0,
@@ -44,12 +61,29 @@ const Dashboard: React.FC = () => {
       approved: "+0%", 
       rejected: "+0%",
       users: "+0%"
+    },
+    processingTimeMetrics: {
+      averageProcessingHours: 0,
+      fastestApprovalHours: 0,
+      slowestApprovalHours: 0,
+      totalProcessed: 0,
+      processingDistribution: {
+        lessThan24h: 0,
+        between24And48h: 0,
+        between48And72h: 0,
+        moreThan72h: 0
+      }
     }
-  });  const [loading, setLoading] = useState(true);
+  });
+  
+  const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState<string>("7");
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [silentRefresh, setSilentRefresh] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  // --- Geographic Distribution Aggregation ---
+  const [countryCounts, setCountryCounts] = useState<{ [country: string]: number }>({});
+  const geoUrl = "https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries-sans-antarctica.geojson";
 
   useEffect(() => {
     fetchDashboardData(!isInitialLoad); // Only show loading on initial load
@@ -88,7 +122,7 @@ const Dashboard: React.FC = () => {
       try {
         const { data, error } = await supabase
           .from("passport_applications")
-          .select("status, created_at, updated_at, surname, first_middle_names, last_modified_by_admin_id, last_modified_by_admin_name")
+          .select("status, created_at, updated_at, surname, first_middle_names, last_modified_by_admin_id, last_modified_by_admin_name, country_of_birth")
           .order("updated_at", { ascending: false });
         
         if (error) throw error;
@@ -213,14 +247,76 @@ const Dashboard: React.FC = () => {
           time: timeAgo,
           status: app.status === "submitted" ? "pending" : app.status
         };
-      });      setStats({
+      });      // Calculate processing time metrics
+      const approvedApps = applications.filter(app => app.status === "approved" && app.created_at && app.updated_at);
+      let averageProcessingHours = 0;
+      let fastestApprovalHours = Infinity;
+      let slowestApprovalHours = 0;
+      let lessThan24h = 0;
+      let between24And48h = 0;
+      let between48And72h = 0;
+      let moreThan72h = 0;
+
+      if (approvedApps.length > 0) {
+        // Calculate processing times
+        const processingTimes = approvedApps.map(app => {
+          const createdAt = new Date(app.created_at);
+          const updatedAt = new Date(app.updated_at);
+          const processingTimeHours = (updatedAt.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+          
+          // Update distribution counters
+          if (processingTimeHours < 24) {
+            lessThan24h++;
+          } else if (processingTimeHours < 48) {
+            between24And48h++;
+          } else if (processingTimeHours < 72) {
+            between48And72h++;
+          } else {
+            moreThan72h++;
+          }
+          
+          return processingTimeHours;
+        });
+        
+        // Calculate metrics
+        averageProcessingHours = processingTimes.reduce((sum, time) => sum + time, 0) / processingTimes.length;
+        fastestApprovalHours = Math.min(...processingTimes);
+        slowestApprovalHours = Math.max(...processingTimes);
+      } else {
+        // Default values if no approved applications
+        fastestApprovalHours = 0;
+      }
+
+      setStats({
         pendingApplications: currentPending,
         approvedApplications: currentApproved,
         rejectedApplications: currentRejected,
         totalUsers: totalUsers || 0,
         recentActivity,
-        percentageChanges
-      });    } catch (error) {
+        percentageChanges,
+        processingTimeMetrics: {
+          averageProcessingHours,
+          fastestApprovalHours,
+          slowestApprovalHours,
+          totalProcessed: approvedApps.length,
+          processingDistribution: {
+            lessThan24h,
+            between24And48h,
+            between48And72h,
+            moreThan72h
+          }
+        }
+      });
+      // Aggregate applications by country_of_birth
+      const countryCounter: { [country: string]: number } = {};
+      applications.forEach(app => {
+        const country = app.country_of_birth?.trim();
+        if (country) {
+          countryCounter[country] = (countryCounter[country] || 0) + 1;
+        }
+      });
+      setCountryCounts(countryCounter);
+    } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
       // Only hide loading state if not a silent refresh
@@ -397,9 +493,7 @@ const Dashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+      </div>      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
         <Card>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
@@ -510,6 +604,165 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+        {/* Processing Metrics Overview Section */}
+      <div className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Processing Metrics Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <h3 className="text-blue-600 text-sm font-medium mb-1">Average Processing</h3>
+                <p className="text-2xl font-bold text-gray-900">{stats.processingTimeMetrics?.averageProcessingHours.toFixed(1) || "0"} hrs</p>
+                <p className="text-xs text-gray-500">Average time to process an application</p>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <h3 className="text-green-600 text-sm font-medium mb-1">Fastest Approval</h3>
+                <p className="text-2xl font-bold text-gray-900">{stats.processingTimeMetrics?.fastestApprovalHours.toFixed(1) || "0"} hrs</p>
+                <p className="text-xs text-gray-500">Shortest time to approve an application</p>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <h3 className="text-yellow-600 text-sm font-medium mb-1">Slowest Approval</h3>
+                <p className="text-2xl font-bold text-gray-900">{stats.processingTimeMetrics?.slowestApprovalHours.toFixed(1) || "0"} hrs</p>
+                <p className="text-xs text-gray-500">Longest time to approve an application</p>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <h3 className="text-purple-600 text-sm font-medium mb-1">Total Processed</h3>
+                <p className="text-2xl font-bold text-gray-900">{stats.processingTimeMetrics?.totalProcessed || "0"}</p>
+                <p className="text-xs text-gray-500">Number of processed applications</p>
+              </div>
+            </div>
+            
+            <h3 className="font-medium text-gray-700 mb-3">Processing Time Distribution</h3>
+            <div className="h-6 bg-gray-100 rounded-lg overflow-hidden flex">
+              {stats.processingTimeMetrics?.processingDistribution && (
+                <>
+                  <div 
+                    className="h-full bg-green-500" 
+                    style={{ 
+                      width: `${stats.processingTimeMetrics.totalProcessed > 0 
+                        ? (stats.processingTimeMetrics.processingDistribution.lessThan24h / stats.processingTimeMetrics.totalProcessed) * 100
+                        : 0}%` 
+                    }}
+                    title={`< 24h (${stats.processingTimeMetrics.processingDistribution.lessThan24h})`}
+                  ></div>
+                  <div 
+                    className="h-full bg-blue-500" 
+                    style={{ 
+                      width: `${stats.processingTimeMetrics.totalProcessed > 0 
+                        ? (stats.processingTimeMetrics.processingDistribution.between24And48h / stats.processingTimeMetrics.totalProcessed) * 100
+                        : 0}%` 
+                    }}
+                    title={`24-48h (${stats.processingTimeMetrics.processingDistribution.between24And48h})`}
+                  ></div>
+                  <div 
+                    className="h-full bg-yellow-500" 
+                    style={{ 
+                      width: `${stats.processingTimeMetrics.totalProcessed > 0 
+                        ? (stats.processingTimeMetrics.processingDistribution.between48And72h / stats.processingTimeMetrics.totalProcessed) * 100
+                        : 0}%` 
+                    }}
+                    title={`48-72h (${stats.processingTimeMetrics.processingDistribution.between48And72h})`}
+                  ></div>
+                  <div 
+                    className="h-full bg-red-500" 
+                    style={{ 
+                      width: `${stats.processingTimeMetrics.totalProcessed > 0 
+                        ? (stats.processingTimeMetrics.processingDistribution.moreThan72h / stats.processingTimeMetrics.totalProcessed) * 100
+                        : 0}%` 
+                    }}
+                    title={`> 72h (${stats.processingTimeMetrics.processingDistribution.moreThan72h})`}
+                  ></div>
+                </>
+              )}
+            </div>
+            
+            <div className="flex flex-wrap gap-3 mt-3">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                <span className="text-xs text-gray-600">&lt; 24h ({stats.processingTimeMetrics?.processingDistribution?.lessThan24h || 0})</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
+                <span className="text-xs text-gray-600">24-48h ({stats.processingTimeMetrics?.processingDistribution?.between24And48h || 0})</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-yellow-500 rounded-sm"></div>
+                <span className="text-xs text-gray-600">48-72h ({stats.processingTimeMetrics?.processingDistribution?.between48And72h || 0})</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                <span className="text-xs text-gray-600">&gt; 72h ({stats.processingTimeMetrics?.processingDistribution?.moreThan72h || 0})</span>
+              </div>
+            </div>
+            
+            <div className="mt-4 text-xs text-gray-500">
+              <p>Efficiency Insights:</p>
+              <p className="mt-1">Processing efficiency is calculated based on the time elapsed between submission and decision. Lower average processing times indicate higher administrative efficiency.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Geographic Distribution Section */}
+      <div className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Geographic Distribution</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {Object.keys(countryCounts).length === 0 ? (
+              <div className="text-center text-gray-500 py-8">No country data available.</div>
+            ) : (
+              <div>
+                <div className="w-full max-w-3xl mx-auto" style={{ height: 400 }}>
+                  <MapContainer center={[10, 0]} zoom={2} style={{ width: '100%', height: 400 }} scrollWheelZoom={false}>
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    {/* Plot a marker for each country with applications */}
+                    {Object.entries(countryCounts).map(([country, count]) => {
+                      // Use a simple lookup for country centroids (for demo, only Marshall Islands)
+                      // In production, use a full country-to-coordinates mapping or a geocoding API
+                      const centroids: { [key: string]: [number, number] } = {
+                        'Marshall Islands': [7.1164, 171.1858],
+                        // Add more countries as needed
+                      };
+                      const position = centroids[country];
+                      if (!position) return null;
+                      return (
+                        <Marker key={country} position={position} icon={L.icon({ iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png', iconSize: [25, 41], iconAnchor: [12, 41] })}>
+                          <Popup>
+                            <strong>{country}</strong><br />Applications: {count}
+                          </Popup>
+                        </Marker>
+                      );
+                    })}
+                  </MapContainer>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-3 justify-center">
+                  {Object.entries(countryCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 8)
+                    .map(([country, count]) => (
+                      <div key={country} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                        {country}: {count}
+                      </div>
+                    ))}
+                  {Object.keys(countryCounts).length > 8 && (
+                    <div className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">+{Object.keys(countryCounts).length - 8} more</div>
+                  )}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -1112,7 +1365,7 @@ const Applications: React.FC = () => {
                         <span className="font-medium text-gray-700 w-32 shrink-0">Nationality:</span>
                         <span className="text-gray-900">{viewApp.mother_nationality || '—'}</span>
                       </div>
-                      <div className="flex">
+                                           <div className="flex">
                         <span className="font-medium text-gray-700 w-32 shrink-0">Place of Birth:</span>
                         <span className="text-gray-900">{[viewApp.mother_birth_city, viewApp.mother_birth_state, viewApp.mother_birth_country].filter(Boolean).join(', ') || '—'}</span>
                       </div>
@@ -1164,7 +1417,7 @@ const Applications: React.FC = () => {
       {/* Edit Modal */}
       {editApp && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+                   <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
             <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onClick={handleEditClose}>&times;</button>
             <h3 className="text-xl font-semibold mb-4">Edit Application</h3>
             <form className="space-y-4" onSubmit={e => { e.preventDefault(); handleEditSave(); }}>
@@ -1258,15 +1511,14 @@ const Users = () => (
         </button>
       </div>
     </div>
-
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
       <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-none shadow-sm">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-500 rounded-xl">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
             </div>
             <div>
               <p className="text-2xl font-bold text-blue-900">1,284</p>
@@ -1276,13 +1528,13 @@ const Users = () => (
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-green-50 to-green-100 border-none shadow-sm">
+      <Card className="bg-gradient-to-br from-green-50 to-green-100 border-none shadow-md hover:shadow-lg transition-shadow">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-green-500 rounded-xl">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             </div>
             <div>
               <p className="text-2xl font-bold text-green-900">156</p>
@@ -1292,13 +1544,13 @@ const Users = () => (
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-none shadow-sm">
+      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-none shadow-md hover:shadow-lg transition-shadow">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-purple-500 rounded-xl">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
+            </svg>
             </div>
             <div>
               <p className="text-2xl font-bold text-purple-900">28</p>
@@ -1308,13 +1560,13 @@ const Users = () => (
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-none shadow-sm">
+      <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-none shadow-md hover:shadow-lg transition-shadow">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-orange-500 rounded-xl">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            </svg>
             </div>
             <div>
               <p className="text-2xl font-bold text-orange-900">5</p>
@@ -1638,8 +1890,8 @@ const Settings = () => (
 // Modernized Sidebar and Topbar
 const sidebarItems = [
   { id: 'dashboard', label: 'Dashboard', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6m-6 0v6m0 0H7m6 0h6" /></svg> },
-  { id: 'applications', label: 'Applications', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2v-5a2 2 0 00-2-2h-2a2 2 0 00-2 2v5a2 2 0 002 2z" /></svg> },
-  { id: 'users', label: 'Users', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M16 3.13a4 4 0 010 7.75M8 3.13a4 4 0 010 7.75" /></svg> },
+  { id: 'applications', label: 'Applications', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2v-5a2 2 0 00-2-2h-2a2 2 0 00-2 2v5a2 2 0 012 2z" /></svg> },
+  { id: 'users', label: 'Users', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M16 3.13a4 4 0 010 5.75M8 3.13a4 4 0 010 5.75" /></svg> },
   { id: 'settings', label: 'Settings', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
 ];
 
@@ -1663,7 +1915,7 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout }: { activeTab: string, set
     </nav>
     <div className="px-6 py-4 border-t border-blue-800">
       <button className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition text-white font-semibold shadow" onClick={onLogout}>
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" /></svg>
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" /></svg>
         Logout
       </button>
     </div>

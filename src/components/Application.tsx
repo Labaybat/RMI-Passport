@@ -1528,7 +1528,7 @@ export default function Apply() {
     const newParam = searchParams.get('new');
     
     // Check for both string 'true' and boolean true (from react-router)
-    const isNewParam = newParam === 'true' || newParam === true || newParam === 'true"' || newParam === '"true"' || newParam === '"true';
+    const isNewParam = newParam === 'true' || newParam === 'true"' || newParam === '"true"' || newParam === '"true';
     
     // Only set to create draft if explicitly requested
     setShouldCreateDraft(isNewParam);
