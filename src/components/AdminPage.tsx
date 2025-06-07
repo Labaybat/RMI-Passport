@@ -845,6 +845,11 @@ const Dashboard: React.FC = () => {
 const Applications: React.FC = () => {
   const { user, profile } = useAuth(); // Get current admin user info
   const [applications, setApplications] = useState<any[]>([]);
+  const [filteredApplications, setFilteredApplications] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("Last 30 Days");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -884,25 +889,148 @@ const Applications: React.FC = () => {
     { key: "old_passport_url", label: "Old Passport Copy" },
     { key: "signature_url", label: "Signature" },
     { key: "photo_id_url", label: "Photo ID" },
-  ];
-  useEffect(() => {
+  ];  useEffect(() => {
     const fetchApplications = async () => {
       setLoading(true);
       setError(null);
-      const { data, error } = await supabase
-        .from("passport_applications")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) {
+      
+      try {
+        // Try the join query first
+        const { data, error } = await supabase
+          .from("passport_applications")
+          .select(`
+            *,
+            profiles!user_id (
+              first_name,
+              last_name,
+              email
+            )
+          `)
+          .order("created_at", { ascending: false });
+          
+        if (error) {
+          console.error("Error with join query:", error);
+          // Fall back to manual join approach
+          await fetchApplicationsWithManualJoin();
+        } else {
+          setApplications(data || []);
+          setFilteredApplications(data || []);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("Unexpected error in fetchApplications:", err);
+        await fetchApplicationsWithManualJoin();
+      }
+    };
+    
+    const fetchApplicationsWithManualJoin = async () => {
+      try {
+        // Fetch applications without join
+        const { data: appsData, error: appsError } = await supabase
+          .from("passport_applications")
+          .select("*")
+          .order("created_at", { ascending: false });
+          
+        if (appsError) {
+          throw appsError;
+        }
+        
+        // Get user IDs from applications
+        const userIds = [...new Set(appsData?.map(app => app.user_id).filter(Boolean))];
+        
+        // Fetch profiles for these users
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select("id, first_name, last_name, email")
+          .in("id", userIds);
+        
+        if (profilesError) {
+          console.warn("Error fetching profiles:", profilesError);
+        }
+        
+        // Create a map of user_id to profile
+        const profilesMap = new Map();
+        profilesData?.forEach(profile => {
+          profilesMap.set(profile.id, profile);
+        });
+        
+        // Merge the data
+        const applications = appsData?.map(app => ({
+          ...app,
+          profiles: profilesMap.get(app.user_id) || null
+        })) || [];
+        
+        setApplications(applications);
+        setFilteredApplications(applications);
+      } catch (err) {
+        console.error("Error in manual join fallback:", err);
         setError("Failed to fetch applications");
         setApplications([]);
-      } else {
-        setApplications(data || []);
+        setFilteredApplications([]);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
+    
     fetchApplications();
   }, []);
+  
+  // Apply filters whenever applications, search query, or filters change
+  useEffect(() => {
+    if (loading) return;
+    
+    let filtered = [...applications];
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(app => app.status === statusFilter);
+    }
+
+    // Apply application type filter
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(app => app.application_type === typeFilter);
+    }
+
+    // Apply date filter
+    if (dateFilter) {
+      const today = new Date();
+      let cutoffDate = new Date();
+      
+      if (dateFilter === 'Last 30 Days') {
+        cutoffDate.setDate(today.getDate() - 30);
+      } else if (dateFilter === 'Last 90 Days') {
+        cutoffDate.setDate(today.getDate() - 90);
+      } else {
+        // 'All Time' - no date filtering needed
+        cutoffDate = new Date(0); // Jan 1, 1970
+      }
+
+      filtered = filtered.filter(app => {
+        const submissionDate = app.submitted_at 
+          ? new Date(app.submitted_at) 
+          : new Date(app.created_at);
+        return submissionDate >= cutoffDate;
+      });
+    }    // Apply search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(app => {
+        const submittedByName = app.profiles ? 
+          [app.profiles.first_name, app.profiles.last_name].filter(Boolean).join(' ') : '';
+        return (
+          (app.id && app.id.toLowerCase().includes(query)) ||
+          (`${app.surname || ''} ${app.first_middle_names || ''}`.toLowerCase().includes(query)) ||
+          (app.email && app.email.toLowerCase().includes(query)) ||
+          (app.phone && app.phone.includes(query)) ||
+          (app.passport_number && app.passport_number.toLowerCase().includes(query)) ||
+          (submittedByName.toLowerCase().includes(query)) ||
+          (app.profiles?.email && app.profiles.email.toLowerCase().includes(query))
+        );
+      });
+    }
+
+    setFilteredApplications(filtered);
+  }, [applications, searchQuery, statusFilter, typeFilter, dateFilter, loading]);
   
   // New effect to fetch unread message counts for all applications
   useEffect(() => {
@@ -911,14 +1039,13 @@ const Applications: React.FC = () => {
     const fetchUnreadMessageCounts = async () => {
       // For each application, count unread messages from users
       const counts: {[key: string]: number} = {};
-      
-      for (const app of applications) {
+        for (const app of applications) {
         const { count, error } = await supabase
           .from('messages')
           .select('*', { count: 'exact', head: true })
           .eq('application_id', app.id)
           .eq('sender_type', 'user')
-          .eq('read', false);
+          .eq('read_by_admin', false);
         
         if (!error && count !== null) {
           counts[app.id] = count;
@@ -934,8 +1061,7 @@ const Applications: React.FC = () => {
     const channel = supabase
       .channel('admin_messages_count')
       .on(
-        'postgres_changes',
-        {
+        'postgres_changes',        {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
@@ -950,6 +1076,26 @@ const Applications: React.FC = () => {
             ...prev,
             [appId]: (prev[appId] || 0) + 1
           }));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `sender_type=eq.user`
+        },        async (payload) => {
+          const msg = payload.new as any;
+          const appId = msg.application_id;
+          
+          // If message was marked as read by admin, decrease the count
+          if (msg.read_by_admin && payload.old && !payload.old.read_by_admin) {
+            setApplicationMessagesCount(prev => ({
+              ...prev,
+              [appId]: Math.max(0, (prev[appId] || 0) - 1)
+            }));
+          }
         }
       )
       .subscribe();
@@ -1041,6 +1187,100 @@ const Applications: React.FC = () => {
       } : app));
       setEditApp(null);
       toast({ title: "Updated", description: "Application updated." });
+    }  };
+  // Function to export applications as CSV
+  const exportToCSV = () => {
+    console.log("Export function called");
+    
+    if (filteredApplications.length === 0) {
+      toast({
+        title: "No data to export",
+        description: "There are no applications matching your current filters."
+      });
+      return;
+    }
+    
+    try {
+      // Define the headers for the CSV
+      const headers = [
+        'Application ID',
+        'Full Name',
+        'Submitted By',
+        'Email',
+        'Phone',
+        'Passport Number',
+        'Application Type',
+        'Status',
+        'Submission Date',
+        'Created At'
+      ];
+      
+      // Format the application data for CSV
+      const csvData = filteredApplications.map(app => {
+        const submittedByName = app.profiles ? 
+          [app.profiles.first_name, app.profiles.last_name].filter(Boolean).join(' ') || app.profiles.email || '' 
+          : '';
+        return [
+          app.id || '',
+          `${app.surname || ''} ${app.first_middle_names || ''}`.trim(),
+          submittedByName,
+          app.email || '',
+          app.phone || '',
+          app.passport_number || '',
+          formatApplicationType(app.application_type) || '',
+          app.status || '',
+          app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '',
+          app.created_at ? new Date(app.created_at).toLocaleDateString() : ''
+        ];
+      });
+      
+      // Convert to CSV format
+      let csvContent = headers.join(',') + '\n';
+      csvData.forEach(row => {
+        // Properly handle commas within fields by adding quotes
+        const formattedRow = row.map(field => {
+          // If the field contains commas, quotes, or newlines, enclose in quotes
+          if (typeof field === 'string' && (field.includes(',') || field.includes('"') || field.includes('\n'))) {
+            // Replace double quotes with two double quotes
+            return `"${field.replace(/"/g, '""')}"`;
+          }
+          return field;
+        });
+        csvContent += formattedRow.join(',') + '\n';
+      });
+      
+      // Create a blob and download link
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      
+      // Generate filename with current date
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `passport_applications_${date}.csv`;
+      link.setAttribute('download', filename);
+      
+      // Append to body, click and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the object URL
+      URL.revokeObjectURL(url);
+      
+      // Show success message
+      toast({
+        title: "Export successful",
+        description: `${filteredApplications.length} applications exported to ${filename}`
+      });
+      
+      console.log("Export completed successfully");
+    } catch (error) {
+      console.error("Error during export:", error);
+      toast({
+        title: "Export failed",
+        description: "There was an error exporting the applications. Please try again."
+      });
     }
   };
 
@@ -1049,8 +1289,7 @@ const Applications: React.FC = () => {
     setStatusApp(app);
     setStatusValue(app?.status || "");
   };  const handleStatusClose = () => setStatusApp(null);
-  
-  // Handle opening message modal
+    // Handle opening message modal
   const handleOpenMessages = (app: any) => {
     const name = [app.surname, app.first_middle_names].filter(Boolean).join(' ') || 'Unnamed';
     const id = app.id.slice(-8).toUpperCase();
@@ -1058,13 +1297,43 @@ const Applications: React.FC = () => {
     setCurrentApplicationId(app.id);
     setCurrentApplicationTitle(`${name} - ${id}`);
     setMessageModalOpen(true);
+    
+    // Clear notification count for this application
+    setApplicationMessagesCount(prev => ({
+      ...prev,
+      [app.id]: 0
+    }));
   };
-  
-  // Handle closing message modal
-  const handleCloseMessages = () => {
+    // Handle closing message modal
+  const handleCloseMessages = async () => {
+    const appId = currentApplicationId;
     setMessageModalOpen(false);
     setCurrentApplicationId("");
     setCurrentApplicationTitle("");
+    
+    // Re-fetch unread message count for the application that was just closed
+    if (appId && user?.id) {
+      // Add a small delay to ensure database operations have completed
+      setTimeout(async () => {        try {
+          const { count, error } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('application_id', appId)
+            .eq('sender_type', 'user')
+            .eq('read_by_admin', false);
+          
+          if (!error && count !== null) {
+            setApplicationMessagesCount(prev => ({
+              ...prev,
+              [appId]: count
+            }));
+            console.log(`🔄 Updated message count for ${appId}: ${count}`);
+          }
+        } catch (error) {
+          console.error('Error refreshing message count:', error);
+        }
+      }, 500);
+    }
   };
   
   const handleStatusSave = async () => {
@@ -1205,24 +1474,30 @@ const Applications: React.FC = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold text-gray-800">Applications Management</h2>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <input
+          <div className="flex items-center gap-2">            <input
               type="text"
               placeholder="Search applications..."
               className="px-3 py-2 border rounded-md text-sm text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <button className="p-2 text-gray-400 hover:text-gray-600">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
-          </div>
-          <select className="border rounded-md px-3 py-2 text-sm bg-white">
-            <option>Last 30 Days</option>
-            <option>Last 90 Days</option>
-            <option>All Time</option>
-          </select>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2">
+          </div>          <select 
+            className="border rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+          >
+            <option value="Last 30 Days">Last 30 Days</option>
+            <option value="Last 90 Days">Last 90 Days</option>
+            <option value="All Time">All Time</option>
+          </select><button 
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2"
+            onClick={exportToCSV}
+          >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
@@ -1230,15 +1505,23 @@ const Applications: React.FC = () => {
           </button>
         </div>
       </div>
-      <div className="bg-white rounded-lg border shadow-sm">
-        <div className="border-b px-4 py-3 flex items-center gap-4">
-          <select className="border rounded-md px-3 py-1.5 text-sm bg-white text-gray-900">
+      <div className="bg-white rounded-lg border shadow-sm">        <div className="border-b px-4 py-3 flex items-center gap-4">
+          <select 
+            className="border rounded-md px-3 py-1.5 text-sm bg-white text-gray-900"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
+            <option value="submitted">Submitted</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
-          <select className="border rounded-md px-3 py-1.5 text-sm bg-white text-gray-900">
+          <select 
+            className="border rounded-md px-3 py-1.5 text-sm bg-white text-gray-900"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+          >
             <option value="all">All Types</option>
             <option value="new">New Passport</option>
             <option value="renewal">Renewal</option>
@@ -1250,56 +1533,70 @@ const Applications: React.FC = () => {
             <div className="p-6 text-center text-gray-500">Loading applications...</div>
           ) : error ? (
             <div className="p-6 text-center text-red-500">{error}</div>
-          ) : (
-            <table className="w-full text-sm text-left">
+          ) : (            <table className="w-full text-sm text-left">
               <thead>
                 <tr className="bg-gray-50 text-gray-600 text-xs">
                   <th className="py-4 px-6 font-medium">APPLICATION ID</th>
                   <th className="py-4 px-6 font-medium">APPLICANT</th>
+                  <th className="py-4 px-6 font-medium">SUBMITTED BY</th>
                   <th className="py-4 px-6 font-medium">TYPE</th>
                   <th className="py-4 px-6 font-medium">SUBMISSION DATE</th>
                   <th className="py-4 px-6 font-medium">STATUS</th>
                   <th className="py-4 px-6 font-medium">ACTIONS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
-                {applications.map((app) => (
-                  <tr key={app.id} className="hover:bg-gray-50">
-                    <td className="py-4 px-6 font-medium text-blue-600" style={{ maxWidth: 200, wordBreak: 'break-all' }}>{app.id}</td>
-                    <td className="py-4 px-6 whitespace-normal break-words max-w-xs text-gray-900">{[app.surname, app.first_middle_names].filter(Boolean).join(' ') || '—'}</td>
-                    <td className="py-4 px-6 whitespace-normal break-words max-w-xs text-gray-900">{formatApplicationType(app.application_type)}</td>
-                    <td className="py-4 px-6 text-gray-500">{app.submitted_at ? app.submitted_at.split("T")[0] : "-"}</td>
-                    <td className="py-4 px-6">
-                      {statusBadge(app.status)}
-                    </td>
-                    <td className="py-4 px-6">                      <div className="flex items-center gap-2">
-                        <button title="View" className="p-2 rounded-full hover:bg-blue-100 transition" onClick={() => handleView(app.id)}><EyeIcon className="w-5 h-5 text-blue-600" /></button>
-                        <button title="Edit" className="p-2 rounded-full hover:bg-gray-100 transition" onClick={() => handleEdit(app.id)}><PencilIcon className="w-5 h-5 text-gray-600" /></button>
-                        <button title="Delete" className="p-2 rounded-full hover:bg-red-100 transition" onClick={() => handleDelete(app.id)} disabled={deletingId === app.id}><TrashIcon className="w-5 h-5 text-red-600" /></button>
-                        <button title="Update Status" className="p-2 rounded-full hover:bg-indigo-100 transition" onClick={() => handleStatus(app.id)}><ArrowPathIcon className="w-5 h-5 text-indigo-600" /></button>
-                        <button 
-                          title="Messages" 
-                          className="p-2 rounded-full hover:bg-teal-100 transition relative" 
-                          onClick={() => handleOpenMessages(app)}
-                        >
-                          <ChatBubbleLeftRightIcon className="w-5 h-5 text-teal-600" />
-                          {(applicationMessagesCount[app.id] || 0) > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-medium">
-                              {applicationMessagesCount[app.id]}
-                            </span>
-                          )}
-                        </button>
-                      </div>
+              <tbody className="divide-y divide-gray-100">{filteredApplications.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 px-6 text-center text-gray-500">
+                      {loading ? "Loading applications..." : "No applications found matching your filters"}
                     </td>
                   </tr>
-                ))}
+                ) : (                  filteredApplications.map((app) => (
+                    <tr key={app.id} className="hover:bg-gray-50">
+                      <td className="py-4 px-6 font-medium text-blue-600" style={{ maxWidth: 200, wordBreak: 'break-all' }}>{app.id}</td>
+                      <td className="py-4 px-6 whitespace-normal break-words max-w-xs text-gray-900">{[app.surname, app.first_middle_names].filter(Boolean).join(' ') || '—'}</td>
+                      <td className="py-4 px-6 whitespace-normal break-words max-w-xs text-gray-900">
+                        {app.profiles ? 
+                          [app.profiles.first_name, app.profiles.last_name].filter(Boolean).join(' ') || app.profiles.email || '—'
+                          : '—'
+                        }
+                      </td>
+                      <td className="py-4 px-6 whitespace-normal break-words max-w-xs text-gray-900">{formatApplicationType(app.application_type)}</td>
+                      <td className="py-4 px-6 text-gray-500">{app.submitted_at ? app.submitted_at.split("T")[0] : "-"}</td>
+                      <td className="py-4 px-6">
+                        {statusBadge(app.status)}
+                      </td>
+                      <td className="py-4 px-6">                      <div className="flex items-center gap-2">
+                          <button title="View" className="p-2 rounded-full hover:bg-blue-100 transition" onClick={() => handleView(app.id)}><EyeIcon className="w-5 h-5 text-blue-600" /></button>
+                          <button title="Edit" className="p-2 rounded-full hover:bg-gray-100 transition" onClick={() => handleEdit(app.id)}><PencilIcon className="w-5 h-5 text-gray-600" /></button>
+                          <button title="Delete" className="p-2 rounded-full hover:bg-red-100 transition" onClick={() => handleDelete(app.id)} disabled={deletingId === app.id}><TrashIcon className="w-5 h-5 text-red-600" /></button>
+                          <button title="Update Status" className="p-2 rounded-full hover:bg-indigo-100 transition" onClick={() => handleStatus(app.id)}><ArrowPathIcon className="w-5 h-5 text-indigo-600" /></button>
+                          <button 
+                            title="Messages" 
+                            className="p-2 rounded-full hover:bg-teal-100 transition relative" 
+                            onClick={() => handleOpenMessages(app)}
+                          >
+                            <ChatBubbleLeftRightIcon className="w-5 h-5 text-teal-600" />
+                            {(applicationMessagesCount[app.id] || 0) > 0 && (
+                              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-medium">
+                                {applicationMessagesCount[app.id]}
+                              </span>
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           )}
-        </div>
-        <div className="border-t px-4 py-3 flex items-center justify-between">
+        </div>        <div className="border-t px-4 py-3 flex items-center justify-between">
           <div className="text-sm text-gray-500">
-            Showing {applications.length} application{applications.length !== 1 ? 's' : ''}
+            Showing {filteredApplications.length} of {applications.length} application{applications.length !== 1 ? 's' : ''}
+            {(searchQuery || statusFilter !== 'all' || typeFilter !== 'all' || dateFilter !== 'All Time') && (
+              <span className="ml-1 text-blue-600">(filtered)</span>
+            )}
           </div>
           {/* Pagination controls could go here */}
         </div>

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -38,5 +37,28 @@
   /* Ensure dropdown options are visible */
   select option {
     @apply text-gray-900 bg-white;
+  }
+}
+
+/* Chat message animations */
+@layer components {
+  .animate-fadeIn {
+    animation: chatFadeIn 0.3s ease-out;
+  }
+
+  @keyframes chatFadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(8px) scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Smooth scrolling for chat */
+  .chat-scroll {
+    scroll-behavior: smooth;
   }
 }

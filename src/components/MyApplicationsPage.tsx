@@ -205,14 +205,13 @@ const MyApplicationsPage: React.FC = () => {
     const fetchUnreadMessageCounts = async () => {
       // For each application, count unread messages from admins
       const counts: {[key: string]: number} = {}
-      
-      for (const app of applications) {
+        for (const app of applications) {
         const { count, error } = await supabase
           .from('messages')
           .select('*', { count: 'exact', head: true })
           .eq('application_id', app.id)
           .eq('sender_type', 'admin')
-          .eq('read', false)
+          .eq('read_by_user', false)
         
         if (!error && count !== null) {
           counts[app.id] = count
@@ -228,8 +227,7 @@ const MyApplicationsPage: React.FC = () => {
     const channel = supabase
       .channel('messages_count')
       .on(
-        'postgres_changes',
-        {
+        'postgres_changes',        {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
@@ -247,6 +245,30 @@ const MyApplicationsPage: React.FC = () => {
             ...prev,
             [appId]: (prev[appId] || 0) + 1
           }))
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `sender_type=eq.admin`
+        },
+        async (payload) => {
+          const msg = payload.new as any
+          const appId = msg.application_id
+          
+          // Check if this application belongs to the current user
+          const isUserApp = applications.some(app => app.id === appId)
+          if (!isUserApp) return
+            // If message was marked as read by user, decrease the count
+          if (msg.read_by_user && payload.old && !payload.old.read_by_user) {
+            setApplicationMessagesCount(prev => ({
+              ...prev,
+              [appId]: Math.max(0, (prev[appId] || 0) - 1)
+            }))
+          }
         }
       )
       .subscribe()
@@ -405,7 +427,6 @@ const MyApplicationsPage: React.FC = () => {
       setLoading(false)
     }
   }
-
   // Handle opening message modal
   const handleOpenMessages = (app: PassportApplication) => {
     const name = [app.surname, app.first_middle_names].filter(Boolean).join(' ') || 'Unnamed'
@@ -414,13 +435,42 @@ const MyApplicationsPage: React.FC = () => {
     setCurrentApplicationId(app.id)
     setCurrentApplicationTitle(`${name} - ${id}`)
     setMessageModalOpen(true)
+    
+    // Clear notification count for this application
+    setApplicationMessagesCount(prev => ({
+      ...prev,
+      [app.id]: 0
+    }))
   }
-  
-  // Handle closing message modal
-  const handleCloseMessages = () => {
+    // Handle closing message modal
+  const handleCloseMessages = async () => {
     setMessageModalOpen(false)
     setCurrentApplicationId("")
     setCurrentApplicationTitle("")
+    
+    // Re-fetch unread message count for the application that was just closed
+    if (currentApplicationId && session?.user?.id) {
+      // Add a small delay to ensure database operations have completed
+      setTimeout(async () => {
+        try {          const { count, error } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('application_id', currentApplicationId)
+            .eq('sender_type', 'admin')
+            .eq('read_by_user', false)
+          
+          if (!error && count !== null) {
+            setApplicationMessagesCount(prev => ({
+              ...prev,
+              [currentApplicationId]: count
+            }))
+            console.log(`🔄 Updated message count for ${currentApplicationId}: ${count}`)
+          }
+        } catch (error) {
+          console.error('Error refreshing message count:', error)
+        }
+      }, 500)
+    }
   }
 
   // Show loading while session or profile is being determined
