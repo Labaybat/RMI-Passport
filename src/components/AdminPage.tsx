@@ -5,8 +5,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAdminGuard } from "../hooks/useAdminGuard";
 import supabase from "../lib/supabase/client";
 import { useToast } from "../hooks/use-toast";
-import { CheckCircleIcon, XCircleIcon, ClockIcon, PencilIcon, EyeIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
+import { CheckCircleIcon, XCircleIcon, ClockIcon, PencilIcon, EyeIcon, TrashIcon, ArrowPathIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 import AdminComments from "./AdminComments";
+import MessageModal from "./MessageModal"; // Import for messaging system
 // 1. Import for map
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -858,8 +859,7 @@ const Applications: React.FC = () => {
   const [showViewUserModal, setShowViewUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
-  const [editUserLoading, setEditUserLoading] = useState(false);
-  const [editUserForm, setEditUserForm] = useState({
+  const [editUserLoading, setEditUserLoading] = useState(false);  const [editUserForm, setEditUserForm] = useState({
     firstName: "",
     lastName: "",
     email: "",
@@ -869,6 +869,11 @@ const Applications: React.FC = () => {
     role: "user",
     status: "active"
   });
+  // Add states for message functionality
+  const [messageModalOpen, setMessageModalOpen] = useState(false);
+  const [currentApplicationId, setCurrentApplicationId] = useState<string>("");
+  const [currentApplicationTitle, setCurrentApplicationTitle] = useState<string>("");
+  const [applicationMessagesCount, setApplicationMessagesCount] = useState<{[key: string]: number}>({});
   const { toast } = useToast();
 
   // List of document fields and their labels
@@ -880,7 +885,6 @@ const Applications: React.FC = () => {
     { key: "signature_url", label: "Signature" },
     { key: "photo_id_url", label: "Photo ID" },
   ];
-
   useEffect(() => {
     const fetchApplications = async () => {
       setLoading(true);
@@ -899,6 +903,61 @@ const Applications: React.FC = () => {
     };
     fetchApplications();
   }, []);
+  
+  // New effect to fetch unread message counts for all applications
+  useEffect(() => {
+    if (!applications.length || !user?.id) return;
+    
+    const fetchUnreadMessageCounts = async () => {
+      // For each application, count unread messages from users
+      const counts: {[key: string]: number} = {};
+      
+      for (const app of applications) {
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('application_id', app.id)
+          .eq('sender_type', 'user')
+          .eq('read', false);
+        
+        if (!error && count !== null) {
+          counts[app.id] = count;
+        }
+      }
+      
+      setApplicationMessagesCount(counts);
+    };
+    
+    fetchUnreadMessageCounts();
+    
+    // Set up subscription for new messages
+    const channel = supabase
+      .channel('admin_messages_count')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `sender_type=eq.user`
+        },
+        async (payload) => {
+          const msg = payload.new as any;
+          const appId = msg.application_id;
+          
+          // Update message count for this application
+          setApplicationMessagesCount(prev => ({
+            ...prev,
+            [appId]: (prev[appId] || 0) + 1
+          }));
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [applications, user?.id]);
 
   // Generate signed URLs for all document fields when viewApp changes
   useEffect(() => {
@@ -989,8 +1048,26 @@ const Applications: React.FC = () => {
     const app = applications.find(a => a.id === id);
     setStatusApp(app);
     setStatusValue(app?.status || "");
+  };  const handleStatusClose = () => setStatusApp(null);
+  
+  // Handle opening message modal
+  const handleOpenMessages = (app: any) => {
+    const name = [app.surname, app.first_middle_names].filter(Boolean).join(' ') || 'Unnamed';
+    const id = app.id.slice(-8).toUpperCase();
+    
+    setCurrentApplicationId(app.id);
+    setCurrentApplicationTitle(`${name} - ${id}`);
+    setMessageModalOpen(true);
   };
-  const handleStatusClose = () => setStatusApp(null);  const handleStatusSave = async () => {
+  
+  // Handle closing message modal
+  const handleCloseMessages = () => {
+    setMessageModalOpen(false);
+    setCurrentApplicationId("");
+    setCurrentApplicationTitle("");
+  };
+  
+  const handleStatusSave = async () => {
     if (!statusApp) return;
     setStatusSaving(true);
     
@@ -1195,12 +1272,23 @@ const Applications: React.FC = () => {
                     <td className="py-4 px-6">
                       {statusBadge(app.status)}
                     </td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
+                    <td className="py-4 px-6">                      <div className="flex items-center gap-2">
                         <button title="View" className="p-2 rounded-full hover:bg-blue-100 transition" onClick={() => handleView(app.id)}><EyeIcon className="w-5 h-5 text-blue-600" /></button>
                         <button title="Edit" className="p-2 rounded-full hover:bg-gray-100 transition" onClick={() => handleEdit(app.id)}><PencilIcon className="w-5 h-5 text-gray-600" /></button>
                         <button title="Delete" className="p-2 rounded-full hover:bg-red-100 transition" onClick={() => handleDelete(app.id)} disabled={deletingId === app.id}><TrashIcon className="w-5 h-5 text-red-600" /></button>
                         <button title="Update Status" className="p-2 rounded-full hover:bg-indigo-100 transition" onClick={() => handleStatus(app.id)}><ArrowPathIcon className="w-5 h-5 text-indigo-600" /></button>
+                        <button 
+                          title="Messages" 
+                          className="p-2 rounded-full hover:bg-teal-100 transition relative" 
+                          onClick={() => handleOpenMessages(app)}
+                        >
+                          <ChatBubbleLeftRightIcon className="w-5 h-5 text-teal-600" />
+                          {(applicationMessagesCount[app.id] || 0) > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-medium">
+                              {applicationMessagesCount[app.id]}
+                            </span>
+                          )}
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -1643,14 +1731,21 @@ const Applications: React.FC = () => {
                 <option className="bg-white text-gray-900" value="approved">Approved</option>
                 <option className="bg-white text-gray-900" value="rejected">Rejected</option>
               </select>
-            </div>
-            <div className="flex justify-end gap-2">
+            </div>            <div className="flex justify-end gap-2">
               <button className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700" onClick={handleStatusClose}>Cancel</button>
               <button className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700" onClick={handleStatusSave} disabled={statusSaving}>{statusSaving ? 'Saving...' : 'Save'}</button>
             </div>
           </div>
         </div>
       )}
+      
+      {/* Add Message Modal */}
+      <MessageModal 
+        isOpen={messageModalOpen}
+        onClose={handleCloseMessages}
+        applicationId={currentApplicationId}
+        applicationTitle={currentApplicationTitle}
+      />
     </div>
   );
 };

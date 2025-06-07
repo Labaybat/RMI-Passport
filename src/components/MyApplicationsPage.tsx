@@ -6,6 +6,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { useNavigate } from "@tanstack/react-router"
 import supabase from "../lib/supabase/client"
 import Button from "./ui/Button"
+import MessageModal from "./MessageModal" // Import the MessageModal component
 
 // Define the PassportApplication type based on the Supabase table
 type PassportApplication = {
@@ -74,7 +75,13 @@ const MyApplicationsPage: React.FC = () => {
   const [profile, setProfile] = useState<any>(null)
   const [viewApp, setViewApp] = useState<PassportApplication | null>(null)
   const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({})
-    // Define document field mappings with storage keys and display keys
+  // Add states for message functionality
+  const [messageModalOpen, setMessageModalOpen] = useState(false)
+  const [currentApplicationId, setCurrentApplicationId] = useState<string>("")
+  const [currentApplicationTitle, setCurrentApplicationTitle] = useState<string>("")
+  const [applicationMessagesCount, setApplicationMessagesCount] = useState<{[key: string]: number}>({})
+
+  // Define document field mappings with storage keys and display keys
   const documentFields = [
     { key: "birth_certificate", label: "Birth Certificate", storageKey: "birth_certificate_url" },
     { key: "consent_form", label: "Consent Form", storageKey: "consent_form_url" },
@@ -190,6 +197,64 @@ const MyApplicationsPage: React.FC = () => {
       if (subscription) supabase.removeChannel(subscription)
     }
   }, [session?.user?.id, isConfigured])
+
+  // New effect to fetch unread message counts for all applications
+  useEffect(() => {
+    if (!session?.user?.id || !applications.length) return
+    
+    const fetchUnreadMessageCounts = async () => {
+      // For each application, count unread messages from admins
+      const counts: {[key: string]: number} = {}
+      
+      for (const app of applications) {
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('application_id', app.id)
+          .eq('sender_type', 'admin')
+          .eq('read', false)
+        
+        if (!error && count !== null) {
+          counts[app.id] = count
+        }
+      }
+      
+      setApplicationMessagesCount(counts)
+    }
+    
+    fetchUnreadMessageCounts()
+    
+    // Set up subscription for new messages
+    const channel = supabase
+      .channel('messages_count')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `sender_type=eq.admin`
+        },
+        async (payload) => {
+          const msg = payload.new as any
+          const appId = msg.application_id
+          
+          // Check if this application belongs to the current user
+          const isUserApp = applications.some(app => app.id === appId)
+          if (!isUserApp) return
+          
+          setApplicationMessagesCount(prev => ({
+            ...prev,
+            [appId]: (prev[appId] || 0) + 1
+          }))
+        }
+      )
+      .subscribe()
+      
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [applications, session?.user?.id])
 
   // Utility: Map status to progress if progress is missing
   const getProgress = (app: PassportApplication) => {
@@ -339,6 +404,23 @@ const MyApplicationsPage: React.FC = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Handle opening message modal
+  const handleOpenMessages = (app: PassportApplication) => {
+    const name = [app.surname, app.first_middle_names].filter(Boolean).join(' ') || 'Unnamed'
+    const id = app.id.slice(-8).toUpperCase()
+    
+    setCurrentApplicationId(app.id)
+    setCurrentApplicationTitle(`${name} - ${id}`)
+    setMessageModalOpen(true)
+  }
+  
+  // Handle closing message modal
+  const handleCloseMessages = () => {
+    setMessageModalOpen(false)
+    setCurrentApplicationId("")
+    setCurrentApplicationTitle("")
   }
 
   // Show loading while session or profile is being determined
@@ -706,8 +788,11 @@ const MyApplicationsPage: React.FC = () => {
                             </svg>
                             Download Certificate
                           </Button>
-                        )}{/* Future comment section preparation - just a placeholder for now */}                        <Button 
+                        )}
+                        {/* Updated Messages button */}
+                        <Button 
                           className="bg-teal-100 text-teal-700 hover:bg-teal-200 py-2 px-4 rounded-md text-xs sm:text-sm ml-auto flex items-center shadow-sm"
+                          onClick={() => handleOpenMessages(app)}
                         >
                           <svg 
                             xmlns="http://www.w3.org/2000/svg" 
@@ -724,7 +809,11 @@ const MyApplicationsPage: React.FC = () => {
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                           </svg>
                           Messages
-                          <span className="ml-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-white text-[10px] font-medium">0</span>
+                          {(applicationMessagesCount[app.id] || 0) > 0 && (
+                            <span className="ml-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-white text-[10px] font-medium">
+                              {applicationMessagesCount[app.id]}
+                            </span>
+                          )}
                         </Button>
                       </div>
                       
@@ -958,7 +1047,7 @@ const MyApplicationsPage: React.FC = () => {
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                               <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
                             </div>
                             <span className="font-medium text-gray-900">{doc.label}</span>
@@ -972,8 +1061,8 @@ const MyApplicationsPage: React.FC = () => {
                               title={`View ${doc.label}`}
                             >
                               <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                               </svg>
                             </a>
                             <a 
@@ -983,7 +1072,7 @@ const MyApplicationsPage: React.FC = () => {
                               title={`Download ${doc.label}`}
                             >
                               <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
                               </svg>
                             </a>
                           </div>
@@ -1014,8 +1103,7 @@ const MyApplicationsPage: React.FC = () => {
                         <p className="text-gray-500 text-xs">{new Date(viewApp.created_at).toLocaleString()}</p>
                       </div>
                     </div>
-                    
-                    {viewApp.submitted_at && (
+                      {viewApp.submitted_at && (
                       <div className="flex items-start gap-3">
                         <div className="rounded-full bg-amber-100 p-2 mt-1">
                           <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1028,8 +1116,7 @@ const MyApplicationsPage: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    
-                    {viewApp.status === 'approved' && (
+                      {viewApp.status === 'approved' && (
                       <div className="flex items-start gap-3">
                         <div className="rounded-full bg-green-100 p-2 mt-1">
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1042,8 +1129,7 @@ const MyApplicationsPage: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    
-                    {viewApp.status === 'rejected' && (
+                      {viewApp.status === 'rejected' && (
                       <div className="flex items-start gap-3">
                         <div className="rounded-full bg-red-100 p-2 mt-1">
                           <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1113,6 +1199,14 @@ const MyApplicationsPage: React.FC = () => {
           </div>
         </div>
       )}
+      
+      {/* Add Message Modal */}
+      <MessageModal 
+        isOpen={messageModalOpen}
+        onClose={handleCloseMessages}
+        applicationId={currentApplicationId}
+        applicationTitle={currentApplicationTitle}
+      />
     </div>
   )
 }
