@@ -30,32 +30,55 @@ const AdminComments: React.FC<AdminCommentsProps> = ({ applicationId }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const { user } = useAuth();
-  const { toast } = useToast();
-
-  // Fetch comments for this application
+  const { toast } = useToast();  // Fetch comments for this application
   const fetchComments = async () => {
     setLoading(true);
-    try {      const { data, error } = await supabase
+    try {      
+      // First fetch the comments
+      const { data: commentsData, error: commentsError } = await supabase
         .from('application_comments')
-        .select(`
-          *,
-          profiles!admin_id (
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .eq('application_id', applicationId)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching comments:', error);
+      if (commentsError) {
+        console.error('Error fetching comments:', commentsError);
         toast({
           title: "Error",
           description: "Failed to load comments",
         });
-      } else {
-        setComments(data || []);
+        return;
       }
+      
+      // Then fetch profile info for each comment if there are comments
+      if (commentsData && commentsData.length > 0) {
+        const adminIds = commentsData.map(comment => comment.admin_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name')
+          .in('id', adminIds);
+          
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+        } else {
+          // Map profiles to comments
+          const commentsWithProfiles = commentsData.map(comment => {
+            const profile = profilesData?.find(p => p.id === comment.admin_id);
+            return {
+              ...comment,
+              profiles: profile ? {
+                first_name: profile.first_name,
+                last_name: profile.last_name
+              } : undefined
+            };
+          });
+          setComments(commentsWithProfiles);
+          return;
+        }
+      }
+      
+      // If we get here, we either had no comments or couldn't fetch profiles
+      setComments(commentsData || []);
     } catch (err) {
       console.error('Error:', err);
       toast({
@@ -65,15 +88,14 @@ const AdminComments: React.FC<AdminCommentsProps> = ({ applicationId }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Add new comment
+  };  // Add new comment
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || !user) return;
 
     setSubmitting(true);
     try {
+      // Insert the new comment
       const { data, error } = await supabase
         .from('application_comments')
         .insert([
@@ -81,13 +103,9 @@ const AdminComments: React.FC<AdminCommentsProps> = ({ applicationId }) => {
             application_id: applicationId,
             admin_id: user.id,
             comment_text: newComment.trim(),
-          }        ])        .select(`
-          *,
-          profiles!admin_id (
-            first_name,
-            last_name
-          )
-        `);
+          }
+        ])
+        .select('*');
 
       if (error) {
         console.error('Error adding comment:', error);
@@ -97,7 +115,7 @@ const AdminComments: React.FC<AdminCommentsProps> = ({ applicationId }) => {
         });
       } else {
         setNewComment('');
-        await fetchComments(); // Refresh comments
+        await fetchComments(); // Refresh comments to include the new comment with profile data
         toast({
           title: "Success",
           description: "Comment added successfully",

@@ -1489,9 +1489,92 @@ const Applications: React.FC = () => {
                       <span className="text-gray-900 font-mono text-xs">{viewApp.user_id}</span>
                     </div>
                   </div>
+                </div>              </div>
+
+              {/* Application Timeline - Full Width */}
+              <div className="col-span-1 lg:col-span-2 mt-6">
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Application Timeline</h4>
+                  <div className="space-y-4 text-sm">
+                    {/* Application Created */}
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-full bg-blue-100 p-2 mt-1">
+                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800">Application Created</p>
+                        <p className="text-gray-500 text-xs">{viewApp.created_at ? new Date(viewApp.created_at).toLocaleString() : '—'}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Application Submitted */}
+                    {viewApp.submitted_at && (
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-amber-100 p-2 mt-1">
+                          <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-800">Application Submitted</p>
+                          <p className="text-gray-500 text-xs">{new Date(viewApp.submitted_at).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Application Reviewed (when status is 'pending') */}
+                    {viewApp.status === 'pending' && (
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-blue-100 p-2 mt-1">
+                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-800">Under Review</p>
+                          <p className="text-gray-500 text-xs">{viewApp.updated_at ? new Date(viewApp.updated_at).toLocaleString() : '—'}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Application Approved */}
+                    {viewApp.status === 'approved' && (
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-green-100 p-2 mt-1">
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-800">Application Approved</p>
+                          <p className="text-gray-500 text-xs">{viewApp.updated_at ? new Date(viewApp.updated_at).toLocaleString() : '—'}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Application Rejected */}
+                    {viewApp.status === 'rejected' && (
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-red-100 p-2 mt-1">
+                          <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-800">Application Rejected</p>
+                          <p className="text-gray-500 text-xs">{viewApp.updated_at ? new Date(viewApp.updated_at).toLocaleString() : '—'}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>              {/* Admin Comments - Full Width */}
-              <div className="col-span-1 lg:col-span-2">
+              </div>
+
+              {/* Admin Comments - Full Width */}
+              <div className="col-span-1 lg:col-span-2 mt-6">
                 <AdminComments applicationId={viewApp.id} />
               </div>
             </div>
@@ -2218,7 +2301,7 @@ const Users: React.FC = () => {
                           <span className="font-medium text-gray-900">{getUserFullName(user)}</span>
                         </div>
                       </td>
-                      <td className="py-4 px-6 text-gray-600">{user.email || "N/A"}</td>
+                      <td className="py-4 px-6 text-gray-600 break-all max-w-xs">{user.email || "N/A"}</td>
                       <td className="py-4 px-6">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                           ${getUserRole(user) === 'admin' ? 'bg-purple-100 text-purple-800' :
@@ -2508,10 +2591,9 @@ const Users: React.FC = () => {
                     <div className="flex">
                       <span className="font-medium text-gray-700 w-32 shrink-0">Full Name:</span>
                       <span className="text-gray-900">{getUserFullName(selectedUser)}</span>
-                    </div>
-                    <div className="flex">
+                    </div>                    <div className="flex">
                       <span className="font-medium text-gray-700 w-32 shrink-0">Email:</span>
-                      <span className="text-gray-900">{selectedUser.email || '—'}</span>
+                      <span className="text-gray-900 break-all">{selectedUser.email || '—'}</span>
                     </div>
                     <div className="flex">
                       <span className="font-medium text-gray-700 w-32 shrink-0">Phone:</span>
@@ -2654,14 +2736,13 @@ const Users: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Email *
-                </label>
-                <input
+                </label>                <input
                   type="email"
                   name="email"
                   value={editUserForm.email}
                   onChange={handleEditUserFormChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white text-ellipsis"
                 />
               </div>
 
