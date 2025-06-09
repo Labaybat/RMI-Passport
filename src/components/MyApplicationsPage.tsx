@@ -292,6 +292,11 @@ const MyApplicationsPage: React.FC = () => {
     }
   }
 
+  // Check if user has any draft applications
+  const hasDraftApplications = () => {
+    return applications.some(app => app.status === 'draft');
+  }
+
   // Utility: Dynamic status message
   const getStatusMessage = (app: PassportApplication) => {
     const name = [app.surname, app.first_middle_names].filter(Boolean).join(' ')
@@ -573,27 +578,28 @@ const MyApplicationsPage: React.FC = () => {
                   <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
                 </svg>
                 Refresh
-              </Button>
+              </Button>              {!hasDraftApplications() && (
                 <Button 
-                className="bg-blue-600 text-white hover:bg-blue-700 py-2 px-4 sm:px-5 rounded-md text-xs sm:text-sm flex items-center justify-center shadow-sm"
-                onClick={handleStartNewApplication}
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  className="mr-1.5"
+                  className="bg-blue-600 text-white hover:bg-blue-700 py-2 px-4 sm:px-5 rounded-md text-xs sm:text-sm flex items-center justify-center shadow-sm"
+                  onClick={handleStartNewApplication}
                 >
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-                Start New Application
-              </Button>
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="mr-1.5"
+                  >
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Start New Application
+                </Button>
+              )}
             </div>
           </div>
 
