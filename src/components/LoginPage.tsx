@@ -217,8 +217,14 @@ export function LoginPage() {
               >
                 {buttonText}
               </button>
+              
+              <div className="flex justify-end">
+                <Link to="/recover-password" className="text-sm text-blue-600 hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
 
-              <p className="text-center text-sm text-gray-500">
+              <p className="text-center text-sm text-gray-500 mt-4">
                 Don't have an account?{" "}
                 <Link to="/signup" className="text-blue-600 hover:underline">Sign up</Link>
               </p>
@@ -228,9 +234,10 @@ export function LoginPage() {
 
         {/* Right Column - Passport Act Information */}
         <div className="md:w-3/5 bg-gradient-to-br from-blue-800 via-blue-700 to-blue-600 text-white p-8 md:p-12">
-          <h3 className="text-2xl font-bold mb-6 border-b border-blue-400 pb-3">Passport Act, 2020 Highlights</h3>
-          <ul className="space-y-4">
-            {passportActPoints.map((point, index) => (
+          <div className="fade-in">
+            <h3 className="text-2xl font-bold mb-6 border-b border-blue-400 pb-3">Passport Act, 2020 Highlights</h3>
+            <ul className="space-y-4">
+              {passportActPoints.map((point, index) => (
               <li key={index} className="flex items-start">
                 <div className="mt-1 mr-3 flex-shrink-0">
                   <svg className="h-5 w-5 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
@@ -243,6 +250,7 @@ export function LoginPage() {
           </ul>
           <div className="mt-6 text-sm text-blue-300 italic border-t border-blue-400 pt-4">
             Passport Act, 2020 (43MIRCCh.11) - Republic of the Marshall Islands
+          </div>
           </div>
         </div>
       </div>

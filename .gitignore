@@ -1,14 +1,92 @@
 
-# dependencies
-/node_modules
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# production
-/dist
+# Production builds
+dist/
+build/
 
-# env files
+# Environment files
 .env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# misc
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Temporary files
+*.tmp
+*.temp
+
+# Database and SQL files (development/testing)
+*.sql
+*.db
+*.sqlite
+*.sqlite3
+
+# Documentation and guide files (keep only essential ones)
+ADD_SENDER_NAME_COLUMN_GUIDE.md
+ARCHITECTURE_DIAGRAMS.md
+CURRENT_STATUS.md
+DELETE_USER_FUNCTION_README.md
+DELETE_USER_TROUBLESHOOTING.md
+DEPLOYMENT_GUIDE.md
+EDGE_FUNCTION_TROUBLESHOOTING.md
+ENHANCEMENT_RECOMMENDATIONS.md
+EXECUTIVE_TECHNICAL_BRIEF.md
+MIGRATION_GUIDE.md
+MIGRATION_INSTRUCTIONS.md
+REAL_TIME_CHAT_IMPLEMENTED.md
+SOLUTION_COMPLETE.md
+SYSTEM_WORKING_CONFIRMED.md
+TECHNICAL_REVIEW.md
+TESTING_CHECKLIST.md
+USER_DELETION_SETUP.md
+
+# Batch files and scripts
+*.bat
+
+# Test files
+test-*.sql
+test-*.md
+debug-*.js
+
+# Example files
+*-example-*
+
+# Temporary directories
+-p/

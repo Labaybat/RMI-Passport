@@ -19,6 +19,8 @@ import { AuthProvider } from "./contexts/AuthContext"
 import PhotoGuideline from "./components/photoguideline"
 import AdminPage from "./components/AdminPage"
 import MyApplicationsPage from "./components/MyApplicationsPage"
+import { PasswordRecoveryPage } from "./components/PasswordRecoveryPage"
+import { PasswordResetPage } from "./components/PasswordResetPage"
 
 // Root layout
 const rootRoute = createRootRoute({
@@ -84,6 +86,18 @@ const myApplicationsRoute = createRoute({
   component: MyApplicationsPage,
 })
 
+const passwordRecoveryRoute = createRoute({
+  path: "/recover-password",
+  getParentRoute: () => rootRoute,
+  component: PasswordRecoveryPage,
+})
+
+const passwordResetRoute = createRoute({
+  path: "/reset-password",
+  getParentRoute: () => rootRoute,
+  component: PasswordResetPage,
+})
+
 // Router setup
 const router = createRouter({
   routeTree: rootRoute.addChildren([
@@ -96,6 +110,8 @@ const router = createRouter({
     photoGuidelineRoute,
     adminRoute,
     myApplicationsRoute,
+    passwordRecoveryRoute,
+    passwordResetRoute,
   ]),
 })
 
