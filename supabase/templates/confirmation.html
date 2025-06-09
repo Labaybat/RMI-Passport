@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to RMI Passport Portal</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 50%, #2563eb 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 10px 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .message {
+            color: #4b5563;
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+        .confirm-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+            transition: all 0.2s ease;
+        }
+        .confirm-button:hover {
+            background: linear-gradient(135deg, #047857 0%, #059669 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+        }
+        .welcome-notice {
+            background-color: #ecfdf5;
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        .welcome-notice h3 {
+            color: #047857;
+            margin: 0 0 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .welcome-notice p {
+            color: #065f46;
+            margin: 0;
+            font-size: 14px;
+        }
+        .footer {
+            background-color: #f8fafc;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .legal-notice {
+            background-color: #eff6ff;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .legal-notice h4 {
+            color: #1e40af;
+            margin: 0 0 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .legal-notice p {
+            color: #1e3a8a;
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .footer-text {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .footer-legal {
+            color: #9ca3af;
+            font-size: 12px;
+            font-style: italic;
+        }
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+            margin: 30px 0;
+        }
+        .steps {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .steps h3 {
+            color: #1f2937;
+            margin: 0 0 15px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .steps ol {
+            margin: 0;
+            padding-left: 20px;
+            color: #4b5563;
+        }
+        .steps li {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .header, .content, .footer {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .confirm-button {
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with RMI Branding -->
+        <div class="header">
+            <div class="logo">🛂</div>
+            <h1>RMI Passport Portal</h1>
+            <p>Republic of the Marshall Islands</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <div class="greeting">Welcome to the Official Portal!</div>
+            
+            <div class="message">
+                <p>Hello and welcome to the Republic of the Marshall Islands Passport Portal,</p>
+                <p>Thank you for creating your account with the official RMI Passport Portal. To complete your registration and start your passport application process, please confirm your email address by clicking the button below.</p>
+            </div>
+
+            <!-- Confirmation Button -->
+            <div style="text-align: center;">
+                <a href="{{ .ConfirmationURL }}" class="confirm-button">
+                    Confirm My Email Address
+                </a>
+            </div>
+
+            <!-- Welcome Information -->
+            <div class="welcome-notice">
+                <h3>✅ What's Next?</h3>
+                <p>Once your email is confirmed, you'll be able to access your secure dashboard and begin your passport application process with all required documentation and forms.</p>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="steps">
+                <h3>📝 Your Next Steps:</h3>
+                <ol>
+                    <li>Click the confirmation button above to verify your email</li>
+                    <li>Complete your secure login to access your dashboard</li>
+                    <li>Gather required documents (birth certificate, photo ID, etc.)</li>
+                    <li>Begin your official passport application</li>
+                    <li>Submit your application and track its progress</li>
+                </ol>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Alternative Link -->
+            <div style="font-size: 14px; color: #6b7280;">
+                <p><strong>Having trouble with the button above?</strong></p>
+                <p>Copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; background-color: #f3f4f6; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 13px;">
+                    {{ .ConfirmationURL }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer with Legal Information -->
+        <div class="footer">
+            <!-- Legal Notice -->
+            <div class="legal-notice">
+                <h4>📋 Legal Notice - Passport Act, 2020</h4>
+                <p>Your account is subject to the Passport Act, 2020 (43 MIRC Ch.11) of the Republic of the Marshall Islands. Only lawful citizens of RMI are eligible for passport services. False information may result in application denial and legal penalties.</p>
+            </div>
+
+            <div class="footer-text">
+                <p><strong>RMI Passport Portal</strong><br>
+                Official Government Portal<br>
+                Republic of the Marshall Islands</p>
+            </div>
+
+            <div class="footer-legal">
+                <p>Passport Act, 2020 (43 MIRC Ch.11) - Republic of the Marshall Islands</p>
+                <p>© {{ .SiteURL }} - Official Government Communications</p>
+            </div>
+
+            <div class="divider"></div>
+
+            <div style="font-size: 12px; color: #9ca3af;">
+                <p><strong>Security Notice:</strong> This email contains sensitive account information. Please do not forward this email. For assistance, contact our support team through the official portal.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
