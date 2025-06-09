@@ -766,7 +766,7 @@ const MyApplicationsPage: React.FC = () => {
                             </svg>
                             Continue Application
                           </Button>                        ) : (                          <Button 
-                            className="bg-purple-100 text-purple-700 hover:bg-purple-200 py-2 px-4 rounded-md text-xs sm:text-sm shadow-sm flex items-center"
+                            className="bg-purple-600 text-white hover:bg-purple-700 py-2 px-4 rounded-md text-xs sm:text-sm shadow-sm flex items-center"
                             onClick={() => handleViewApplication(app.id)}
                           >
                             <svg 
@@ -787,9 +787,8 @@ const MyApplicationsPage: React.FC = () => {
                             View Details
                           </Button>
                         )}
-                          {(app.status === 'submitted' || app.status === 'pending') && (
-                          <Button 
-                            className="bg-amber-100 text-amber-700 hover:bg-amber-200 py-2 px-4 rounded-md text-xs sm:text-sm shadow-sm flex items-center"
+                          {(app.status === 'submitted' || app.status === 'pending') && (                          <Button 
+                            className="bg-amber-600 text-white hover:bg-amber-700 py-2 px-4 rounded-md text-xs sm:text-sm shadow-sm flex items-center"
                             onClick={() => navigate({ to: "/apply", search: { id: app.id, track: true } })}
                           >
                             <svg 
@@ -811,9 +810,8 @@ const MyApplicationsPage: React.FC = () => {
                             Track Status
                           </Button>
                         )}
-                          {app.status === 'approved' && (
-                          <Button 
-                            className="bg-green-100 text-green-700 hover:bg-green-200 py-2 px-4 rounded-md text-xs sm:text-sm shadow-sm flex items-center"
+                          {app.status === 'approved' && (                          <Button 
+                            className="bg-green-600 text-white hover:bg-green-700 py-2 px-4 rounded-md text-xs sm:text-sm shadow-sm flex items-center"
                             onClick={() => {
                               // In a real implementation, this would download a certificate
                               // For now, just show an alert
@@ -839,9 +837,8 @@ const MyApplicationsPage: React.FC = () => {
                             Download Certificate
                           </Button>
                         )}
-                        {/* Updated Messages button */}
-                        <Button 
-                          className="bg-teal-100 text-teal-700 hover:bg-teal-200 py-2 px-4 rounded-md text-xs sm:text-sm ml-auto flex items-center shadow-sm"
+                        {/* Updated Messages button */}                        <Button 
+                          className="bg-teal-600 text-white hover:bg-teal-700 py-2 px-4 rounded-md text-xs sm:text-sm ml-auto flex items-center shadow-sm"
                           onClick={() => handleOpenMessages(app)}
                         >
                           <svg 
@@ -1226,9 +1223,8 @@ const MyApplicationsPage: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-6 flex justify-end gap-3 print:hidden">
-                <Button
-                  className="bg-gray-100 text-gray-700 hover:bg-gray-200 py-2 px-4 rounded-md text-sm shadow-sm"
+              <div className="mt-6 flex justify-end gap-3 print:hidden">                <Button
+                  className="bg-gray-600 text-white hover:bg-gray-700 py-2 px-4 rounded-md text-sm shadow-sm"
                   onClick={handleViewClose}
                 >
                   Close

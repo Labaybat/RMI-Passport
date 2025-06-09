@@ -1429,20 +1429,83 @@ const Step6Review: React.FC<{
   )
 }
 
-// ProgressBar component for step navigation
+// Compact Modern ProgressBar component
 const ProgressBar: React.FC<{ currentStep: number; totalSteps: number; isCompact?: boolean }> = ({ currentStep, totalSteps, isCompact = false }) => {
   const percent = Math.max(0, Math.min(100, Math.round((currentStep - 1) / (totalSteps - 1) * 100)))
+  
+  const stepLabels = [
+    "Personal Info",
+    "Contact Info", 
+    "Emergency Contact",
+    "Parent Info",
+    "Document Upload",
+    "Review & Submit"
+  ]
+  
   return (
-    <div className={isCompact ? "py-2" : "py-4"}>
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-medium text-blue-900">Step {currentStep} of {totalSteps}</span>
-        <span className="text-xs font-medium text-blue-700">{percent}%</span>
+    <div className="py-3">
+      {/* Compact header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
+            <span className="text-white text-xs font-semibold">{currentStep}</span>
+          </div>
+          <div>
+            <span className="text-sm font-medium text-gray-900">{stepLabels[currentStep - 1]}</span>
+            <div className="text-xs text-gray-500">Step {currentStep} of {totalSteps}</div>
+          </div>
+        </div>
+        <div className="text-sm font-semibold text-blue-600">{percent}%</div>
       </div>
-      <div className={`w-full bg-blue-100 rounded-full h-2 ${isCompact ? 'h-1.5' : 'h-2'}`}> 
-        <div
-          className="bg-gradient-to-r from-blue-500 to-blue-700 h-full rounded-full transition-all duration-300"
-          style={{ width: `${percent}%` }}
+
+      {/* Compact step indicators */}
+      <div className="flex items-center justify-between mb-2 relative">
+        {Array.from({ length: totalSteps }, (_, index) => {
+          const stepNum = index + 1
+          const isCompleted = stepNum < currentStep
+          const isCurrent = stepNum === currentStep
+          
+          return (
+            <div key={stepNum} className="relative z-10">
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 ${
+                  isCompleted
+                    ? 'bg-green-500 text-white'
+                    : isCurrent
+                    ? 'bg-blue-600 text-white ring-2 ring-blue-200'
+                    : 'bg-gray-200 text-gray-500'
+                }`}
+              >
+                {isCompleted ? (
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  stepNum
+                )}
+              </div>
+            </div>
+          )
+        })}
+        
+        {/* Background connecting line */}
+        <div className="absolute top-1/2 left-3 right-3 h-0.5 bg-gray-200 -translate-y-1/2 -z-10" />
+        
+        {/* Progress connecting line */}
+        <div 
+          className="absolute top-1/2 left-3 h-0.5 bg-green-500 -translate-y-1/2 transition-all duration-500 -z-10"
+          style={{ width: `calc(${Math.max(0, percent - 16.66)}% + 12px)` }}
         />
+      </div>
+
+      {/* Compact progress bar */}
+      <div className="relative">
+        <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
       </div>
     </div>
   )
@@ -1884,9 +1947,15 @@ export default function Apply() {
         return null
     }
   }
-
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">Loading application...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-gray-600">Loading application...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

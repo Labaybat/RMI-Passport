@@ -286,19 +286,32 @@ export default function MyProfile() {
                           <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
-
-                    {/* Save Button */}
+                    </div>                    {/* Action Buttons */}
                     <div className="pt-8 border-t border-gray-200">
-                      <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex flex-col sm:flex-row gap-4 justify-between">                        <Button
+                          type="button"
+                          onClick={() => navigate({ to: '/dashboard' })}
+                          className="flex-1 sm:flex-none sm:order-1 bg-blue-50 border border-gray-300 text-blue-800 hover:text-blue-900 hover:bg-blue-100 hover:border-blue-400 rounded-lg h-12 px-6 font-medium shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center"
+                          style={{ color: '#1e40af', backgroundColor: '#eff6ff' }}
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v0H8v0z" />
+                          </svg>
+                          Back to Dashboard
+                        </Button>
+                        
                         <Button
                           type="submit"
                           disabled={saving}
-                          className="flex-1 sm:flex-none bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg h-12 px-8 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                          className="flex-1 sm:flex-none sm:order-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg h-12 px-6 font-medium shadow-lg hover:shadow-xl disabled:shadow-sm transition-all duration-200 flex items-center justify-center disabled:cursor-not-allowed"
                         >
                           {saving ? (
                             <>
-                              <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
                               Saving Changes...
                             </>
                           ) : (
@@ -307,14 +320,6 @@ export default function MyProfile() {
                               Save Changes
                             </>
                           )}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => navigate({ to: '/dashboard' })}
-                          className="flex-1 sm:flex-none rounded-lg h-12 px-8 font-semibold border-gray-300 hover:bg-gray-50 transition-all duration-200"
-                        >
-                          Dashboard
                         </Button>
                       </div>
                     </div>

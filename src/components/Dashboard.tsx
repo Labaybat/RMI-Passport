@@ -894,7 +894,7 @@ const PassportDashboard: React.FC = () => {
                     <path d="M5 12h14"></path>
                     <path d="M12 5v14"></path>
                   </svg>
-                </div>                <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
+                </div>                <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900 text-left">
                   {(() => { console.log("[Dashboard] Rendering button with label:", buttonLabel); return buttonLabel; })()}
                 </span>
               </Button>
