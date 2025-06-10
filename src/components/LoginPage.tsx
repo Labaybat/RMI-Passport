@@ -10,10 +10,20 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-
-  useEffect(() => {
+  const [showSuspendedMessage, setShowSuspendedMessage] = useState(false)
+    useEffect(() => {
     if (!authLoading && user && profile) {
-      if (profile.role === "admin") {
+      // Check if user account is suspended
+      if (profile.status === "suspended") {
+        console.log("[Login] User account is suspended")
+        setShowSuspendedMessage(true)
+        // Sign out the suspended user
+        supabase.auth.signOut()
+        return
+      }
+      
+      // Only redirect non-suspended users
+      if (profile.role === "admin" || profile.role === "staff") {
         navigate({ to: "/admin" })
       } else {
         navigate({ to: "/dashboard" })
@@ -92,17 +102,29 @@ export function LoginPage() {
         .select("*")
         .eq("id", signInData.user.id)
         .single()
-
+        
       if (profileError && profileError.code !== "PGRST116") { // PGRST116 = not found
         console.error("[Login] Profile check error:", profileError)
         toast.error("Error checking user profile")
         setLoading(false)
         return
       }
+      
+      // Check if user account is suspended
+      if (profile && profile.status === "suspended") {
+        console.log("[Login] User account is suspended")
+        toast.error("Your account has been suspended. Please contact support for assistance.")
+        setShowSuspendedMessage(true)
+        
+        // Sign out the suspended user
+        await supabase.auth.signOut()
+        setLoading(false)
+        return
+      }
 
-      if (!profile) {
-        console.log("[Login] Creating new profile...")
+      if (!profile) {        console.log("[Login] Creating new profile...")
         const meta = signInData.user.user_metadata || {}
+        
         const { error: insertError } = await supabase
           .from("profiles")
           .insert({
@@ -112,7 +134,8 @@ export function LoginPage() {
             last_name: meta.last_name || "",
             phone: meta.phone || "",
             gender: meta.gender || "",
-            date_of_birth: meta.dob || meta.date_of_birth || ""
+            date_of_birth: meta.dob || meta.date_of_birth || "",
+            status: "active" // Set default status to active for new users
           })
 
         if (insertError) {
@@ -170,12 +193,31 @@ export function LoginPage() {
           {/* Square-shaped Login Card */}
           <div className="w-full max-w-sm bg-white rounded-xl shadow-lg border border-gray-100 p-8 transition-shadow hover:shadow-xl">
             {/* Seal Image styled like SignUp page */}
-            <img src="/seal.png" alt="Marshall Islands Seal" className="w-24 h-24 mx-auto mb-6 drop-shadow-lg" />
-            <h2 className="text-3xl font-bold mb-2 text-center text-[#1e3a8a]">RMI Passport Portal</h2>
-            <p className="mb-4 text-sm text-gray-500 text-center">
-              Enter your credentials to access your account
-            </p>
-            <form className="w-full flex flex-col space-y-3" onSubmit={handleLogin}>
+            <img src="/seal.png" alt="Marshall Islands Seal" className="w-24 h-24 mx-auto mb-6 drop-shadow-lg" />            <h2 className="text-3xl font-bold mb-2 text-center text-[#1e3a8a]">RMI Passport Portal</h2>
+            
+            {showSuspendedMessage ? (
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">Account Suspended</h3>
+                    <p className="text-sm text-red-700 mt-1">
+                      Your account has been suspended. Please contact support for assistance.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="mb-4 text-sm text-gray-500 text-center">
+                Enter your credentials to access your account
+              </p>
+            )}
+            
+            <form className={`w-full flex flex-col space-y-3 ${showSuspendedMessage ? 'opacity-50 pointer-events-none' : ''}`} onSubmit={handleLogin}>
               <div className="relative">
                 <input
                   type="email"
@@ -208,14 +250,12 @@ export function LoginPage() {
                 >
                   Password
                 </label>
-              </div>
-
-              <button
+              </div>              <button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white py-2.5 px-4 rounded-lg hover:from-blue-700 hover:to-blue-900 transition flex items-center justify-center gap-2 shadow-lg"
+                disabled={loading || showSuspendedMessage}
+                className={`w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white py-2.5 px-4 rounded-lg hover:from-blue-700 hover:to-blue-900 transition flex items-center justify-center gap-2 shadow-lg ${showSuspendedMessage ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {buttonText}
+                {showSuspendedMessage ? "Account Suspended" : buttonText}
               </button>
               
               <div className="flex justify-end">

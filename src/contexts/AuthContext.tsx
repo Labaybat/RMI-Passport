@@ -3,7 +3,7 @@ import supabase from '../lib/supabase/client';
 
 interface AuthContextType {
   user: { id: string; email: string } | null
-  profile: { first_name?: string; last_name?: string; full_name?: string; email?: string; role?: string } | null
+  profile: { first_name?: string; last_name?: string; full_name?: string; email?: string; role?: string; status?: string } | null
   signOut: () => Promise<{ error: Error | null }>
   isConfigured: boolean
   loading: boolean
@@ -20,12 +20,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const getSession = async () => {
       const { data, error } = await supabase.auth.getUser()
+      
       if (data?.user) {
         setUser({ id: data.user.id, email: data.user.email || "" })
-
+        
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("first_name, last_name, role")
+          .select("first_name, last_name, role, status")
           .eq("id", data.user.id)
           .single()
 
@@ -49,7 +50,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setUser({ id: session.user.id, email: session.user.email || "" })
         } else {
           setUser(null)
-          setProfile(null)        }
+          setProfile(null)
+        }
       }
     );
 
@@ -89,12 +91,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       (async () => {
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("first_name, last_name, role")
+          .select("first_name, last_name, role, status")
           .eq("id", user.id)
           .single();
+          
         if (profileError) {
           console.error("Error fetching profile (on user change):", profileError.message);
         }
+        
         setProfile(profileData || null);
       })();
     }
