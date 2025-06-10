@@ -84,6 +84,9 @@ USER_DELETION_SETUP.md
 test-*.sql
 test-*.md
 debug-*.js
+test-*.mjs
+rate-limit-test.mjs
+tatus --short
 
 # Example files
 *-example-*
