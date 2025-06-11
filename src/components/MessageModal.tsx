@@ -244,13 +244,15 @@ const MessageModal: React.FC<MessageModalProps> = ({
         (payload) => {
           console.log('📝 Message updated:', payload);
           const updatedMessage = payload.new as Message;
-          
-          setMessages(current => 
-            current.map(msg => 
-              (msg.id && msg.id === updatedMessage.id) || 
-              (msg.sender_id === updatedMessage.sender_id && msg.content === updatedMessage.content)
-              ? updatedMessage : msg
-            )
+            setMessages(current => 
+            current.map(msg => {
+              if ((msg.id && msg.id === updatedMessage.id) || 
+                  (msg.sender_id === updatedMessage.sender_id && msg.content === updatedMessage.content)) {
+                // Preserve the sender_name from the existing message when updating
+                return { ...updatedMessage, sender_name: msg.sender_name || updatedMessage.sender_name };
+              }
+              return msg;
+            })
           );
         }
       )
@@ -517,14 +519,13 @@ const MessageModal: React.FC<MessageModalProps> = ({
         console.error('❌ Error marking single message as read:', error);
       } else {
         console.log('✅ Single message marked as read');
-        
-        // Update local state to reflect read status
+          // Update local state to reflect read status - preserve sender_name
         setMessages(current => 
           current.map(msg => 
             (msg.sender_id === message.sender_id && 
              msg.content === message.content && 
              msg.created_at === message.created_at)
-            ? { ...msg, ...updateData } : msg
+            ? { ...msg, ...updateData, sender_name: msg.sender_name } : msg
           )
         );
       }
