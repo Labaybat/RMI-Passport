@@ -199,24 +199,19 @@ export function SignUpPage() {
         }))
         
         setRateLimitedUntil(retryDate)
-        toast.error(`${result.error || 'Too many verification attempts'}. Please try again later.`)
+        toast.error("Too many verification attempts. Please try again later.")
         setIsSubmittingEmail(false)
         return
       }
 
       if (!response.ok || !result.success) {
-        console.error("Error response from send-verification function:", result)
         toast.error("Failed to send verification code. Please try again.")
         setIsSubmittingEmail(false)
         return
       }
 
-      // Check if we're in development mode and code is returned
-      if (import.meta.env.DEV && result.code) {
-        toast.success(`Verification code sent to ${verificationEmail}. For development, your code is: ${result.code}`, { duration: 10000 })
-      } else {
-        toast.success(`Verification code sent to ${verificationEmail}. Please check your inbox.`)
-      }
+      // Send success message without exposing verification code
+      toast.success(`Verification code sent to ${verificationEmail}. Please check your inbox.`)
       
       // Create a smooth transition animation
       const emailSection = document.querySelector('.email-section')

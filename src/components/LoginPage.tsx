@@ -84,16 +84,14 @@ export function LoginPage() {
           break
         }
         await new Promise(res => setTimeout(res, 500)) // Slightly longer delay for mobile
-      }
-
-      if (!verifiedSession) {
+      }      if (!verifiedSession) {
         console.error("[Login] Could not verify session")
         toast.error("Login failed: session verification error")
         setLoading(false)
         return
       }
 
-      console.log("[Login] Session verified:", verifiedSession)
+      console.log("[Login] Session verified successfully")
 
       // Step 3: Ensure profile exists
       console.log("[Login] Checking profile...")

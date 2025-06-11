@@ -59,12 +59,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       listener?.subscription.unsubscribe()
     }
   }, []);
-
   useEffect(() => {
     // Check if environment variables are configured
     console.log("[AuthContext] Environment variables check:");
-    console.log("VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
-    console.log("VITE_SUPABASE_ANON_KEY:", import.meta.env.VITE_SUPABASE_ANON_KEY);
+    console.log("VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL ? "SET" : "NOT SET");
+    console.log("VITE_SUPABASE_ANON_KEY:", import.meta.env.VITE_SUPABASE_ANON_KEY ? "SET" : "NOT SET");
     
     const isSupabaseConfigured = Boolean(
       import.meta.env.VITE_SUPABASE_URL && 

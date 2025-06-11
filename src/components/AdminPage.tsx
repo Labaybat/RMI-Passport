@@ -173,38 +173,35 @@ const Dashboard: React.FC = () => {
               surname, 
               first_middle_names,
               user_id
-            `)
-            .order("created_at", { ascending: false });
+            `)            .order("created_at", { ascending: false });
             if (fallbackError) throw fallbackError;
           
           // Get user IDs from applications
           const userIds = [...new Set(data?.map(app => app.user_id).filter(Boolean))];
-          console.log("DEBUG FALLBACK: User IDs found in applications:", userIds);
-          console.log("DEBUG FALLBACK: Sample application data:", data?.[0]);
+          console.log("DEBUG FALLBACK: User ID count found:", userIds.length);
+          console.log("DEBUG FALLBACK: Sample application count:", data?.length || 0);
           
           // Fetch profiles for these users
           const { data: profilesData, error: profilesError } = await supabase
             .from("profiles")
             .select("id, first_name, last_name")
             .in("id", userIds);
-          
-          console.log("DEBUG FALLBACK: Profiles data fetched:", profilesData);
-          console.log("DEBUG FALLBACK: Profiles error:", profilesError);
+          console.log("DEBUG FALLBACK: Profiles count fetched:", profilesData?.length || 0);
+          console.log("DEBUG FALLBACK: Profiles query status:", profilesError ? "ERROR" : "SUCCESS");
           
           if (profilesError) console.warn("Error fetching profiles:", profilesError);
           
           // Create a map of user_id to profile
           const profilesMap = new Map();
           profilesData?.forEach(profile => {
-            profilesMap.set(profile.id, profile);
-          });
-          console.log("DEBUG FALLBACK: Profiles map:", profilesMap);
+            profilesMap.set(profile.id, profile);          });
+          console.log("DEBUG FALLBACK: Profiles mapping completed successfully");
             // Merge the data
           applications = data?.map(app => ({
             ...app,
             profiles: profilesMap.get(app.user_id) || null
-          })) || [];
-          console.log("DEBUG FALLBACK: Final merged applications:", applications.slice(0, 2));
+          })) || [];          
+          console.log("DEBUG FALLBACK: Successfully merged applications data");
         } else {
           throw error;
         }

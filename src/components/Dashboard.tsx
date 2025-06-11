@@ -110,10 +110,9 @@ const PassportDashboard: React.FC = () => {
         setProfile(null);
         setLoading(false);
         navigate({ to: "/login" });
-        return;
-      }
+        return;      }
       setSession(sessionData.session);
-      console.log("[Dashboard] Session:", sessionData.session);
+      console.log("[Dashboard] Session acquired successfully");
       // Fetch profile from Supabase
       const userId = sessionData.session.user.id;
       const { data: profileData, error } = await supabaseClient
@@ -125,10 +124,9 @@ const PassportDashboard: React.FC = () => {
         setProfile(null);
         setLoading(false);
         navigate({ to: "/login" });
-        return;
-      }
+        return;      }
       setProfile(profileData);
-      console.log("[Dashboard] Profile:", profileData);
+      console.log("[Dashboard] Profile loaded successfully");
       setLoading(false);
     };
     fetchSessionAndProfile();
@@ -357,9 +355,8 @@ const PassportDashboard: React.FC = () => {
       setHasAnyApplications(null);
       return;
     }
-    
-    console.log("[Dashboard] Environment Check:");
-    console.log("VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
+      console.log("[Dashboard] Environment Check:");
+    console.log("VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL ? "SET" : "NOT SET");
     console.log("VITE_SUPABASE_ANON_KEY:", import.meta.env.VITE_SUPABASE_ANON_KEY ? "SET" : "NOT SET");
     console.log("[Dashboard] Consolidated logic START - isConfigured:", isConfigured, "session.user.id:", session.user.id);
     console.log("[Dashboard] Current buttonLabel before logic:", buttonLabel);
@@ -380,10 +377,9 @@ const PassportDashboard: React.FC = () => {
             setLoading(false);
             setHasAnyApplications(false);
             return;
-          }
-            console.log("[Dashboard] Applications found:", data);
+          }            console.log("[Dashboard] Applications found:", data);
           console.log("[Dashboard] Applications data length:", data ? data.length : 0);
-          console.log("[Dashboard] Raw applications data:", JSON.stringify(data, null, 2));
+          console.log("[Dashboard] Application statuses:", data?.map(app => ({ id: app.id, status: app.status })));
           
           // Find draft
           const draftApp = data.find((app) => app.status === "draft");
