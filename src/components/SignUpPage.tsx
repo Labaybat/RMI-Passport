@@ -281,11 +281,17 @@ export function SignUpPage() {
         return
       }
 
-      // Mark the code as used
-      await supabase
-        .from("recovery_codes")
-        .update({ used: true })
-        .eq("id", data[0].id)
+      // Mark the code as used using our helper function
+      const { data: markResult, error: markError } = await supabase
+        .rpc('mark_code_as_used', {
+          p_email: verificationEmail,
+          p_code: verificationCode
+        })
+      
+      if (markError) {
+        console.error("Error marking code as used:", markError)
+        // Continue anyway since verification succeeded
+      }
 
       // Initialize form data with verified email
       setFormData({

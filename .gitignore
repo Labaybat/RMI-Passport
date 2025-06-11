@@ -53,10 +53,13 @@ coverage/
 *.temp
 
 # Database and SQL files (development/testing)
-*.sql
 *.db
 *.sqlite
 *.sqlite3
+
+# Allow SQL migrations but ignore general SQL files
+*.sql
+!supabase/migrations/*.sql
 
 # Documentation and guide files (keep only essential ones)
 ADD_SENDER_NAME_COLUMN_GUIDE.md
@@ -86,6 +89,9 @@ test-*.md
 debug-*.js
 test-*.mjs
 rate-limit-test.mjs
+browser-test-rls.js
+test-rls-policies.mjs
+tatus
 tatus --short
 
 # Example files
