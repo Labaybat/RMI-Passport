@@ -37,10 +37,12 @@ const MessageModal: React.FC<MessageModalProps> = ({
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();  const [unreadCount, setUnreadCount] = useState(0);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isAdmin, setIsAdmin] = useState(false);  const messagesEndRef = useRef<HTMLDivElement>(null);
   const userIdRef = useRef<string | null>(null);
   const isAdminRef = useRef<boolean>(false);
+  
+  // Add a ref to track processed message IDs to prevent duplicates
+  const processedMessageIds = useRef<Set<string>>(new Set());
 
   // Function to scroll to the bottom of messages
   const scrollToBottom = () => {
@@ -73,17 +75,22 @@ const MessageModal: React.FC<MessageModalProps> = ({
     };
     
     checkUserRole();
-  }, [user]);
-  useEffect(() => {
+  }, [user]);  useEffect(() => {
     if (!isOpen || !applicationId) return;
-    
+      // Clear existing messages before fetching new ones when applicationId changes
+    setMessages([]);
+    // Clear processed message IDs when switching applications
+    processedMessageIds.current.clear();
     fetchMessages();
-    
-    // Set up real-time subscription
+      // Set up real-time subscription
     console.log('🔄 Setting up real-time subscription for application:', applicationId);
     
+    // Use a consistent channel name format and add app ID
+    const channelName = `messages-realtime-${applicationId}`;
+    console.log(`📻 Creating channel: ${channelName}`);
+    
     const channel = supabase
-      .channel(`messages:${applicationId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -91,19 +98,62 @@ const MessageModal: React.FC<MessageModalProps> = ({
           schema: 'public',
           table: 'messages',
           filter: `application_id=eq.${applicationId}`
-        },
-        async (payload) => {
+        },        async (payload) => {
           console.log('🚀 REAL-TIME MESSAGE RECEIVED:', payload);
           
           const newMessage = payload.new as Message;
           
-          // Skip if this message was sent by the current user (already handled by optimistic UI)
-          if (newMessage.sender_id === userIdRef.current) {
-            console.log('⏭️ Skipping own message update');
+          // Early exit if we've already processed this message ID
+          if (newMessage.id && processedMessageIds.current.has(newMessage.id)) {
+            console.log('⚠️ Message already processed, skipping:', newMessage.id);
             return;
           }
           
-          console.log('💬 Adding new message to chat in real-time:', newMessage);
+          // Add to processed set
+          if (newMessage.id) {
+            processedMessageIds.current.add(newMessage.id);
+          }
+            // Handle case when message is from current user
+          if (newMessage.sender_id === userIdRef.current) {
+            console.log('⏭️ This message is from current user:', newMessage.id);
+            
+            // Check if we already have this message with this ID
+            setMessages(currentMessages => {
+              // First check: Do we already have this exact message ID?
+              const hasSameId = currentMessages.some(msg => msg.id === newMessage.id);
+              
+              if (hasSameId) {
+                console.log('⚠️ Message with ID already exists in state, skipping:', newMessage.id);
+                return currentMessages;
+              }
+              
+              // Second check: Do we have a temporary version of this message we should update?
+              const tempMessage = currentMessages.find(msg => 
+                msg.sender_id === newMessage.sender_id && 
+                msg.content === newMessage.content &&
+                msg.id && msg.id.toString().startsWith('temp-')
+              );
+              
+              if (tempMessage) {
+                console.log('🔄 Updating temporary message with real ID:', newMessage.id);
+                return currentMessages.map(msg => {
+                  if (msg.id === tempMessage.id) {
+                    return { 
+                      ...newMessage, 
+                      sender_name: tempMessage.sender_name // Preserve sender_name
+                    };
+                  }
+                  return msg;
+                });
+              }
+              
+              // If we reach here, it's a new message from us that we hadn't seen before
+              return currentMessages;
+            });
+            return; // Skip further processing
+          }
+          
+          console.log('💬 Adding new message from other user in real-time:', newMessage);
           
           // Add message to UI immediately with sender name enrichment
           let enrichedMessage = { ...newMessage };
@@ -127,10 +177,51 @@ const MessageModal: React.FC<MessageModalProps> = ({
           } else if (newMessage.sender_type === 'admin') {
             // For users: Set admin messages to have Admin name
             enrichedMessage.sender_name = newMessage.sender_name || 'Admin';
-          }
-          
-          // Add message to UI immediately
-          setMessages(current => [...current, enrichedMessage]);
+          }          // Add message to UI immediately - but check for duplicates first
+          setMessages(current => {
+            console.log('🔎 Checking for duplicates before adding message:', enrichedMessage.id);
+            console.log('📊 Current messages count:', current.length);
+            
+            // Check if this message already exists in our state using multiple criteria
+            const isDuplicate = current.some(msg => {
+              // 1. Check by UUID first - most reliable
+              if (msg.id && enrichedMessage.id && msg.id === enrichedMessage.id) {
+                console.log(`⚠️ Duplicate detected by ID: ${msg.id}`);
+                return true;
+              }
+              
+              // 2. Check by content, sender ID and timestamps (within 5 seconds for safety)
+              if (msg.sender_id === enrichedMessage.sender_id && 
+                  msg.content === enrichedMessage.content) {
+                  
+                if (msg.created_at && enrichedMessage.created_at) {
+                  const msgTime = new Date(msg.created_at).getTime();
+                  const newMsgTime = new Date(enrichedMessage.created_at).getTime();
+                  const timeDiff = Math.abs(msgTime - newMsgTime);
+                  
+                  // If timestamps are within 5 seconds, consider it a duplicate
+                  if (timeDiff < 5000) {
+                    console.log(`⚠️ Duplicate detected by content and time: ${msg.content.substring(0, 20)}... (time diff: ${timeDiff}ms)`);
+                    return true;
+                  }
+                } else if (msg.created_at === enrichedMessage.created_at) {
+                  // Exact timestamp match
+                  console.log(`⚠️ Duplicate detected by content and exact timestamp`);
+                  return true;
+                }
+              }
+              
+              return false;
+            });
+            
+            if (isDuplicate) {
+              console.log('⚠️ Duplicate message detected, not adding to state');
+              return current;
+            }
+            
+            console.log('✅ New message, adding to state. New count will be:', current.length + 1);
+            return [...current, enrichedMessage];
+          });
           
           // Since the modal is open and user can see the message, mark it as read immediately
           // This creates a true chat experience where messages are read as they appear
@@ -176,10 +267,21 @@ const MessageModal: React.FC<MessageModalProps> = ({
     
     // Mark messages as read when modal opens
     markUserMessagesAsRead();
-    
-    return () => {
-      console.log('🧹 Cleaning up real-time subscription');
-      supabase.removeChannel(channel);
+      return () => {
+      console.log(`🧹 Cleaning up real-time subscription for channel: ${channelName}`);
+      if (channel) {
+        channel.unsubscribe()
+          .then(() => {
+            console.log('✅ Channel unsubscribed successfully');
+            return supabase.removeChannel(channel);
+          })
+          .then(() => {
+            console.log('✅ Channel removed successfully');
+          })
+          .catch(err => {
+            console.error('❌ Error during channel cleanup:', err);
+          });
+      }
     };
   }, [isOpen, applicationId, isAdmin, user?.id]);
   
@@ -267,10 +369,16 @@ const MessageModal: React.FC<MessageModalProps> = ({
           ).join(' ');
           
           return { ...msg, sender_name: formattedName };
-        }
-        return msg;
+        }        return msg;
       });
-        setMessages(enrichedMessages || []);
+        
+      // Remove any potential duplicates based on ID before setting state
+      const uniqueMessages = enrichedMessages.filter((message, index, arr) => {
+        const firstIndex = arr.findIndex(m => m.id === message.id);
+        return firstIndex === index; // Keep only the first occurrence of each ID
+      });
+      
+      setMessages(uniqueMessages || []);
       
       // Count unread messages based on user role using new read status tracking
       const unreadMessages = enrichedMessages.filter(msg => {
@@ -445,18 +553,21 @@ const MessageModal: React.FC<MessageModalProps> = ({
         const lastName = profile.last_name ? profile.last_name.charAt(0).toUpperCase() + profile.last_name.slice(1) : '';
         adminName = [firstName, lastName].filter(Boolean).join(' ') || 'Admin';
       }
-    }
-      // Create message object for UI update (with temp ID)
+    }    // Create message object for UI update (with unique temp ID)
+    const timestamp = new Date().toISOString();
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    
+    // Create a unique client-side message object for optimistic UI
     const uiMessage: Message = {
-      id: `temp-${Date.now()}`, // Temporary ID for optimistic UI update
+      id: tempId, // Unique temporary ID that won't conflict with UUID format
       application_id: applicationId,
       sender_id: user.id,
       sender_type: isAdmin ? 'admin' : 'user',
       content: newMessage,
       read: false,
-      read_by_admin: false, // Initialize as unread for admin
-      read_by_user: false, // Initialize as unread for user
-      created_at: new Date().toISOString(), // Add current timestamp
+      read_by_admin: isAdmin, // If admin is sending, it's read by admin
+      read_by_user: !isAdmin, // If user is sending, it's read by user
+      created_at: timestamp, // Add current timestamp
       sender_name: isAdmin ? adminName : undefined // Set proper admin name if applicable
     };
       // Create a separate object for database insertion
@@ -465,9 +576,8 @@ const MessageModal: React.FC<MessageModalProps> = ({
       sender_id: user.id,
       sender_type: isAdmin ? 'admin' : 'user',
       content: newMessage,
-      read: false, // Keep for backward compatibility
-      read_by_admin: false, // Initialize as unread for admin
-      read_by_user: false, // Initialize as unread for user
+      read: false, // Keep for backward compatibility      read_by_admin: isAdmin, // If admin is sending, mark as read by admin
+      read_by_user: !isAdmin, // If user is sending, mark as read by user
       sender_name: isAdmin ? adminName : undefined // Save admin name in database
     };
     
@@ -541,9 +651,17 @@ const MessageModal: React.FC<MessageModalProps> = ({
                 </svg>
               </div>
               <p className="text-gray-500 mb-1">No messages yet</p>
-              <p className="text-sm text-gray-400">Send a message to start the conversation</p>
-            </div>) : (messages.map((message, index) => (              <div 
-                key={message.id || index}
+              <p className="text-sm text-gray-400">Send a message to start the conversation</p>            </div>) : (messages.map((message, index) => {
+              // Generate a truly unique key for each message with enhanced uniqueness
+              const messageKey = message.id && !message.id.toString().startsWith('temp-')
+                ? `real-${message.id}` 
+                : message.id && message.id.toString().startsWith('temp-')
+                  ? `temp-${message.id}` 
+                  : `fallback-${message.sender_id}-${message.created_at || Date.now()}-${index}-${Math.random().toString(36).substring(2, 8)}`;
+              
+              return (
+              <div 
+                key={messageKey}
                 className={`p-3 rounded-lg max-w-[80%] flex flex-col animate-fadeIn shadow-sm transition-all duration-200 ${
                   // For admins: all admin messages should be right-aligned, user messages left-aligned
                   // For users: all user messages should be right-aligned, admin messages left-aligned
@@ -571,11 +689,11 @@ const MessageModal: React.FC<MessageModalProps> = ({
                   (isAdmin && message.sender_type === 'admin') || (!isAdmin && message.sender_type === 'user')
                     ? 'text-blue-200 text-right' 
                     : 'text-gray-500'
-                }`}>
-                  {message.created_at ? new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Sending...'}
+                }`}>                  {message.created_at ? new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Sending...'}
                 </p>
               </div>
-            ))
+              );
+            })
           )}
           
           {/* Dummy div for scrolling to bottom */}
