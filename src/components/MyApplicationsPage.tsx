@@ -7,6 +7,7 @@ import { useNavigate } from "@tanstack/react-router"
 import supabase from "../lib/supabase/client"
 import Button from "./ui/Button"
 import MessageModal from "./MessageModal" // Import the MessageModal component
+import ApplicationIntakeModal, { ApplicationIntakeData } from "./ApplicationIntakeModal"
 import Footer from "./Footer"
 
 // Define the PassportApplication type based on the Supabase table
@@ -81,7 +82,8 @@ const MyApplicationsPage: React.FC = () => {
   const [currentApplicationId, setCurrentApplicationId] = useState<string>("")
   const [currentApplicationTitle, setCurrentApplicationTitle] = useState<string>("")
   const [applicationMessagesCount, setApplicationMessagesCount] = useState<{[key: string]: number}>({})
-
+  // Add state for ApplicationIntakeModal
+  const [showIntakeModal, setShowIntakeModal] = useState<boolean>(false)
   // Define document field mappings with storage keys and display keys
   const documentFields = [
     { key: "birth_certificate", label: "Birth Certificate", storageKey: "birth_certificate_url" },
@@ -90,6 +92,10 @@ const MyApplicationsPage: React.FC = () => {
     { key: "old_passport_copy", label: "Old Passport Copy", storageKey: "old_passport_url" },
     { key: "signature", label: "Signature", storageKey: "signature_url" },
     { key: "photo_id", label: "Photo ID", storageKey: "photo_id_url" },
+    { key: "social_security_card", label: "Social Security Card/Number", storageKey: "social_security_card_url" },
+    { key: "passport_photo", label: "Passport Photo", storageKey: "passport_photo_url" },
+    { key: "relationship_proof", label: "Relationship Proof", storageKey: "relationship_proof_url" },
+    { key: "parent_guardian_id", label: "Parent/Guardian Identification", storageKey: "parent_guardian_id_url" },
   ]
 
   // Fetch session and profile
@@ -315,11 +321,29 @@ const MyApplicationsPage: React.FC = () => {
   const handleBackToDashboard = () => {
     navigate({ to: "/dashboard" })
   }
-
   // Handle starting a new application
   const handleStartNewApplication = () => {
-    navigate({ to: "/apply", search: { new: true } })
-  }  // Handle continuing an existing draft
+    setShowIntakeModal(true);
+  }
+
+  // Handle ApplicationIntakeModal actions
+  const handleIntakeModalClose = () => {
+    setShowIntakeModal(false);
+  };
+
+  const handleIntakeModalContinue = (intakeData: ApplicationIntakeData) => {
+    setShowIntakeModal(false);
+    // Navigate to Application.tsx with intake data in URL params
+    navigate({ 
+      to: "/apply", 
+      search: { 
+        new: true,
+        intake: JSON.stringify(intakeData)
+      } 
+    });
+  };
+
+  // Handle continuing an existing draft
   const handleContinueApplication = (appId: string) => {
     navigate({ to: "/apply", search: { id: appId } })
   }  // Handle view application details
@@ -1055,65 +1079,74 @@ const MyApplicationsPage: React.FC = () => {
                       <span className="text-gray-900">{[viewApp.mother_birth_city, viewApp.mother_birth_state, viewApp.mother_birth_country].filter(Boolean).join(', ') || '—'}</span>                    </div>
                   </div>
                 </div>
-              </div>
-              
-              {/* Uploaded Documents - Moved to bottom */}
+              </div>              {/* Document Status - Show All Documents */}
               <div className="mt-6">
                 <div className="bg-gray-50 rounded-lg p-4 border">
-                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Uploaded Documents</h4>
-                  <div className="space-y-2">
+                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Document Status</h4>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                     {documentFields.map(doc => {
                       const url = signedUrls[doc.key];
                       // Check both the display key and storage key for document existence
                       const documentExists = !!(viewApp[doc.key] || viewApp[doc.storageKey]);
                       
-                      // For debugging, add to the console 
-                      console.log(`Document ${doc.label} - exists: ${documentExists}, url: ${url ? 'Yes' : 'No'}`);
-                      
-                      // Skip if document doesn't exist or no signed URL generated
-                      if (!documentExists || !url) return null;
-                      
                       return (
                         <div key={doc.key} className="flex items-center justify-between p-3 bg-white border rounded-lg">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                              documentExists ? 'bg-green-100' : 'bg-gray-100'
+                            }`}>
+                              {documentExists ? (
+                                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                              )}
                             </div>
-                            <span className="font-medium text-gray-900">{doc.label}</span>
+                            <div className="flex-1 min-w-0">
+                              <span className="font-medium text-gray-900 text-sm">{doc.label}</span>
+                              <p className={`text-xs ${documentExists ? 'text-green-600' : 'text-gray-500'}`}>
+                                {documentExists ? 'Uploaded' : 'Not uploaded'}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <a 
-                              href={url} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
-                              title={`View ${doc.label}`}
-                            >
-                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                            </a>
-                            <a 
-                              href={url} 
-                              download 
-                              className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
-                              title={`Download ${doc.label}`}
-                            >
-                              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                              </svg>
-                            </a>
+                          <div className="flex items-center gap-1">
+                            {documentExists && url ? (
+                              <>
+                                <a 
+                                  href={url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
+                                  title={`View ${doc.label}`}
+                                >
+                                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
+                                </a>
+                                <a 
+                                  href={url} 
+                                  download 
+                                  className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
+                                  title={`Download ${doc.label}`}
+                                >
+                                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                  </svg>
+                                </a>
+                              </>
+                            ) : (
+                              <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                                No file
+                              </span>
+                            )}
                           </div>
                         </div>
                       );
                     })}
-                    {/* Show message if no documents are found or if no signed URLs were generated */}
-                    {documentFields.filter(doc => (viewApp[doc.key] || viewApp[doc.storageKey]) && signedUrls[doc.key]).length === 0 && (
-                      <p className="text-gray-500 text-sm italic">No documents available to view</p>
-                    )}
                   </div>
                 </div>
               </div>
@@ -1228,13 +1261,19 @@ const MyApplicationsPage: React.FC = () => {
             </div>
           </div>
         </div>
-      )}      
-      {/* Add Message Modal */}
+      )}        {/* Add Message Modal */}
       <MessageModal 
         isOpen={messageModalOpen}
         onClose={handleCloseMessages}
         applicationId={currentApplicationId}
         applicationTitle={currentApplicationTitle}
+      />
+      
+      {/* Application Intake Modal */}
+      <ApplicationIntakeModal
+        isOpen={showIntakeModal}
+        onClose={handleIntakeModalClose}
+        onContinue={handleIntakeModalContinue}
       />
     </div>
   )

@@ -57,9 +57,9 @@ coverage/
 *.sqlite
 *.sqlite3
 
-# Allow SQL migrations but ignore general SQL files
-*.sql
+# Allow SQL migrations and setup files
 !supabase/migrations/*.sql
+!supabase/*.sql
 
 # Documentation and guide files (keep only essential ones)
 ADD_SENDER_NAME_COLUMN_GUIDE.md
@@ -91,11 +91,10 @@ test-*.mjs
 rate-limit-test.mjs
 browser-test-rls.js
 test-rls-policies.mjs
+
+# Git status artifacts
 tatus
 tatus --short
 
 # Example files
 *-example-*
-
-# Temporary directories
--p/

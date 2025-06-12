@@ -871,16 +871,19 @@ const Applications: React.FC = () => {
   const [currentApplicationTitle, setCurrentApplicationTitle] = useState<string>("");
   const [applicationMessagesCount, setApplicationMessagesCount] = useState<{[key: string]: number}>({});
   const { toast } = useToast();
-
-  // List of document fields and their labels
+  // List of document fields and their labels - matches MyApplicationsPage.tsx
   const documentFields = [
-    { key: "birth_certificate_url", label: "Birth Certificate" },
-    { key: "consent_form_url", label: "Consent Form" },
-    { key: "marriage_certificate_url", label: "Marriage/Divorce Certificate" },
-    { key: "old_passport_url", label: "Old Passport Copy" },
-    { key: "signature_url", label: "Signature" },
-    { key: "photo_id_url", label: "Photo ID" },
-  ];  useEffect(() => {
+    { key: "birth_certificate", label: "Birth Certificate", storageKey: "birth_certificate_url" },
+    { key: "consent_form", label: "Consent Form", storageKey: "consent_form_url" },
+    { key: "marriage_or_divorce_certificate", label: "Marriage/Divorce Certificate", storageKey: "marriage_certificate_url" },
+    { key: "old_passport_copy", label: "Old Passport Copy", storageKey: "old_passport_url" },
+    { key: "signature", label: "Signature", storageKey: "signature_url" },
+    { key: "photo_id", label: "Photo ID", storageKey: "photo_id_url" },
+    { key: "social_security_card", label: "Social Security Card/Number", storageKey: "social_security_card_url" },
+    { key: "passport_photo", label: "Passport Photo", storageKey: "passport_photo_url" },
+    { key: "relationship_proof", label: "Relationship Proof", storageKey: "relationship_proof_url" },
+    { key: "parent_guardian_id", label: "Parent/Guardian Identification", storageKey: "parent_guardian_id_url" },
+  ];useEffect(() => {
     const fetchApplications = async () => {
       setLoading(true);
       setError(null);
@@ -1095,14 +1098,13 @@ const Applications: React.FC = () => {
       supabase.removeChannel(channel);
     };
   }, [applications, user?.id]);
-
   // Generate signed URLs for all document fields when viewApp changes
   useEffect(() => {
     if (!viewApp) return;
     (async () => {
       const newUrls: { [key: string]: string } = {};
       for (const doc of documentFields) {
-        const url = viewApp[doc.key];
+        const url = viewApp[doc.storageKey];
         if (url && url.trim() !== "") {
           // Extract the file path from the public URL
           const match = url.match(/passport-documents\/(.+)$/);
@@ -1640,137 +1642,85 @@ const Applications: React.FC = () => {
                   {[viewApp.surname, viewApp.first_middle_names].filter(Boolean).join(' ')}
                 </h1>
                 <p className="text-gray-600">Application ID: {viewApp.id}</p>
-              </div>
-
-              {/* Two Column Layout */}
+              </div>              {/* Two Column Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column: Applicant Information */}
-                <div className="space-y-6">
-                  <div className="bg-gray-50 rounded-lg p-4 border">
-                    <h4 className="font-semibold text-lg text-gray-900 mb-3">Applicant Information</h4>
-                    <div className="space-y-2.5 text-sm">
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Full Name:</span>
-                        <span className="text-gray-900">{[viewApp.surname, viewApp.first_middle_names].filter(Boolean).join(' ') || '—'}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Email:</span>
-                        <span className="text-gray-900">{viewApp.email || '—'}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Phone:</span>
-                        <span className="text-gray-900">{viewApp.phone_number || '—'}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Address:</span>
-                        <span className="text-gray-900">{[viewApp.address_unit, viewApp.street_name, viewApp.city, viewApp.state, viewApp.postal_code].filter(Boolean).join(', ') || '—'}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Application Type:</span>
-                        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded print:bg-transparent print:text-black print:px-0 print:py-0">
-                          {formatApplicationType(viewApp.application_type)}
-                        </span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Current Status:</span>
-                        <span className="print:text-black">
-                          <span className="print:hidden">{statusBadge(viewApp.status)}</span>
-                          <span className="hidden print:inline">{viewApp.status}</span>
-                        </span>
-                      </div>
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Applicant Information</h4>
+                  <div className="space-y-2.5 text-sm">
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Full Name:</span>
+                      <span className="text-gray-900">{[viewApp.surname, viewApp.first_middle_names].filter(Boolean).join(' ') || '—'}</span>
                     </div>
-                  </div>
-
-                  {/* Personal Details */}
-                  <div className="bg-gray-50 rounded-lg p-4 border">
-                    <h4 className="font-semibold text-lg text-gray-900 mb-3">Personal Details</h4>
-                    <div className="space-y-2.5 text-sm">
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Gender:</span>
-                        <span className="text-gray-900">{viewApp.gender || '—'}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Date of Birth:</span>
-                        <span className="text-gray-900">{viewApp.date_of_birth || '—'}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Place of Birth:</span>
-                        <span className="text-gray-900">{[viewApp.place_of_birth_city, viewApp.place_of_birth_state, viewApp.country_of_birth].filter(Boolean).join(', ') || '—'}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Hair Color:</span>
-                        <span className="text-gray-900">{viewApp.hair_color || '—'}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Eye Color:</span>
-                        <span className="text-gray-900">{viewApp.eye_color || '—'}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Height:</span>
-                        <span className="text-gray-900">
-                          {viewApp.height_feet && viewApp.height_inches ? `${viewApp.height_feet}' ${viewApp.height_inches}"` : '—'}
-                        </span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">Marital Status:</span>
-                        <span className="text-gray-900">{viewApp.marital_status || '—'}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="font-medium text-gray-700 w-32 shrink-0">SSN:</span>
-                        <span className="text-gray-900">{viewApp.social_security_number || '—'}</span>
-                      </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Email:</span>
+                      <span className="text-gray-900">{viewApp.email || '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Phone:</span>
+                      <span className="text-gray-900">{viewApp.phone_number || '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Address:</span>
+                      <span className="text-gray-900">{[viewApp.address_unit, viewApp.street_name, viewApp.city, viewApp.state, viewApp.postal_code].filter(Boolean).join(', ') || '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Application Type:</span>
+                      <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded print:bg-transparent print:text-black print:px-0 print:py-0">
+                        {formatApplicationType(viewApp.application_type)}
+                      </span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Current Status:</span>
+                      <span className="print:text-black">
+                        <span className="print:hidden">{statusBadge(viewApp.status)}</span>
+                        <span className="hidden print:inline">{viewApp.status}</span>
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Right Column: Uploaded Documents */}
-                <div className="print:hidden">
-                  <div className="bg-gray-50 rounded-lg p-4 border">
-                    <h4 className="font-semibold text-lg text-gray-900 mb-3">Uploaded Documents</h4>
-                    <div className="space-y-2">
-                      {documentFields.map(doc => {
-                        const url = signedUrls[doc.key];
-                        if (!viewApp[doc.key]) return null;
-                        return (
-                          <div key={doc.key} className="flex items-center justify-between p-3 bg-white border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                              </div>
-                              <span className="font-medium text-gray-900">{doc.label}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <a 
-                                href={url} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
-                                title={`View ${doc.label}`}
-                              >
-                                <EyeIcon className="w-4 h-4 text-blue-600" />
-                              </a>
-                              <a 
-                                href={url} 
-                                download 
-                                className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
-                                title={`Download ${doc.label}`}
-                              >
-                                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                                </svg>
-                              </a>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {documentFields.filter(doc => viewApp[doc.key]).length === 0 && (
-                        <p className="text-gray-500 text-sm italic">No documents uploaded</p>
-                      )}
+                {/* Right Column: Personal Details */}
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Personal Details</h4>
+                  <div className="space-y-2.5 text-sm">
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Gender:</span>
+                      <span className="text-gray-900">{viewApp.gender || '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Date of Birth:</span>
+                      <span className="text-gray-900">{viewApp.date_of_birth || '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Place of Birth:</span>
+                      <span className="text-gray-900">{[viewApp.place_of_birth_city, viewApp.place_of_birth_state, viewApp.country_of_birth].filter(Boolean).join(', ') || '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Hair Color:</span>
+                      <span className="text-gray-900">{viewApp.hair_color || '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Eye Color:</span>
+                      <span className="text-gray-900">{viewApp.eye_color || '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Height:</span>
+                      <span className="text-gray-900">
+                        {viewApp.height_feet && viewApp.height_inches ? `${viewApp.height_feet}' ${viewApp.height_inches}"` : '—'}
+                      </span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">Marital Status:</span>
+                      <span className="text-gray-900">{viewApp.marital_status || '—'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium text-gray-700 w-32 shrink-0">SSN:</span>
+                      <span className="text-gray-900">{viewApp.social_security_number || '—'}</span>
                     </div>
                   </div>
-                </div>              </div>
+                </div>
+              </div>
 
               {/* Emergency Contact - Full Width */}
               <div className="col-span-1 lg:col-span-2 mt-6">
@@ -1836,12 +1786,81 @@ const Applications: React.FC = () => {
                       <div className="flex">
                         <span className="font-medium text-gray-700 w-32 shrink-0">Nationality:</span>
                         <span className="text-gray-900">{viewApp.mother_nationality || '—'}</span>
-                      </div>
-                                           <div className="flex">
+                      </div>                      <div className="flex">
                         <span className="font-medium text-gray-700 w-32 shrink-0">Place of Birth:</span>
                         <span className="text-gray-900">{[viewApp.mother_birth_city, viewApp.mother_birth_state, viewApp.mother_birth_country].filter(Boolean).join(', ') || '—'}</span>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>              {/* Uploaded Documents - Full Width */}
+              <div className="col-span-1 lg:col-span-2 mt-6 print:hidden">
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Document Status</h4>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                    {documentFields.map(doc => {
+                      const url = signedUrls[doc.key];
+                      // Check both the display key and storage key for document existence
+                      const documentExists = !!(viewApp[doc.key] || viewApp[doc.storageKey]);
+                      
+                      return (
+                        <div key={doc.key} className="flex items-center justify-between p-3 bg-white border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                              documentExists ? 'bg-green-100' : 'bg-gray-100'
+                            }`}>
+                              {documentExists ? (
+                                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L4.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="font-medium text-gray-900 text-sm">{doc.label}</span>
+                              <p className={`text-xs ${documentExists ? 'text-green-600' : 'text-gray-500'}`}>
+                                {documentExists ? 'Uploaded' : 'Not uploaded'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {documentExists && url ? (
+                              <>
+                                <a 
+                                  href={url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
+                                  title={`View ${doc.label}`}
+                                >
+                                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
+                                </a>
+                                <a 
+                                  href={url} 
+                                  download 
+                                  className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
+                                  title={`Download ${doc.label}`}
+                                >
+                                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                  </svg>
+                                </a>
+                              </>
+                            ) : (
+                              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                No file
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

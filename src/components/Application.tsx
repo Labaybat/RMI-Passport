@@ -12,6 +12,7 @@ import supabase from "../lib/supabase/client";
 import { useAuth } from "../contexts/AuthContext"
 import { useRouter } from '@tanstack/react-router';
 import Footer from "./Footer"
+import { ApplicationIntakeData } from "./ApplicationIntakeModal"
 
 // Types
 interface FormData {
@@ -68,7 +69,15 @@ interface FormData {
   marriage_certificate_url?: string;
   old_passport_url?: string;
   signature_url?: string;
-  photo_id_url?: string;
+  photo_id_url?: string;  // New document fields
+  social_security_card?: string;
+  social_security_card_url?: string;
+  passport_photo?: string;
+  passport_photo_url?: string;
+  relationship_proof?: string;
+  relationship_proof_url?: string;
+  parent_guardian_id?: string;
+  parent_guardian_id_url?: string;
   status?: string;
   submitted_at?: string;
 }
@@ -831,12 +840,11 @@ const Step5FileUploads: React.FC<{
   const [uploadError, setUploadError] = useState<string | null>(null);
   // Store signed URLs for each doc
   const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
-
   const documentTypes = [
     {
       key: "birth_certificate" as keyof FormData,
       label: "Birth Certificate",
-      description: "Official birth certificate or certified copy",
+      description: "Official birth certificate or certified copy of the applicant",
       accept: "image/*, application/pdf",
       required: true,
       urlField: "birth_certificate_url"
@@ -844,7 +852,7 @@ const Step5FileUploads: React.FC<{
     {
       key: "consent_form" as keyof FormData,
       label: "Consent Form",
-      description: "Parental consent form (if under 18)",
+      description: "Signed consent form by applicant or parent/guardian",
       accept: "image/*, application/pdf",
       required: true,
       urlField: "consent_form_url"
@@ -860,7 +868,7 @@ const Step5FileUploads: React.FC<{
     {
       key: "old_passport_copy" as keyof FormData,
       label: "Previous Passport",
-      description: "Copy of your most recent passport (if renewal)",
+      description: "Copy of applicant's most recent passport (if renewal)",
       accept: "image/*, application/pdf",
       required: false,
       urlField: "old_passport_url"
@@ -868,7 +876,7 @@ const Step5FileUploads: React.FC<{
     {
       key: "signature" as keyof FormData,
       label: "Signature Sample",
-      description: "Clear image of your signature on white paper",
+      description: "Image of applicant's signature or parent/guardian signature if minor",
       accept: "image/*",
       required: true,
       urlField: "signature_url"
@@ -876,10 +884,40 @@ const Step5FileUploads: React.FC<{
     {
       key: "photo_id" as keyof FormData,
       label: "Photo Identification",
-      description: "Driver's license, state ID, or other government-issued ID",
+      description: "Applicant's driver's license, state ID, or other government-issued photo ID",
       accept: "image/*",
       required: true,
       urlField: "photo_id_url"
+    },    {
+      key: "social_security_card" as keyof FormData,
+      label: "Social Security Card/Number",
+      description: "Applicant's Social Security card or document showing SSN",
+      accept: "image/*, application/pdf",
+      required: true,
+      urlField: "social_security_card_url"
+    },
+    {
+      key: "passport_photo" as keyof FormData,
+      label: "Passport Photo",
+      description: "Professional passport photo of the applicant for the new passport",
+      accept: "image/*",
+      required: true,
+      urlField: "passport_photo_url"
+    },    {
+      key: "relationship_proof" as keyof FormData,
+      label: "Relationship Proof",
+      description: "Proof of relationship between applicant and person submitting (birth certificate, adoption papers, legal guardianship documents, power of attorney, marriage certificate, etc.)",
+      accept: "image/*, application/pdf",
+      required: true,
+      urlField: "relationship_proof_url"
+    },
+    {
+      key: "parent_guardian_id" as keyof FormData,
+      label: "Parent/Guardian Identification",
+      description: "Government-issued photo ID of the parent/guardian submitting the application",
+      accept: "image/*, application/pdf",
+      required: true,
+      urlField: "parent_guardian_id_url"
     },
   ];
 
@@ -904,11 +942,10 @@ const Step5FileUploads: React.FC<{
         if (formData[doc.urlField as keyof FormData]) {
           newUrls[doc.key] = await getSignedUrl(doc.urlField);
         }
-      }
-      setSignedUrls(newUrls);
+      }      setSignedUrls(newUrls);
     })();
     // eslint-disable-next-line
-  }, [formData.birth_certificate_url, formData.consent_form_url, formData.marriage_certificate_url, formData.old_passport_url, formData.signature_url, formData.photo_id_url]);
+  }, [formData.birth_certificate_url, formData.consent_form_url, formData.marriage_certificate_url, formData.old_passport_url, formData.signature_url, formData.photo_id_url, formData.social_security_card_url, formData.passport_photo_url, formData.relationship_proof_url, formData.parent_guardian_id_url]);
 
   const handleFileChange = async (field: keyof FormData, urlField: string, file: File | "") => {
     if (!user) return;
@@ -1011,14 +1048,17 @@ const Step6Review: React.FC<{
   )
 
   // Use the same signedUrls logic as Step5FileUploads
-  const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
-  const documentTypes = [
+  const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});  const documentTypes = [
     { key: "birth_certificate", label: "Birth Certificate", urlField: "birth_certificate_url" },
     { key: "consent_form", label: "Consent Form", urlField: "consent_form_url" },
     { key: "marriage_or_divorce_certificate", label: "Marriage/Divorce Certificate", urlField: "marriage_certificate_url" },
     { key: "old_passport_copy", label: "Old Passport Copy", urlField: "old_passport_url" },
     { key: "signature", label: "Signature", urlField: "signature_url" },
     { key: "photo_id", label: "Photo ID", urlField: "photo_id_url" },
+    { key: "social_security_card", label: "Social Security Card", urlField: "social_security_card_url" },
+    { key: "passport_photo", label: "Passport Photo", urlField: "passport_photo_url" },
+    { key: "relationship_proof", label: "Relationship Proof", urlField: "relationship_proof_url" },
+    { key: "parent_guardian_id", label: "Parent/Guardian Identification", urlField: "parent_guardian_id_url" },
   ];
 
   useEffect(() => {
@@ -1035,11 +1075,10 @@ const Step6Review: React.FC<{
             newUrls[doc.key] = error ? "" : data.signedUrl;
           }
         }
-      }
-      setSignedUrls(newUrls);
+      }      setSignedUrls(newUrls);
     })();
     // eslint-disable-next-line
-  }, [formData.birth_certificate_url, formData.consent_form_url, formData.marriage_certificate_url, formData.old_passport_url, formData.signature_url, formData.photo_id_url]);
+  }, [formData.birth_certificate_url, formData.consent_form_url, formData.marriage_certificate_url, formData.old_passport_url, formData.signature_url, formData.photo_id_url, formData.social_security_card_url, formData.passport_photo_url, formData.relationship_proof_url, formData.parent_guardian_id_url]);
 
   const DocumentStatus: React.FC<{ name: string; url: string; docKey: string }> = ({ name, url, docKey }) => (
     <div className="flex items-center gap-3 py-1.5">
@@ -1567,9 +1606,13 @@ export default function Apply() {
     birth_certificate: "",
     consent_form: "",
     marriage_or_divorce_certificate: "",
-    old_passport_copy: "",
-    signature: "",
+    old_passport_copy: "",    signature: "",
     photo_id: "",
+    // New fields
+    social_security_card: "",
+    passport_photo: "",
+    relationship_proof: "",
+    parent_guardian_id: "",
   });
   const [loading, setLoading] = useState(true);
   const [applicationId, setApplicationId] = useState<string | null>(null);
@@ -1578,11 +1621,10 @@ export default function Apply() {
   const { toast } = useToast();
   const { user } = useAuth();  const router = useRouter();
   // Media queries
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);  const [isLandscape, setIsLandscape] = useState(false);
   const [hasParsedUrl, setHasParsedUrl] = useState(false); // Track if we've already parsed the URL
   const [shouldCreateDraft, setShouldCreateDraft] = useState(false); // Control draft creation
-
+  const [intakeData, setIntakeData] = useState<ApplicationIntakeData | null>(null); // Store intake data from URL
   // Parse URL search params once when component mounts
   useEffect(() => {
     if (hasParsedUrl) return;
@@ -1590,15 +1632,50 @@ export default function Apply() {
       // Get search parameters from URL
     const searchParams = new URLSearchParams(window.location.search);
     const newParam = searchParams.get('new');
+    const intakeParam = searchParams.get('intake');
     
     // Check for both string 'true' and boolean true (from react-router)
     const isNewParam = newParam === 'true' || newParam === 'true"' || newParam === '"true"' || newParam === '"true';
     
+    // Parse intake data if present
+    let parsedIntakeData: ApplicationIntakeData | null = null;
+    if (intakeParam) {
+      try {
+        parsedIntakeData = JSON.parse(decodeURIComponent(intakeParam));
+        console.log("[Application] Parsed intake data:", parsedIntakeData);
+        setIntakeData(parsedIntakeData);
+      } catch (error) {
+        console.error("[Application] Error parsing intake data:", error);
+      }
+    }
+    
     // Only set to create draft if explicitly requested
     setShouldCreateDraft(isNewParam);
-    
-    console.log("[Application] URL parameters parsed, new=", newParam, "shouldCreateDraft=", isNewParam);
-  }, [hasParsedUrl]);
+      console.log("[Application] URL parameters parsed, new=", newParam, "shouldCreateDraft=", isNewParam, "intake data=", parsedIntakeData);
+  }, [hasParsedUrl]);  // Helper function to save intake data to database for tracking/analytics
+  const saveIntakeDataToDatabase = async (intake: ApplicationIntakeData, applicationId: string) => {
+    try {
+      console.log("[Application] Linking intake data to application:", applicationId);
+      
+      // Update the intake record to link it to this application
+      const { error } = await supabase
+        .from('application_intake')
+        .update({ passport_application_id: applicationId })
+        .eq('user_id', user?.id)
+        .is('passport_application_id', null)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.log("[Application] Note: Could not link intake data:", error.message);
+      } else {
+        console.log("[Application] Successfully linked intake data to application");
+      }
+    } catch (error) {
+      console.error("[Application] Error linking intake data:", error);
+      // Don't throw - this is optional tracking data
+    }
+  };
 
   // Check screen size and orientation
   useEffect(() => {
@@ -1676,9 +1753,7 @@ export default function Apply() {
       // If we found ANY drafts, use the most recent one
       if (!error && data && data.length > 0) {
         const draft = data[0];
-        console.log("[Application] Found existing draft(s):", data.length, "- Using most recent:", draft.id);
-        
-        if (isMounted) {
+        console.log("[Application] Found existing draft(s):", data.length, "- Using most recent:", draft.id);        if (isMounted) {
           setFormData((prev) => ({
             ...prev,
             ...Object.fromEntries(
@@ -1686,6 +1761,11 @@ export default function Apply() {
             ),
           }));
           setApplicationId(draft.id);
+          
+          // Link intake data to this existing draft if available
+          if (intakeData) {
+            saveIntakeDataToDatabase(intakeData, draft.id);
+          }
         }
         setLoading(false);
         return;
@@ -1711,16 +1791,15 @@ export default function Apply() {
         setLoading(false);
         return;
       }
-      
-      console.log("[Application] No existing draft found, creating new draft application");
+        console.log("[Application] No existing draft found, creating new draft application");
       alreadyCreatedDraft = true; // Set flag to prevent duplicate creation
-      
-      const insertPayload = {
+        // Prepare the base payload
+      let insertPayload: any = {
         user_id: user.id,
         status: "draft",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        application_type: formData.application_type || "new", // Always include application_type
+        application_type: "new", // Default value
       };
       
       const { data: newApp, error: insertError } = await supabase
@@ -1746,15 +1825,18 @@ export default function Apply() {
           
         if (checkData && checkData.length > 1) {
           console.warn("[Application] WARNING: Multiple drafts exist after creation:", checkData.length);
-        }
-        
-        setFormData((prev) => ({
+        }        setFormData((prev) => ({
           ...prev,
           ...Object.fromEntries(
             Object.entries(newApp[0]).map(([k, v]) => [k, v === null ? "" : v])
           ),
         }));
         setApplicationId(newApp[0].id);
+        
+        // Link intake data to this new draft if available
+        if (intakeData) {
+          saveIntakeDataToDatabase(intakeData, newApp[0].id);
+        }
       }
       setLoading(false);
     };
@@ -1815,8 +1897,15 @@ export default function Apply() {
     "consent_form_url",
     "marriage_certificate_url",
     "old_passport_url",
-    "signature_url",
-    "photo_id_url"
+    "signature_url",    "photo_id_url",
+    "social_security_card",
+    "passport_photo",
+    "relationship_proof",
+    "social_security_card_url",
+    "passport_photo_url",
+    "relationship_proof_url",
+    "parent_guardian_id",
+    "parent_guardian_id_url"
   ];
 
   const updateFormData = (data: Partial<FormData>) => {

@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js'
 import { useNavigate } from "@tanstack/react-router"
 import Button from "./ui/Button"
 import Footer from "./Footer"
+import ApplicationIntakeModal, { ApplicationIntakeData } from "./ApplicationIntakeModal"
 
 const supabaseClient = supabase // already imported
 
@@ -72,9 +73,9 @@ const PassportDashboard: React.FC = () => {
   const { signOut, isConfigured } = useAuth(); // Only use signOut and isConfigured from context
   
   console.log("[Dashboard] isConfigured from useAuth:", isConfigured);
-  
-  const [application, setApplication] = useState<PassportApplication | null>(null);
+    const [application, setApplication] = useState<PassportApplication | null>(null);
   const [isPopupVisible, setIsPopupVisible] = useState<boolean>(false);
+  const [showIntakeModal, setShowIntakeModal] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -506,13 +507,17 @@ const PassportDashboard: React.FC = () => {
           } else {
             newButtonLabel = "Start Application";
             console.log("[Dashboard] Set button for user with NO applications:", newButtonLabel);
-          }
-            console.log("[Dashboard] Final button label decision:", newButtonLabel, "- Draft:", !!draftApp, "HasNonDraft:", hasSubmittedApps);
+          }          console.log("[Dashboard] Final button label decision:", newButtonLabel, "- Draft:", !!draftApp, "HasNonDraft:", hasSubmittedApps);
           console.log("[Dashboard] About to call setButtonLabel with:", newButtonLabel);
           setButtonLabel(newButtonLabel);
           setButtonAction(() => () => {
-            // Just navigate to apply - don't create application here since Application.tsx will handle that
-            navigate({ to: "/apply", search: { new: true } });
+            if (draftApp) {
+              // If there's a draft, navigate directly to continue it
+              navigate({ to: "/apply", search: { id: draftApp.id } });
+            } else {
+              // If no draft, show the intake modal first
+              setShowIntakeModal(true);
+            }
           });
           
           // Add a timeout to verify the state actually updated
@@ -542,11 +547,10 @@ const PassportDashboard: React.FC = () => {
             .select("*")
             .eq("user_id", session.user.id)
             .order("updated_at", { ascending: false });
-            if (error) {
-            console.error("[Dashboard] DIRECT: Error fetching applications:", error);
+            if (error) {            console.error("[Dashboard] DIRECT: Error fetching applications:", error);
             // Fall back to mock
             console.log("[Dashboard] Falling back to mock environment");            setButtonLabel("Start Application");
-            setButtonAction(() => () => navigate({ to: "/apply", search: { new: true } }));
+            setButtonAction(() => () => setShowIntakeModal(true));
             setHasAnyApplications(null);
             setLoading(false);
             return;
@@ -591,11 +595,16 @@ const PassportDashboard: React.FC = () => {
           } else {
             newButtonLabel = "Start Application";
             console.log("[Dashboard] DIRECT: Set button for user with NO applications:", newButtonLabel);
-          }            console.log("[Dashboard] DIRECT: Final button label decision:", newButtonLabel);
+          }          console.log("[Dashboard] DIRECT: Final button label decision:", newButtonLabel);
           setButtonLabel(newButtonLabel);
           setButtonAction(() => () => {
-            // Just navigate to apply - don't create application here since Application.tsx will handle that
-            navigate({ to: "/apply", search: { new: true } });
+            if (draftApp) {
+              // If there's a draft, navigate directly to continue it
+              navigate({ to: "/apply", search: { id: draftApp.id } });
+            } else {
+              // If no draft, show the intake modal first
+              setShowIntakeModal(true);
+            }
           });
           
           // Force a re-render to ensure button updates
@@ -603,10 +612,9 @@ const PassportDashboard: React.FC = () => {
             console.log("[Dashboard] DIRECT: Button label after state update:", newButtonLabel);
             console.log("[Dashboard] DIRECT: Current buttonLabel state:", buttonLabel);
           }, 100);
-          
-        } catch (err) {
+            } catch (err) {
           console.error("[Dashboard] DIRECT: Unexpected error:", err);          // Fall back to mock          setButtonLabel("Start Application");
-          setButtonAction(() => () => navigate({ to: "/apply", search: { new: true } }));
+          setButtonAction(() => () => setShowIntakeModal(true));
           setHasAnyApplications(null);
         } finally {
           setLoading(false);
@@ -720,6 +728,23 @@ const PassportDashboard: React.FC = () => {
     }
   }
 
+  // Handle ApplicationIntakeModal actions
+  const handleIntakeModalClose = () => {
+    setShowIntakeModal(false);
+  };
+
+  const handleIntakeModalContinue = (intakeData: ApplicationIntakeData) => {
+    setShowIntakeModal(false);
+    // Navigate to Application.tsx with intake data in URL params
+    navigate({ 
+      to: "/apply", 
+      search: { 
+        new: true,
+        intake: JSON.stringify(intakeData)
+      } 
+    });
+  };
+
   const handleDownloadForm = (): void => {
     const link = document.createElement("a")
     link.href = "/consent.pdf" // Updated to match the file you will put in public folder
@@ -746,9 +771,9 @@ const PassportDashboard: React.FC = () => {
     }
   }
 
-  const handleProfileClick = (e: React.MouseEvent<HTMLAnchorElement>): void => {
+  const handleProfileClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    navigate({ to: "/my-profile" })
+    navigate({ to: "/profile" })
   }
 
   // Show loading while session or profile is being determined
@@ -1347,11 +1372,17 @@ const PassportDashboard: React.FC = () => {
                 )}              </div>
             </div>
           </div>
-          
-          {/* Footer */}
+            {/* Footer */}
           <Footer />
         </div>
       </div>
+      
+      {/* Application Intake Modal */}
+      <ApplicationIntakeModal
+        isOpen={showIntakeModal}
+        onClose={handleIntakeModalClose}
+        onContinue={handleIntakeModalContinue}
+      />
     </div>
   )
 }
