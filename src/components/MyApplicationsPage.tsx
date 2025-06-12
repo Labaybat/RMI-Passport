@@ -276,16 +276,15 @@ const MyApplicationsPage: React.FC = () => {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [applications, session?.user?.id])
-
-  // Utility: Map status to progress if progress is missing
+  }, [applications, session?.user?.id])  // Utility: Map status to progress if progress is missing
   const getProgress = (app: PassportApplication) => {
-    if (typeof app.progress === 'number') return app.progress
+    // Only use database progress if it's a positive number, otherwise use status-based mapping
+    if (typeof app.progress === 'number' && app.progress > 0) return app.progress
     
     switch (app.status) {
-      case 'draft': return 10
-      case 'submitted': return 33
-      case 'pending': return 66
+      case 'draft': return 25
+      case 'submitted': return 50
+      case 'pending': return 75
       case 'approved': return 100
       case 'rejected': return 100
       default: return 0
@@ -658,11 +657,10 @@ const MyApplicationsPage: React.FC = () => {
                   <div className="text-sm text-gray-500">
                     Last updated: {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </div>
-                </div>
-                
-                {applications.map((app) => {
+                </div>                {applications.map((app) => {
                   const progress = getProgress(app);
                   const statusMsg = getStatusMessage(app);
+                  
                   const lastUpdated = app.updated_at ? 
                     new Date(app.updated_at).toLocaleDateString("en-US", { 
                       year: "numeric", 
@@ -791,32 +789,8 @@ const MyApplicationsPage: React.FC = () => {
                               <circle cx="12" cy="12" r="3" />
                             </svg>
                             View Details
-                          </Button>
-                        )}
-                          {(app.status === 'submitted' || app.status === 'pending') && (                          <Button 
-                            className="bg-amber-600 text-white hover:bg-amber-700 py-2 px-4 rounded-md text-xs sm:text-sm shadow-sm flex items-center"
-                            onClick={() => navigate({ to: "/apply", search: { id: app.id, track: true } })}
-                          >
-                            <svg 
-                              xmlns="http://www.w3.org/2000/svg" 
-                              width="16" 
-                              height="16" 
-                              viewBox="0 0 24 24" 
-                              fill="none" 
-                              stroke="currentColor" 
-                              strokeWidth="2" 
-                              strokeLinecap="round" 
-                              strokeLinejoin="round" 
-                              className="mr-1.5"
-                            >
-                              <path d="M2 12h10" />
-                              <path d="M9 4v16" />
-                              <path d="m16 4 3 8-3 8" />
-                            </svg>
-                            Track Status
-                          </Button>
-                        )}
-                          {app.status === 'approved' && (                          <Button 
+                          </Button>                        )}
+                          {app.status === 'approved' && (<Button 
                             className="bg-green-600 text-white hover:bg-green-700 py-2 px-4 rounded-md text-xs sm:text-sm shadow-sm flex items-center"
                             onClick={() => {
                               // In a real implementation, this would download a certificate

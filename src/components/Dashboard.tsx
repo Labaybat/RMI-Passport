@@ -83,8 +83,8 @@ const PassportDashboard: React.FC = () => {
   const [buttonLabel, setButtonLabel] = useState("Start Application");
   const [buttonAction, setButtonAction] = useState(() => () => {});
   const [draftName, setDraftName] = useState("");
-  const [draftSurname, setDraftSurname] = useState("");
-  const [applications, setApplications] = useState<PassportApplication[]>([]);
+  const [draftSurname, setDraftSurname] = useState("");  const [applications, setApplications] = useState<PassportApplication[]>([]);
+  const [applicationMessagesCount, setApplicationMessagesCount] = useState<{[key: string]: number}>({});
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -295,13 +295,96 @@ const PassportDashboard: React.FC = () => {
     };
   }, [session?.user?.id, isConfigured]);
 
+  // Fetch unread message counts for all applications
+  useEffect(() => {
+    if (!session?.user?.id || !applications.length) return
+    
+    const fetchUnreadMessageCounts = async () => {
+      // For each application, count unread messages from admins
+      const counts: {[key: string]: number} = {}
+      for (const app of applications) {
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('application_id', app.id)
+          .eq('sender_type', 'admin')
+          .eq('read_by_user', false)
+        
+        if (!error && count !== null) {
+          counts[app.id] = count
+        }
+      }
+      
+      setApplicationMessagesCount(counts)
+    }
+    
+    fetchUnreadMessageCounts()
+    
+    // Set up subscription for new messages
+    const channel = supabase
+      .channel('messages_count_dashboard')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `sender_type=eq.admin`
+        },
+        async (payload) => {
+          const msg = payload.new as any
+          const appId = msg.application_id
+          
+          // Check if this application belongs to the current user
+          const isUserApp = applications.some(app => app.id === appId)
+          if (!isUserApp) return
+          
+          setApplicationMessagesCount(prev => ({
+            ...prev,
+            [appId]: (prev[appId] || 0) + 1
+          }))
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `sender_type=eq.admin`
+        },
+        async (payload) => {
+          const msg = payload.new as any
+          const appId = msg.application_id
+          
+          // Check if this application belongs to the current user
+          const isUserApp = applications.some(app => app.id === appId)
+          if (!isUserApp) return
+          
+          // If message was marked as read by user, decrease the count
+          if (msg.read_by_user && payload.old && !payload.old.read_by_user) {
+            setApplicationMessagesCount(prev => ({
+              ...prev,
+              [appId]: Math.max(0, (prev[appId] || 0) - 1)
+            }))
+          }
+        }
+      )
+      .subscribe()
+      
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [applications, session?.user?.id])
+
   // Utility: Map status to progress if progress is missing
   const getProgress = (app: PassportApplication) => {
-    if (typeof app.progress === 'number') return app.progress;
+    // Only use database progress if it's a positive number, otherwise use status-based mapping
+    if (typeof app.progress === 'number' && app.progress > 0) return app.progress;
     switch (app.status) {
-      case 'draft': return 10;
-      case 'submitted': return 33;
-      case 'pending': return 66;
+      case 'draft': return 25;
+      case 'submitted': return 50;
+      case 'pending': return 75;
       case 'approved': return 100;
       case 'rejected': return 100;
       default: return 0;
@@ -1096,15 +1179,34 @@ const PassportDashboard: React.FC = () => {
               <div className="space-y-6">
                 {/* If there are more than 3 applications, only show the first 3 and add a "View More" link */}
                 {applications.length > 3 ? (
-                  <>
-                    {applications.slice(0, 3).map((app) => {
+                  <>                    {applications.slice(0, 3).map((app) => {
                       const progress = getProgress(app);
                       const statusMsg = getStatusMessage(app);
                       const lastUpdated = app.updated_at ? new Date(app.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "N/A";                      return (
                         <div key={app.id} className="bg-white/80 rounded-lg shadow p-4 mb-2 border border-blue-100">
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-2">
                             <div className="font-semibold text-gray-700 text-sm sm:text-base">{statusMsg}</div>
-                            <div className={`rounded-full px-2 py-0.5 text-xs font-medium ${app.status === 'approved' ? 'bg-green-100 text-green-700' : app.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{app.status ? app.status.charAt(0).toUpperCase() + app.status.slice(1) : 'Unknown'}</div>
+                            <div className="flex items-center gap-2">
+                              {(applicationMessagesCount[app.id] || 0) > 0 && (
+                                <div className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                  <svg 
+                                    xmlns="http://www.w3.org/2000/svg" 
+                                    width="12" 
+                                    height="12" 
+                                    viewBox="0 0 24 24" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    strokeWidth="2" 
+                                    strokeLinecap="round" 
+                                    strokeLinejoin="round"
+                                  >
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                  </svg>
+                                  {applicationMessagesCount[app.id]}
+                                </div>
+                              )}
+                              <div className={`rounded-full px-2 py-0.5 text-xs font-medium ${app.status === 'approved' ? 'bg-green-100 text-green-700' : app.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{app.status ? app.status.charAt(0).toUpperCase() + app.status.slice(1) : 'Unknown'}</div>
+                            </div>
                           </div>
                           <div className="mb-2 flex justify-between text-[10px] sm:text-xs font-medium text-gray-500">
                             <span>Application Started</span>
@@ -1113,7 +1215,12 @@ const PassportDashboard: React.FC = () => {
                           </div>
                           <div className="relative mb-2 h-2 sm:h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
                             <div
-                              className={`absolute h-full rounded-full ${app.status === 'approved' ? 'bg-gradient-to-r from-green-400 to-green-600' : app.status === 'rejected' ? 'bg-gradient-to-r from-red-400 to-red-600' : 'bg-gradient-to-r from-blue-400 to-blue-600'} transition-all duration-500 ease-out`}
+                              className={`absolute h-full rounded-full ${
+                                app.status === 'approved' ? 'bg-gradient-to-r from-green-400 to-green-600' : 
+                                app.status === 'rejected' ? 'bg-gradient-to-r from-red-400 to-red-600' : 
+                                app.status === 'draft' ? 'bg-gradient-to-r from-amber-400 to-amber-600' :
+                                'bg-gradient-to-r from-blue-400 to-blue-600'
+                              } transition-all duration-500 ease-out`}
                               style={{ width: `${progress}%` }}
                             ></div>
                           </div>
@@ -1165,8 +1272,7 @@ const PassportDashboard: React.FC = () => {
                         </svg>
                       </button>
                     </div>
-                  </>
-                ) : (
+                  </>                ) : (
                   applications.map((app) => {
                     const progress = getProgress(app);
                     const statusMsg = getStatusMessage(app);
@@ -1174,7 +1280,27 @@ const PassportDashboard: React.FC = () => {
                       <div key={app.id} className="bg-white/80 rounded-lg shadow p-4 mb-2 border border-blue-100">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-2">
                           <div className="font-semibold text-gray-700 text-sm sm:text-base">{statusMsg}</div>
-                          <div className={`rounded-full px-2 py-0.5 text-xs font-medium ${app.status === 'approved' ? 'bg-green-100 text-green-700' : app.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{app.status ? app.status.charAt(0).toUpperCase() + app.status.slice(1) : 'Unknown'}</div>
+                          <div className="flex items-center gap-2">
+                            {(applicationMessagesCount[app.id] || 0) > 0 && (
+                              <div className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                <svg 
+                                  xmlns="http://www.w3.org/2000/svg" 
+                                  width="12" 
+                                  height="12" 
+                                  viewBox="0 0 24 24" 
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  strokeWidth="2" 
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                {applicationMessagesCount[app.id]}
+                              </div>
+                            )}
+                            <div className={`rounded-full px-2 py-0.5 text-xs font-medium ${app.status === 'approved' ? 'bg-green-100 text-green-700' : app.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{app.status ? app.status.charAt(0).toUpperCase() + app.status.slice(1) : 'Unknown'}</div>
+                          </div>
                         </div>
                         <div className="mb-2 flex justify-between text-[10px] sm:text-xs font-medium text-gray-500">
                           <span>Application Started</span>
@@ -1183,7 +1309,12 @@ const PassportDashboard: React.FC = () => {
                         </div>
                         <div className="relative mb-2 h-2 sm:h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
                           <div
-                            className={`absolute h-full rounded-full ${app.status === 'approved' ? 'bg-gradient-to-r from-green-400 to-green-600' : app.status === 'rejected' ? 'bg-gradient-to-r from-red-400 to-red-600' : 'bg-gradient-to-r from-blue-400 to-blue-600'} transition-all duration-500 ease-out`}
+                            className={`absolute h-full rounded-full ${
+                              app.status === 'approved' ? 'bg-gradient-to-r from-green-400 to-green-600' : 
+                              app.status === 'rejected' ? 'bg-gradient-to-r from-red-400 to-red-600' : 
+                              app.status === 'draft' ? 'bg-gradient-to-r from-amber-400 to-amber-600' :
+                              'bg-gradient-to-r from-blue-400 to-blue-600'
+                            } transition-all duration-500 ease-out`}
                             style={{ width: `${progress}%` }}
                           ></div>
                         </div>
