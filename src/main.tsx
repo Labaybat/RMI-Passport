@@ -21,6 +21,7 @@ import AdminPage from "./components/AdminPage"
 import MyApplicationsPage from "./components/MyApplicationsPage"
 import { PasswordRecoveryPage } from "./components/PasswordRecoveryPage"
 import { PasswordResetPage } from "./components/PasswordResetPage"
+import TermsAndConditions from "./components/TermsAndConditions"
 
 // Root layout
 const rootRoute = createRootRoute({
@@ -98,6 +99,12 @@ const passwordResetRoute = createRoute({
   component: PasswordResetPage,
 })
 
+const termsAndConditionsRoute = createRoute({
+  path: "/terms-and-conditions",
+  getParentRoute: () => rootRoute,
+  component: TermsAndConditions,
+})
+
 // Router setup
 const router = createRouter({
   routeTree: rootRoute.addChildren([
@@ -112,6 +119,7 @@ const router = createRouter({
     myApplicationsRoute,
     passwordRecoveryRoute,
     passwordResetRoute,
+    termsAndConditionsRoute,
   ]),
 })
 

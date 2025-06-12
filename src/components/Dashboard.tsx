@@ -7,6 +7,7 @@ import supabase from "../lib/supabase/client"
 import { createClient } from '@supabase/supabase-js'
 import { useNavigate } from "@tanstack/react-router"
 import Button from "./ui/Button"
+import Footer from "./Footer"
 
 const supabaseClient = supabase // already imported
 
@@ -1343,10 +1344,12 @@ const PassportDashboard: React.FC = () => {
                       </div>
                     );
                   })
-                )}
-              </div>
+                )}              </div>
             </div>
           </div>
+          
+          {/* Footer */}
+          <Footer />
         </div>
       </div>
     </div>

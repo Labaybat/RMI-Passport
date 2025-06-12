@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link } from "@tanstack/react-router"
 import supabase from "../lib/supabase/client"
 import toast from "react-hot-toast"
+import Footer from "./Footer"
 
 export function PasswordRecoveryPage() {
   const [loading, setLoading] = useState(false)
@@ -71,12 +72,11 @@ export function PasswordRecoveryPage() {
     "Always use a strong, unique password for your passport account.",
     "Check that you're on the official RMI Passport Portal website before entering credentials.",
     "Never share your password recovery links with anyone.",
-    "If you didn't request a password reset, contact support immediately.",
-    "Consider using a password manager to generate and store secure passwords.",
+    "If you didn't request a password reset, contact support immediately.",    "Consider using a password manager to generate and store secure passwords.",
     "Enable two-factor authentication when available for extra security.",
     "Regularly update your password and security questions.",
     "Avoid accessing your account on public or shared computers."
-  ]
+  ];
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-white py-8 px-4">
@@ -161,11 +161,32 @@ export function PasswordRecoveryPage() {
                 </div>
                 <p className="text-sm md:text-base text-blue-100">{tip}</p>
               </li>
-            ))}
-          </ul>          <div className="mt-6 text-sm text-blue-300 italic border-t border-blue-400 pt-4">
+            ))}          </ul>          <div className="mt-6 text-sm text-blue-300 italic border-t border-blue-400 pt-4">
             RMI Passport Portal - Republic of the Marshall Islands
           </div>
-          </div>
+          
+          {/* Footer - Blue theme version */}
+          <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-blue-400">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-xs sm:text-sm text-blue-200">
+              <div className="flex items-center gap-4">
+                <a 
+                  href="/terms-and-conditions" 
+                  className="hover:text-white transition-colors duration-200 underline underline-offset-2"
+                >
+                  Terms and Conditions
+                </a>
+                <a 
+                  href="mailto:support@passportservices.gov" 
+                  className="hover:text-white transition-colors duration-200"
+                >
+                  Contact Support
+                </a>
+              </div>
+              <p className="text-center sm:text-right">
+                © {new Date().getFullYear()} Passport Services. All rights reserved.
+              </p>
+            </div>
+          </div>          </div>
         </div>
       </div>
     </div>

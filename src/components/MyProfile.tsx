@@ -9,6 +9,7 @@ import { User, Save, Mail, Calendar, Shield } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import supabase from '../lib/supabase/client'
 import { useNavigate } from '@tanstack/react-router'
+import Footer from './Footer'
 
 interface Profile {
   first_name: string
@@ -432,10 +433,12 @@ export default function MyProfile() {
                         <span className="text-sm text-green-700 font-medium">Profile Active</span>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
+                  </div>                </CardContent>
               </Card>
             </div>
+            
+            {/* Footer */}
+            <Footer />
           </div>
         </div>
       </div>

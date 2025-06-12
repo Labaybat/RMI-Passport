@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router"
 import supabase from "../lib/supabase/client"
 import toast from "react-hot-toast"
 import { useAuth } from "../contexts/AuthContext"
+import Footer from "./Footer"
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -178,10 +179,9 @@ export function LoginPage() {
     "Applications require proof of citizenship through birth certificates or court decrees.",
     "Regular passports are valid for 10 years; Official and Diplomatic for 5 years.",
     "Incompetents and minors require legal guardian consent for passport applications.",
-    "Passports can be revoked for false information, criminal activity, or if lost/stolen.",
-    "Sale, forgery, or solicitation of passports is prohibited with penalties up to $10,000 and 10 years imprisonment.",
+    "Passports can be revoked for false information, criminal activity, or if lost/stolen.",    "Sale, forgery, or solicitation of passports is prohibited with penalties up to $10,000 and 10 years imprisonment.",
     "Temporary identification documents may be issued in emergencies when passport books are unavailable."
-  ]
+  ];
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-white py-8 px-4">
@@ -260,9 +260,7 @@ export function LoginPage() {
                 <Link to="/recover-password" className="text-sm text-blue-600 hover:underline">
                   Forgot password?
                 </Link>
-              </div>
-
-              <p className="text-center text-sm text-gray-500 mt-4">
+              </div>              <p className="text-center text-sm text-gray-500 mt-4">
                 Don't have an account?{" "}
                 <Link to="/signup" className="text-blue-600 hover:underline">Sign up</Link>
               </p>
@@ -285,9 +283,31 @@ export function LoginPage() {
                 <p className="text-sm md:text-base text-blue-100">{point}</p>
               </li>
             ))}
-          </ul>
-          <div className="mt-6 text-sm text-blue-300 italic border-t border-blue-400 pt-4">
+          </ul>          <div className="mt-6 text-sm text-blue-300 italic border-t border-blue-400 pt-4">
             Passport Act, 2020 (43MIRCCh.11) - Republic of the Marshall Islands
+          </div>
+          
+          {/* Footer - Blue theme version */}
+          <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-blue-400">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-xs sm:text-sm text-blue-200">
+              <div className="flex items-center gap-4">
+                <Link 
+                  to="/terms-and-conditions" 
+                  className="hover:text-white transition-colors duration-200 underline underline-offset-2"
+                >
+                  Terms and Conditions
+                </Link>
+                <a 
+                  href="mailto:support@passportservices.gov" 
+                  className="hover:text-white transition-colors duration-200"
+                >
+                  Contact Support
+                </a>
+              </div>
+              <p className="text-center sm:text-right">
+                © {new Date().getFullYear()} Passport Services. All rights reserved.
+              </p>
+            </div>
           </div>
           </div>
         </div>

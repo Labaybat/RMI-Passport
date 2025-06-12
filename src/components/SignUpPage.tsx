@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import supabase from "../lib/supabase/client"
 import toast from "react-hot-toast"
+import Footer from "./Footer"
 
 export function SignUpPage() {
   const navigate = useNavigate()
@@ -475,6 +476,29 @@ export function SignUpPage() {
           <div className="mt-6 text-sm text-blue-300 italic border-t border-blue-400 pt-4">
             Passport Act, 2020 (43MIRCCh.11) - Republic of the Marshall Islands
           </div>
+          
+          {/* Footer - Blue theme version */}
+          <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-blue-400">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-xs sm:text-sm text-blue-200">
+              <div className="flex items-center gap-4">
+                <a 
+                  href="/terms-and-conditions" 
+                  className="hover:text-white transition-colors duration-200 underline underline-offset-2"
+                >
+                  Terms and Conditions
+                </a>
+                <a 
+                  href="mailto:support@passportservices.gov" 
+                  className="hover:text-white transition-colors duration-200"
+                >
+                  Contact Support
+                </a>
+              </div>
+              <p className="text-center sm:text-right">
+                © {new Date().getFullYear()} Passport Services. All rights reserved.
+              </p>
+            </div>
+          </div>
         </div>
       );
     } else if (step === "email") {
@@ -556,6 +580,29 @@ export function SignUpPage() {
           <div className="mt-6 text-sm text-blue-300 italic border-t border-blue-400 pt-4">
             Passport Act, 2020 (43MIRCCh.11) - Republic of the Marshall Islands
           </div>
+          
+          {/* Footer - Blue theme version */}
+          <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-blue-400">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-xs sm:text-sm text-blue-200">
+              <div className="flex items-center gap-4">
+                <a 
+                  href="/terms-and-conditions" 
+                  className="hover:text-white transition-colors duration-200 underline underline-offset-2"
+                >
+                  Terms and Conditions
+                </a>
+                <a 
+                  href="mailto:support@passportservices.gov" 
+                  className="hover:text-white transition-colors duration-200"
+                >
+                  Contact Support
+                </a>
+              </div>
+              <p className="text-center sm:text-right">
+                © {new Date().getFullYear()} Passport Services. All rights reserved.
+              </p>
+            </div>
+          </div>
         </div>
       );
     } else if (step === "verify") {
@@ -625,6 +672,29 @@ export function SignUpPage() {
           </form>
           <div className="mt-6 text-sm text-blue-300 italic border-t border-blue-400 pt-4">
             Passport Act, 2020 (43MIRCCh.11) - Republic of the Marshall Islands
+          </div>
+          
+          {/* Footer - Blue theme version */}
+          <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-blue-400">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-xs sm:text-sm text-blue-200">
+              <div className="flex items-center gap-4">
+                <a 
+                  href="/terms-and-conditions" 
+                  className="hover:text-white transition-colors duration-200 underline underline-offset-2"
+                >
+                  Terms and Conditions
+                </a>
+                <a 
+                  href="mailto:support@passportservices.gov" 
+                  className="hover:text-white transition-colors duration-200"
+                >
+                  Contact Support
+                </a>
+              </div>
+              <p className="text-center sm:text-right">
+                © {new Date().getFullYear()} Passport Services. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
       );
@@ -727,6 +797,29 @@ export function SignUpPage() {
           
           <div className="mt-6 text-sm text-blue-300 italic border-t border-blue-400 pt-4">
             Passport Act, 2020 (43MIRCCh.11) - Republic of the Marshall Islands
+          </div>
+          
+          {/* Footer - Blue theme version */}
+          <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-blue-400">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-xs sm:text-sm text-blue-200">
+              <div className="flex items-center gap-4">
+                <a 
+                  href="/terms-and-conditions" 
+                  className="hover:text-white transition-colors duration-200 underline underline-offset-2"
+                >
+                  Terms and Conditions
+                </a>
+                <a 
+                  href="mailto:support@passportservices.gov" 
+                  className="hover:text-white transition-colors duration-200"
+                >
+                  Contact Support
+                </a>
+              </div>
+              <p className="text-center sm:text-right">
+                © {new Date().getFullYear()} Passport Services. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
       );

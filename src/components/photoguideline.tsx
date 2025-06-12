@@ -1,6 +1,7 @@
 import type React from "react"
 import { useNavigate } from "@tanstack/react-router"
 import Button from "./ui/Button"
+import Footer from "./Footer"
 
 // Simple icon components using SVG
 const CameraIcon = () => (
@@ -212,9 +213,7 @@ const PhotoGuideline: React.FC = () => {
                   </p>
                 </div>
               </div>
-            </div>
-
-            <div className="flex justify-center pb-8 pt-4">
+            </div>            <div className="flex justify-center pb-8 pt-4">
               <Button
                 className="px-8 py-3 rounded-xl bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700 transition-all duration-200"
                 onClick={() => navigate({ to: "/dashboard" })}
@@ -222,6 +221,9 @@ const PhotoGuideline: React.FC = () => {
                 Back to Dashboard
               </Button>
             </div>
+            
+            {/* Footer */}
+            <Footer />
           </div>
         </div>
       </div>

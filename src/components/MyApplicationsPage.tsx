@@ -7,6 +7,7 @@ import { useNavigate } from "@tanstack/react-router"
 import supabase from "../lib/supabase/client"
 import Button from "./ui/Button"
 import MessageModal from "./MessageModal" // Import the MessageModal component
+import Footer from "./Footer"
 
 // Define the PassportApplication type based on the Supabase table
 type PassportApplication = {
@@ -851,10 +852,13 @@ const MyApplicationsPage: React.FC = () => {
                     </div>
                   );
                 })}
-              </>
-            )}
+              </>            )}
           </div>
-        </div>      </div>
+          
+          {/* Footer */}
+          <Footer />
+        </div>
+      </div>
       
       {/* Application Details Modal */}
       {viewApp && (
@@ -1224,8 +1228,7 @@ const MyApplicationsPage: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
-      
+      )}      
       {/* Add Message Modal */}
       <MessageModal 
         isOpen={messageModalOpen}

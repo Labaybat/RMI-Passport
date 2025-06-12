@@ -11,6 +11,7 @@ import { useToast } from "../hooks/use-toast"
 import supabase from "../lib/supabase/client";
 import { useAuth } from "../contexts/AuthContext"
 import { useRouter } from '@tanstack/react-router';
+import Footer from "./Footer"
 
 // Types
 interface FormData {
@@ -1982,9 +1983,11 @@ export default function Apply() {
               <Button onClick={handleNext} className="bg-blue-900 hover:bg-blue-800 w-24">
                 Next
               </Button>
-            )}
-          </div>
+            )}          </div>
         </Card>
+        
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   )
