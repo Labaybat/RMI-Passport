@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
 
 const TermsAndConditions: React.FC = () => {
@@ -18,9 +17,8 @@ const TermsAndConditions: React.FC = () => {
               <p className="text-xs sm:text-sm text-gray-500">Government Portal Terms of Service</p>
             </div>
           </div>
-          
-          <Link
-            to="/dashboard"
+            <button
+            onClick={() => window.history.back()}
             className="group relative flex h-10 sm:h-12 items-center overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 px-3 sm:px-4 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
@@ -28,9 +26,9 @@ const TermsAndConditions: React.FC = () => {
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
             </div>
             <span className="text-xs sm:text-sm font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
-              Back to Dashboard
+              Back
             </span>
-          </Link>
+          </button>
         </div>
 
         {/* Terms Content */}
