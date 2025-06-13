@@ -1385,18 +1385,38 @@ const Applications: React.FC = () => {
       setSignedUrls(newUrls);
     })();
   }, [viewApp]);
-
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this application?")) return;
     setDeletingId(id);
+    
+    // Get the application data before deletion to include in the log
+    const app = applications.find(a => a.id === id);
+    const applicantName = app ? 
+      [app.surname, app.first_middle_names].filter(Boolean).join(' ') || 'Unnamed' : 
+      'Unknown';
+    
     const { error } = await supabase
       .from("passport_applications")
       .delete()
       .eq("id", id);
+    
     setDeletingId(null);
+    
     if (error) {
       toast({ title: "Error", description: "Failed to delete application." });
     } else {
+      // Log the deletion in the admin activity log
+      await logActivityEvent(
+        "Deleted Application",
+        id,
+        { 
+          applicantName: applicantName,
+          applicationType: app?.application_type || 'Unknown',
+          applicationStatus: app?.status || 'Unknown',
+          deletedAt: new Date().toISOString()
+        }
+      );
+      
       setApplications(applications.filter(app => app.id !== id));
       toast({ title: "Deleted", description: "Application deleted." });
     }
@@ -2754,15 +2774,16 @@ const Users: React.FC = () => {
           body: { user_id: user.id }
         });        if (!error && data?.success) {
           // Edge function succeeded!
-          
-          // Log this activity
+            // Log this activity with detailed information using 'delete' action type
           await logActivityEvent(
             "Deleted User",
             user.id,
             {
               userName: getUserFullName(user),
               email: user.email,
-              role: user.role
+              role: user.role,
+              method: "Edge Function",
+              timestamp: new Date().toISOString()
             }
           );
           
@@ -2814,9 +2835,7 @@ const Users: React.FC = () => {
     if (commentsError) {
       console.warn("Error deleting user's comments:", commentsError);
       // Continue with deletion even if this fails
-    }
-
-    // Delete user from profiles table
+    }    // Delete user from profiles table
     const { error: profileError } = await supabase
       .from("profiles")
       .delete()
@@ -2824,14 +2843,18 @@ const Users: React.FC = () => {
 
     if (profileError) {
       throw new Error(`Failed to delete profile: ${profileError.message}`);
-    }    // Log this activity (fallback approach)
+    }
+    
+    // Log this activity with detailed information using 'delete' action type
     await logActivityEvent(
-      "Deleted User (Fallback Method)",
+      "Deleted User",
       user.id,
       {
         userName: getUserFullName(user),
         email: user.email,
-        role: user.role
+        role: user.role,
+        method: "Fallback Method",
+        timestamp: new Date().toISOString()
       }
     );
     

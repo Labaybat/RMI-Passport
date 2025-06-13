@@ -158,14 +158,15 @@ const AdminComments: React.FC<AdminCommentsProps> = ({ applicationId }) => {
         toast({
           title: "Error",
           description: "Failed to delete comment",
-        });      } else {
-        // Log the comment deletion activity
+        });      } else {        // Log the comment deletion activity with improved details
         await logActivityEvent(
           "Deleted Comment",
           applicationId,
           {
             commentId: commentId,
-            applicationId: applicationId
+            applicationId: applicationId,
+            deletedAt: new Date().toISOString(),
+            deletedBy: user?.email || 'Unknown Admin'
           }
         );
         

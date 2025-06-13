@@ -318,18 +318,19 @@ const ActivityFilters: React.FC<{
             
             {/* Action Type Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Action Type</label>
-              <select 
+              <label className="block text-sm font-medium text-gray-700 mb-1">Action Type</label>              <select 
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={localFilters.actionType}
-                onChange={(e) => handleFilterChange('actionType', e.target.value)}
+                value={localFilters.actionType}                onChange={(e) => handleFilterChange('actionType', e.target.value)}
               >
                 <option value="all">All Actions</option>
                 <option value="login">Login/Logout</option>
-                <option value="review">Application Review</option>
                 <option value="status">Status Changes</option>
-                <option value="document">Document Processing</option>
                 <option value="settings">System Settings</option>
+                <option value="delete">Deletions</option>
+                <option value="user">User Management</option>
+                <option value="document">Document Processing</option>
+                <option value="comment">Comments</option>
+                <option value="message">Messages</option>
               </select>
             </div>
             
@@ -477,10 +478,11 @@ const ActivityLogEntryRow: React.FC<{ entry: ActivityLogEntry }> = ({ entry }) =
 
 // Main Activity Log Component
 const ActivityLog: React.FC = () => {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();  const [loading, setLoading] = useState(true);
   const [activityData, setActivityData] = useState<ActivityLogEntry[]>([]);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [silentRefresh, setSilentRefresh] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     dateRange: 'all',
@@ -499,10 +501,11 @@ const ActivityLog: React.FC = () => {
    * Fetch activity log data from Supabase
    * @param silent When true, won't show loading state
    * This reduces UI flicker during auto-refresh
-   */
-  const fetchActivityData = async (silent = false) => {
+   */  const fetchActivityData = async (silent = false) => {
     try {
-      if (!silent) {
+      if (silent) {
+        setSilentRefresh(true);
+      } else {
         setLoading(true);
       }
       
@@ -545,11 +548,16 @@ const ActivityLog: React.FC = () => {
       if (filters.userType !== 'all') {
         countQuery = countQuery.eq('is_admin', filters.userType === 'admin');
       }
-      
-      // Action type filter
+        // Action type filter
       if (filters.actionType !== 'all') {
-        query = query.ilike('action', `%${filters.actionType}%`);
-        countQuery = countQuery.ilike('action', `%${filters.actionType}%`);
+        // Special case for login/logout to handle both activities
+        if (filters.actionType === 'login') {
+          query = query.or('action.ilike.%login%,action.ilike.%logout%');
+          countQuery = countQuery.or('action.ilike.%login%,action.ilike.%logout%');
+        } else {
+          query = query.ilike('action', `%${filters.actionType}%`);
+          countQuery = countQuery.ilike('action', `%${filters.actionType}%`);
+        }
       }
       
       // Search query
@@ -664,10 +672,13 @@ const ActivityLog: React.FC = () => {
           title: "Error",
           description: "Failed to fetch activity data. Please try again."
         });
-      }
-    } finally {
-      // Only update loading state if not in silent mode
-      if (!silent) {
+      }    } finally {
+      // Update the last updated timestamp
+      setLastUpdated(new Date());
+      
+      if (silent) {
+        setSilentRefresh(false);
+      } else {
         setLoading(false);
       }
     }
@@ -752,20 +763,24 @@ const ActivityLog: React.FC = () => {
     fetchActivityData();
     fetchActivitySummary(); // Fetch summary data independently
   }, [filters, currentPage]);
-    // Update data periodically if auto-refresh is enabled
+  // Update data periodically if auto-refresh is enabled
   useEffect(() => {
     if (!autoRefresh) return;
     
     // Initial fetch for summary only, main data is already fetched
     fetchActivitySummary();
-      const interval = setInterval(() => {
-      // Refresh both data and summary silently without showing loading state
-      fetchActivityData(true); // Pass true for silent mode
-      fetchActivitySummary();
+    
+    const interval = setInterval(() => {
+      // Only trigger a refresh if we're not already refreshing
+      if (!silentRefresh) {
+        // Refresh both data and summary silently without showing loading state
+        fetchActivityData(true); // Pass true for silent mode
+        fetchActivitySummary();
+      }
     }, 30000); // Every 30 seconds
     
     return () => clearInterval(interval);
-  }, [autoRefresh]);
+  }, [autoRefresh, silentRefresh]);
 
   const handleSearch = () => {
     setCurrentPage(1); // Reset to first page when searching
@@ -777,36 +792,47 @@ const ActivityLog: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-6 space-y-6">      <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Activity Log</h1>
           <p className="text-gray-600">Monitor admin and staff activities</p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => {
-              setCurrentPage(1); // Reset to first page when toggling auto-refresh
-              setAutoRefresh(!autoRefresh);
-            }}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              autoRefresh
-                ? 'bg-green-100 text-green-800 hover:bg-green-200 border border-green-300'
-                : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300'
-            }`}
-          >
-            Auto Refresh: {autoRefresh ? 'ON' : 'OFF'}
-          </button>
-          <button
+        </div>        <div className="flex flex-col items-end gap-2"><div className={`flex items-center gap-2 px-4 py-2 border rounded-lg shadow-sm hover:shadow transition-all ${autoRefresh ? 'bg-green-50 border-green-200' : 'bg-white'}`}>
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={autoRefresh}
+                onChange={(e) => {
+                  setCurrentPage(1); // Reset to first page when toggling auto-refresh
+                  setAutoRefresh(e.target.checked);
+                }}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span>Auto-refresh</span>
+            </label>{autoRefresh && (
+              <div className={`flex items-center gap-1 text-xs ${silentRefresh ? 'text-blue-600' : 'text-green-600'}`}>
+                <div className={`w-2 h-2 rounded-full ${
+                  silentRefresh ? 'bg-blue-500 animate-bounce' : 'bg-green-500 animate-pulse'
+                }`}></div>
+                <span className="font-medium">{silentRefresh ? 'Updating...' : 'Live'}</span>
+              </div>
+            )}
+          </div>          <button
             onClick={() => {
               setCurrentPage(1); // Reset to first page on manual refresh
               fetchActivityData();
             }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className={`px-4 py-2 rounded-lg transition ${
+              silentRefresh 
+              ? 'bg-gray-100 text-blue-600 border border-blue-300' 
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+            disabled={loading || silentRefresh}
           >
-            <ArrowPathIcon className="w-4 h-4 inline mr-2" />
-            Refresh
+            <ArrowPathIcon className={`w-4 h-4 inline mr-2 ${silentRefresh ? 'animate-spin' : ''}`} />            {silentRefresh ? 'Updating...' : 'Refresh'}
           </button>
+          <p className="text-xs text-gray-500 self-end">
+            Last updated: {lastUpdated.toLocaleTimeString()}
+          </p>
         </div>
       </div>
       
