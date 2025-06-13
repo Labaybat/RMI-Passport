@@ -322,13 +322,11 @@ const ActivityFilters: React.FC<{
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={localFilters.actionType}                onChange={(e) => handleFilterChange('actionType', e.target.value)}
               >
-                <option value="all">All Actions</option>
-                <option value="login">Login/Logout</option>
+                <option value="all">All Actions</option>                <option value="login">Login/Logout</option>
                 <option value="status">Status Changes</option>
                 <option value="settings">System Settings</option>
                 <option value="delete">Deletions</option>
                 <option value="user">User Management</option>
-                <option value="document">Document Processing</option>
                 <option value="comment">Comments</option>
                 <option value="message">Messages</option>
               </select>
