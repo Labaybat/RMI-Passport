@@ -7,13 +7,14 @@ node_modules/
 # Production builds
 dist/
 build/
+.vercel/
 
 # Environment files
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env*.local
+.env.development
+.env.test
+.env.production
 
 # IDE and Editor files
 .vscode/
@@ -21,6 +22,10 @@ build/
 *.swp
 *.swo
 *~
+*.sublime*
+.project
+.classpath
+.settings/
 
 # OS generated files
 .DS_Store
@@ -32,11 +37,13 @@ ehthumbs.db
 Thumbs.db
 
 # Logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+pnpm-debug.log*
 
 # Runtime data
 pids
@@ -46,11 +53,21 @@ pids
 
 # Coverage directory used by tools like istanbul
 coverage/
+.nyc_output/
 *.lcov
 
-# Temporary files
-*.tmp
-*.temp
+# Cache directories
+.npm/
+.eslintcache
+.stylelintcache
+.node_repl_history
+.yarn-integrity
+.parcel-cache/
+.cache/
+.next/
+.nuxt/
+.docusaurus/
+.serverless/
 
 # Database and SQL files (development/testing)
 *.db
@@ -60,8 +77,41 @@ coverage/
 # Allow SQL migrations but ignore general SQL files
 *.sql
 !supabase/migrations/*.sql
+!add_cascade_delete.sql
 
-# Documentation and guide files (keep only essential ones)
+# Test files and scripts
+test-*.js
+test-*.jsx
+test-*.ts
+test-*.tsx
+test-*.sql
+test-*.md
+test-*.mjs
+*-test.*
+debug-*.js
+debug-*.ts
+verify-*.js
+verify-*.bat
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Specific test files
+rate-limit-test.mjs
+browser-test-rls.js
+test-rls-policies.mjs
+test-message-alignment.js
+test-message-alignment-updated.js
+test-message-notification.js
+test-name-display.js
+test-activity-logging.js
+test-rate-limiting.mjs
+check-user-in-log.js
+
+# Documentation files (keep only essential ones)
+# Note: We're explicitly listing files we want to exclude, keeping only the important documentation
+# that would help others understand the project and its components
 ADD_SENDER_NAME_COLUMN_GUIDE.md
 ARCHITECTURE_DIAGRAMS.md
 CURRENT_STATUS.md
@@ -83,19 +133,11 @@ USER_DELETION_SETUP.md
 # Batch files and scripts
 *.bat
 
-# Test files
-test-*.sql
-test-*.md
-debug-*.js
-test-*.mjs
-rate-limit-test.mjs
-browser-test-rls.js
-test-rls-policies.mjs
-tatus
-tatus --short
-
 # Example files
 *-example-*
 
-# Temporary directories
+# Temporary directories and files
 -p/
+*.tmp
+*.temp
+/tmp/

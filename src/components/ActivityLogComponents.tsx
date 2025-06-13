@@ -25,11 +25,11 @@ interface ActivityLogEntry {
   device_info?: string;
   details?: string;
   is_admin: boolean;
+  user_role?: string; // Adding user role to properly display role in UI
 }
 
 // Sample mock data for activity log
-const mockActivityData: ActivityLogEntry[] = [
-  {
+const mockActivityData: ActivityLogEntry[] = [  {
     id: '1',
     created_at: '2025-06-13T12:45:00Z',
     user_id: 'admin-123',
@@ -37,9 +37,9 @@ const mockActivityData: ActivityLogEntry[] = [
     action: 'Login',
     ip_address: '192.168.1.1',
     device_info: 'Chrome / Windows',
-    is_admin: true
-  },
-  {
+    is_admin: true,
+    user_role: 'admin'
+  },  {
     id: '2',
     created_at: '2025-06-13T13:30:00Z',
     user_id: 'staff-456',
@@ -49,9 +49,9 @@ const mockActivityData: ActivityLogEntry[] = [
     ip_address: '192.168.1.2',
     device_info: 'Safari / Mac',
     details: 'Preliminary review completed',
-    is_admin: false
-  },
-  {
+    is_admin: false,
+    user_role: 'staff'
+  },  {
     id: '3',
     created_at: '2025-06-13T14:15:00Z',
     user_id: 'admin-123',
@@ -61,9 +61,9 @@ const mockActivityData: ActivityLogEntry[] = [
     ip_address: '192.168.1.1',
     device_info: 'Chrome / Windows',
     details: 'Changed status from Pending to Approved',
-    is_admin: true
-  },
-  {
+    is_admin: true,
+    user_role: 'admin'
+  },  {
     id: '4',
     created_at: '2025-06-12T09:20:00Z',
     user_id: 'staff-789',
@@ -73,9 +73,9 @@ const mockActivityData: ActivityLogEntry[] = [
     ip_address: '192.168.1.3',
     device_info: 'Firefox / Linux',
     details: 'Verified birth certificate',
-    is_admin: false
-  },
-  {
+    is_admin: false,
+    user_role: 'staff'
+  },  {
     id: '5',
     created_at: '2025-06-12T10:05:00Z',
     user_id: 'admin-123',
@@ -84,9 +84,9 @@ const mockActivityData: ActivityLogEntry[] = [
     ip_address: '192.168.1.1',
     device_info: 'Chrome / Windows',
     details: 'Modified rate limiting parameters',
-    is_admin: true
-  },
-  {
+    is_admin: true,
+    user_role: 'admin'
+  },  {
     id: '6',
     created_at: '2025-06-11T15:45:00Z',
     user_id: 'staff-456',
@@ -94,9 +94,9 @@ const mockActivityData: ActivityLogEntry[] = [
     action: 'Logout',
     ip_address: '192.168.1.2',
     device_info: 'Safari / Mac',
-    is_admin: false
-  },
-  {
+    is_admin: false,
+    user_role: 'staff'
+  },  {
     id: '7',
     created_at: '2025-06-11T16:30:00Z',
     user_id: 'admin-890',
@@ -105,7 +105,8 @@ const mockActivityData: ActivityLogEntry[] = [
     ip_address: '192.168.1.4',
     device_info: 'Edge / Windows',
     details: 'Processed 15 pending applications',
-    is_admin: true
+    is_admin: true,
+    user_role: 'admin'
   }
 ];
 
@@ -120,6 +121,12 @@ function formatDate(dateString: string): string {
     minute: 'numeric',
     hour12: true
   });
+}
+
+// Format a user's full name from first and last name, or return a fallback
+function formatUserName(firstName?: string, lastName?: string, fallback: string = 'Unknown User'): string {
+  const fullName = `${firstName || ''} ${lastName || ''}`.trim();
+  return fullName || fallback;
 }
 
 // Function to get applicant full name from passport_applications table
@@ -154,7 +161,18 @@ const getApplicantName = async (applicationId: string): Promise<string> => {
 export const logActivityEvent = async (action: string, recordId?: string, details?: any) => {
   try {
     const user = await supabase.auth.getUser();
-    if (user && user.data && user.data.user) {
+    if (user && user.data && user.data.user) {      // Fetch the user's role and name from the profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, first_name, last_name')
+        .eq('id', user.data.user.id)
+        .single();
+      
+      // Default to user role if not found, use the correct role if available
+      const isAdmin = profileData?.role === 'admin';      // Generate user's full name
+      const userFullName = profileData ? 
+        `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() : '';
+      
       // Check if this is an application-related activity
       let enrichedDetails = details;
       
@@ -174,14 +192,13 @@ export const logActivityEvent = async (action: string, recordId?: string, detail
           applicantName: applicantName
         };
       }
-      
-      await logAdminActivity({
+        await logAdminActivity({
         userId: user.data.user.id,
-        userName: user.data.user.email || 'Admin User',
+        userName: userFullName || user.data.user.email || 'Admin User',
         action,
         recordId,
         details: enrichedDetails,
-        isAdmin: true,
+        isAdmin: isAdmin,
         deviceInfo: getDeviceInfo()
       });
     }
@@ -367,20 +384,29 @@ const ActivityLogEntryRow: React.FC<{ entry: ActivityLogEntry }> = ({ entry }) =
   return (
     <div className="py-3 px-4 border-b border-gray-100 hover:bg-gray-50">
       <div className="flex items-start justify-between">
-        <div className="flex items-start gap-3">
-          <div className={`p-2 rounded-full ${entry.is_admin ? 'bg-purple-100' : 'bg-blue-100'}`}>
-            {entry.is_admin ? (
+        <div className="flex items-start gap-3">          <div className={`p-2 rounded-full ${
+            entry.user_role === 'admin' ? 'bg-purple-100' : 
+            entry.user_role === 'staff' ? 'bg-blue-100' : 
+            'bg-gray-100'
+          }`}>
+            {entry.user_role === 'admin' ? (
               <ShieldCheckIcon className="w-5 h-5 text-purple-700" />
-            ) : (
+            ) : entry.user_role === 'staff' ? (
               <UserIcon className="w-5 h-5 text-blue-700" />
+            ) : (
+              <UserIcon className="w-5 h-5 text-gray-700" />
             )}
           </div>
           
           <div>
             <div className="flex items-center gap-2">
               <span className="font-medium text-gray-900">{entry.user_name}</span>
-              <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${entry.is_admin ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
-                {entry.is_admin ? 'Admin' : 'Staff'}
+              <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                entry.user_role === 'admin' ? 'bg-purple-100 text-purple-800' : 
+                entry.user_role === 'staff' ? 'bg-blue-100 text-blue-800' : 
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {entry.user_role ? entry.user_role.charAt(0).toUpperCase() + entry.user_role.slice(1) : (entry.is_admin ? 'Admin' : 'Staff')}
               </span>
             </div>
               <div className="flex items-center gap-2 mt-1">
@@ -508,10 +534,9 @@ const ActivityLog: React.FC = () => {
             break;
         }
       }
-      
-      // User type filter
+        // User type filter - we'll handle this later when we join with profiles
+      // For now, still use is_admin for counting purposes
       if (filters.userType !== 'all') {
-        query = query.eq('is_admin', filters.userType === 'admin');
         countQuery = countQuery.eq('is_admin', filters.userType === 'admin');
       }
       
@@ -559,6 +584,26 @@ const ActivityLog: React.FC = () => {
         });
       } else {
         // Transform the data if needed
+        const userIds = data.map(item => item.user_id).filter(Boolean);
+        const uniqueUserIds = [...new Set(userIds)];
+          // Fetch user roles and names from profiles table
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, role, first_name, last_name')
+          .in('id', uniqueUserIds);
+        
+        // Create maps for user role and name lookups
+        const userRoleMap = {};
+        const userNameMap = {};
+        
+        if (profilesData) {
+          profilesData.forEach(profile => {
+            userRoleMap[profile.id] = profile.role;              // Create full name from first and last name
+            const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+            userNameMap[profile.id] = fullName || null; // Only set if not empty
+          });
+        }
+        
         transformedData = data.map(item => {
           // Parse details properly - keep as object if possible
           let parsedDetails = item.details;
@@ -570,33 +615,62 @@ const ActivityLog: React.FC = () => {
               parsedDetails = item.details;
             }
           }
+            // Get user role from map, default to is_admin flag if not found
+          const userRole = userRoleMap[item.user_id] || (item.is_admin ? 'admin' : 'staff');
+          
+          // Use the user's full name from profiles if available, otherwise keep the existing name
+          // This ensures we show proper names instead of emails where possible
+          const userName = userNameMap[item.user_id] || item.user_name;
           
           return {
             id: item.id,
             created_at: item.created_at,
             user_id: item.user_id,
-            user_name: item.user_name,
+            user_name: userName,
             action: item.action,
             record_id: item.record_id,
             ip_address: item.ip_address,
             device_info: item.device_info,
             details: parsedDetails,
-            is_admin: item.is_admin
+            is_admin: userRole === 'admin', // Update is_admin based on actual role
+            user_role: userRole
           };
         });
       }
       
       setActivityData(transformedData);
       
-      // Log this view action if auto-logging is enabled
+      // Apply post-fetch user type filtering
+      if (filters.userType !== 'all') {
+        const filteredData = transformedData.filter(item => 
+          filters.userType === 'admin' 
+            ? item.user_role === 'admin' 
+            : item.user_role === 'staff'
+        );
+        setActivityData(filteredData);
+      } else {
+        setActivityData(transformedData);
+      }
+        // Log this view action if auto-logging is enabled
       if (autoRefresh) {
         const user = await supabase.auth.getUser();
         if (user && user.data && user.data.user) {
+          // Fetch user's profile information for name
+          const { data: userProfile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, role')
+            .eq('id', user.data.user.id)
+            .single();
+          
+          // Create user's full name
+          const userFullName = userProfile ? 
+            `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() : '';
+            
           await logAdminActivity({
             userId: user.data.user.id,
-            userName: user.data.user.email || 'Admin User',
+            userName: userFullName || user.data.user.email || 'Admin User',
             action: 'Viewed Activity Log',
-            isAdmin: true,
+            isAdmin: userProfile?.role === 'admin', // Only true if user has admin role
             deviceInfo: getDeviceInfo()
           });
         }
@@ -639,16 +713,42 @@ const ActivityLog: React.FC = () => {
           yesterday: yesterdayData?.length || 0
         });
       }
-      
-      // Query for unique staff and admin users
+        // Query for unique users
       const { data: userData, error: userError } = await supabase
         .from('admin_activity_log')
-        .select('user_id, is_admin')
+        .select('user_id')
         .order('created_at', { ascending: false });
       
       if (!userError && userData) {
-        const uniqueStaff = new Set(userData.filter(e => !e.is_admin).map(e => e.user_id));
-        const uniqueAdmin = new Set(userData.filter(e => e.is_admin).map(e => e.user_id));
+        // Extract unique user IDs
+        const uniqueUserIds = [...new Set(userData.map(e => e.user_id))];
+        
+        // Get role information from profiles table
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, role')
+          .in('id', uniqueUserIds);
+        
+        // Create maps for role lookup
+        const userRoleMap = {};
+        if (profilesData) {
+          profilesData.forEach(profile => {
+            userRoleMap[profile.id] = profile.role;
+          });
+        }
+        
+        // Count unique staff and admin users
+        const uniqueStaff = new Set();
+        const uniqueAdmin = new Set();
+        
+        uniqueUserIds.forEach(userId => {
+          const role = userRoleMap[userId];
+          if (role === 'admin') {
+            uniqueAdmin.add(userId);
+          } else {
+            uniqueStaff.add(userId);
+          }
+        });
         
         setUniqueUsers({
           staff: uniqueStaff.size,

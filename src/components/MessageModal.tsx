@@ -55,8 +55,7 @@ const MessageModal: React.FC<MessageModalProps> = ({
     if (messages.length > 0) {
       scrollToBottom();
     }
-  }, [messages]);
-  // Check if the user is an admin when the component mounts
+  }, [messages]);  // Check if the user is an admin or staff when the component mounts
   useEffect(() => {
     const checkUserRole = async () => {
       if (!user) return;
@@ -67,7 +66,8 @@ const MessageModal: React.FC<MessageModalProps> = ({
         .eq('id', user.id)
         .single();
         
-      const adminStatus = profile?.role === 'admin';
+      // Consider both admin and staff as administrative users for messaging purposes
+      const adminStatus = profile?.role === 'admin' || profile?.role === 'staff';
       setIsAdmin(adminStatus);
       
       // Update refs to avoid stale closures
@@ -76,7 +76,7 @@ const MessageModal: React.FC<MessageModalProps> = ({
     };
     
     checkUserRole();
-  }, [user]);  useEffect(() => {
+  }, [user]);useEffect(() => {
     if (!isOpen || !applicationId) return;
       // Clear existing messages before fetching new ones when applicationId changes
     setMessages([]);
@@ -700,10 +700,9 @@ const MessageModal: React.FC<MessageModalProps> = ({
               
               return (
               <div 
-                key={messageKey}
-                className={`p-3 rounded-lg max-w-[80%] flex flex-col animate-fadeIn shadow-sm transition-all duration-200 ${
-                  // For admins: all admin messages should be right-aligned, user messages left-aligned
-                  // For users: all user messages should be right-aligned, admin messages left-aligned
+                key={messageKey}                className={`p-3 rounded-lg max-w-[80%] flex flex-col animate-fadeIn shadow-sm transition-all duration-200 ${
+                  // For admins/staff: ALL admin/staff messages on right, user messages on left
+                  // For regular users: their messages on right, admin/staff messages on left
                   (isAdmin && message.sender_type === 'admin') || (!isAdmin && message.sender_type === 'user')
                     ? 'bg-blue-600 text-white ml-auto rounded-br-none' 
                     : 'bg-gray-100 text-gray-800 rounded-bl-none'
