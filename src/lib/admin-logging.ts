@@ -70,11 +70,21 @@ const extractBrowserInfo = (userAgent: string): string => {
   } else if (userAgent.includes("Firefox")) {
     return "Firefox";
   } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
+    // This will catch both desktop Safari and Safari on iOS/iPadOS
     return "Safari";
   } else if (userAgent.includes("Edg")) {
     return "Edge";
   } else if (userAgent.includes("OPR") || userAgent.includes("Opera")) {
     return "Opera";
+  } else if (userAgent.includes("CriOS")) {
+    // Chrome on iOS
+    return "Chrome (iOS)";
+  } else if (userAgent.includes("FxiOS")) {
+    // Firefox on iOS
+    return "Firefox (iOS)";
+  } else if (userAgent.includes("EdgiOS")) {
+    // Edge on iOS
+    return "Edge (iOS)";  
   } else {
     return "Unknown Browser";
   }
@@ -92,7 +102,16 @@ const extractOSInfo = (userAgent: string): string => {
     return "Linux";
   } else if (userAgent.includes("Android")) {
     return "Android";
-  } else if (userAgent.includes("iPhone") || userAgent.includes("iPad") || userAgent.includes("iPod")) {
+  } else if (
+    userAgent.includes("iPhone") || 
+    userAgent.includes("iPad") || 
+    userAgent.includes("iPod") ||
+    // Modern iPads with iPadOS may not include "iPad" in user agent
+    (userAgent.includes("AppleWebKit") && 
+     userAgent.includes("Mobile") && 
+     userAgent.includes("Safari") &&
+     !userAgent.includes("Android"))
+  ) {
     return "iOS";
   } else {
     return "Unknown OS";
