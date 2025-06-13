@@ -840,11 +840,12 @@ const Step5FileUploads: React.FC<{
   const [uploadError, setUploadError] = useState<string | null>(null);
   // Store signed URLs for each doc
   const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
+
   const documentTypes = [
     {
       key: "birth_certificate" as keyof FormData,
       label: "Birth Certificate",
-      description: "Official birth certificate or certified copy of the applicant",
+      description: "Official birth certificate or certified copy",
       accept: "image/*, application/pdf",
       required: true,
       urlField: "birth_certificate_url"
@@ -852,7 +853,7 @@ const Step5FileUploads: React.FC<{
     {
       key: "consent_form" as keyof FormData,
       label: "Consent Form",
-      description: "Signed consent form by applicant or parent/guardian",
+      description: "Parental consent form (if under 18)",
       accept: "image/*, application/pdf",
       required: true,
       urlField: "consent_form_url"
@@ -868,7 +869,7 @@ const Step5FileUploads: React.FC<{
     {
       key: "old_passport_copy" as keyof FormData,
       label: "Previous Passport",
-      description: "Copy of applicant's most recent passport (if renewal)",
+      description: "Copy of your most recent passport (if renewal)",
       accept: "image/*, application/pdf",
       required: false,
       urlField: "old_passport_url"
@@ -876,7 +877,7 @@ const Step5FileUploads: React.FC<{
     {
       key: "signature" as keyof FormData,
       label: "Signature Sample",
-      description: "Image of applicant's signature or parent/guardian signature if minor",
+      description: "Clear image of your signature on white paper",
       accept: "image/*",
       required: true,
       urlField: "signature_url"
@@ -884,14 +885,14 @@ const Step5FileUploads: React.FC<{
     {
       key: "photo_id" as keyof FormData,
       label: "Photo Identification",
-      description: "Applicant's driver's license, state ID, or other government-issued photo ID",
+      description: "Driver's license, state ID, or other government-issued ID",
       accept: "image/*",
       required: true,
       urlField: "photo_id_url"
     },    {
       key: "social_security_card" as keyof FormData,
       label: "Social Security Card/Number",
-      description: "Applicant's Social Security card or document showing SSN",
+      description: "Social Security card or document showing your SSN",
       accept: "image/*, application/pdf",
       required: true,
       urlField: "social_security_card_url"
@@ -899,14 +900,14 @@ const Step5FileUploads: React.FC<{
     {
       key: "passport_photo" as keyof FormData,
       label: "Passport Photo",
-      description: "Professional passport photo of the applicant for the new passport",
+      description: "Professional passport photo to be used for your new passport",
       accept: "image/*",
       required: true,
       urlField: "passport_photo_url"
     },    {
       key: "relationship_proof" as keyof FormData,
       label: "Relationship Proof",
-      description: "Proof of relationship between applicant and person submitting (birth certificate, adoption papers, legal guardianship documents, power of attorney, marriage certificate, etc.)",
+      description: "Your proof of relationship with this person (birth certificate, adoption papers, legal guardianship documents, power of attorney, marriage certificate, etc.)",
       accept: "image/*, application/pdf",
       required: true,
       urlField: "relationship_proof_url"
@@ -914,7 +915,7 @@ const Step5FileUploads: React.FC<{
     {
       key: "parent_guardian_id" as keyof FormData,
       label: "Parent/Guardian Identification",
-      description: "Government-issued photo ID of the parent/guardian submitting the application",
+      description: "State ID, passport, or other government-issued identification of the parent/guardian applying on behalf of this person",
       accept: "image/*, application/pdf",
       required: true,
       urlField: "parent_guardian_id_url"

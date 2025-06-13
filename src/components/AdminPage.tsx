@@ -80,10 +80,10 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState<string>("7");
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [silentRefresh, setSilentRefresh] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [silentRefresh, setSilentRefresh] = useState(false);  const [isInitialLoad, setIsInitialLoad] = useState(true);
   // --- Geographic Distribution Aggregation ---
   const [countryCounts, setCountryCounts] = useState<{ [country: string]: number }>({});
+  const [locationAnalytics, setLocationAnalytics] = useState<any[]>([]);
   const geoUrl = "https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries-sans-antarctica.geojson";
 
   useEffect(() => {
@@ -374,17 +374,14 @@ const Dashboard: React.FC = () => {
             between48And72h,
             moreThan72h
           }
-        }
-      });
-      // Aggregate applications by country_of_birth
-      const countryCounter: { [country: string]: number } = {};
-      applications.forEach(app => {
-        const country = app.country_of_birth?.trim();
-        if (country) {
-          countryCounter[country] = (countryCounter[country] || 0) + 1;
-        }
-      });
-      setCountryCounts(countryCounter);
+        }      });
+
+      // REMOVED: Old country_of_birth aggregation - we only want current_location now
+      // The map should only show where users are applying FROM (current_location)
+      // not where they were born (country_of_birth)
+      
+      // Fetch real-time analytics data from application_intake_analytics view
+      await fetchLocationAnalytics(silent);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
@@ -394,6 +391,52 @@ const Dashboard: React.FC = () => {
       } else {
         setSilentRefresh(false);
       }
+    }
+  };
+
+  // New function to fetch location analytics from your Supabase view
+  const fetchLocationAnalytics = async (silent = false) => {
+    try {
+      // Fetch data from your application_intake_analytics view
+      const { data: analyticsData, error } = await supabase
+        .from('application_intake_analytics')
+        .select(`
+          current_location,
+          status,
+          count,
+          avg_age,
+          date_created,
+          applicant_relationship,
+          has_previous_rmi_passport
+        `)
+        .order('date_created', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching location analytics:', error);
+        return;
+      }
+
+      console.log('Location analytics data:', analyticsData);
+      setLocationAnalytics(analyticsData || []);
+
+      // Aggregate by current_location for the map
+      const locationCounter: { [location: string]: number } = {};
+      analyticsData?.forEach(item => {
+        const location = item.current_location?.trim();
+        if (location && location !== 'Unknown' && location !== '') {
+          // Sum the count from the analytics view
+          locationCounter[location] = (locationCounter[location] || 0) + (item.count || 0);
+        }
+      });
+
+      // Update countryCounts with real analytics data
+      setCountryCounts(locationCounter);
+      
+      if (!silent) {
+        console.log('Updated location data:', locationCounter);
+      }
+    } catch (error) {
+      console.error('Error fetching location analytics:', error);
     }
   };
 
@@ -772,57 +815,280 @@ const Dashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Geographic Distribution Section */}
+      </div>      {/* Geographic Distribution Section - DNS Analytics Style */}
       <div className="mt-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Geographic Distribution</CardTitle>
+        <Card>          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Applications by User Location</CardTitle>
+              <p className="text-sm text-gray-600 mt-1">Where users are applying from (current location)</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => fetchLocationAnalytics(true)}
+                className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors"
+                title="Refresh location data"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setAutoRefresh(!autoRefresh)}
+                className={`p-2 rounded-lg transition-colors ${
+                  autoRefresh ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'
+                }`}
+                title={autoRefresh ? 'Auto-refresh enabled' : 'Auto-refresh disabled'}
+              >
+                <ArrowPathIcon className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </CardHeader>
           <CardContent>
             {Object.keys(countryCounts).length === 0 ? (
-              <div className="text-center text-gray-500 py-8">No country data available.</div>
+              <div className="text-center text-gray-500 py-8">No geographic data available.</div>
             ) : (
-              <div>
-                <div className="w-full max-w-3xl mx-auto" style={{ height: 400 }}>
-                  <MapContainer center={[10, 0]} zoom={2} style={{ width: '100%', height: 400 }} scrollWheelZoom={false}>
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    {/* Plot a marker for each country with applications */}
-                    {Object.entries(countryCounts).map(([country, count]) => {
-                      // Use a simple lookup for country centroids (for demo, only Marshall Islands)
-                      // In production, use a full country-to-coordinates mapping or a geocoding API
-                      const centroids: { [key: string]: [number, number] } = {
-                        'Marshall Islands': [7.1164, 171.1858],
-                        // Add more countries as needed
-                      };
-                      const position = centroids[country];
-                      if (!position) return null;
-                      return (
-                        <Marker key={country} position={position} icon={L.icon({ iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png', iconSize: [25, 41], iconAnchor: [12, 41] })}>
-                          <Popup>
-                            <strong>{country}</strong><br />Applications: {count}
-                          </Popup>
-                        </Marker>
-                      );
-                    })}
-                  </MapContainer>
+              <div className="space-y-6">
+                {/* Enhanced Map with Bubble Visualization */}
+                <div className="relative">
+                  <div className="w-full mx-auto bg-slate-50 rounded-lg border overflow-hidden" style={{ height: 450 }}>
+                    <MapContainer 
+                      center={[20, 0]} 
+                      zoom={2} 
+                      style={{ width: '100%', height: 450, backgroundColor: '#f8fafc' }} 
+                      scrollWheelZoom={false}
+                      zoomControl={false}
+                      attributionControl={false}
+                    >
+                      <TileLayer
+                        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                      />
+                      {/* Enhanced Bubble Markers */}
+                      {Object.entries(countryCounts).map(([country, count]) => {
+                        const centroids: { [key: string]: [number, number] } = {
+                          'Marshall Islands': [7.1164, 171.1858],
+                          'United States': [39.8283, -98.5795],
+                          'Fiji': [-17.7134, 178.0650],
+                          'Hawaii': [19.8968, -155.5828],
+                          'Guam': [13.4443, 144.7937],
+                          'Philippines': [12.8797, 121.7740],
+                          'Australia': [-25.2744, 133.7751],
+                          'New Zealand': [-40.9006, 174.8860],
+                          'Japan': [36.2048, 138.2529],
+                          'China': [35.8617, 104.1954],
+                          'South Korea': [35.9078, 127.7669],
+                          'Germany': [51.1657, 10.4515],
+                          'United Kingdom': [55.3781, -3.4360],
+                          'Canada': [56.1304, -106.3468],
+                          'Mexico': [23.6345, -102.5528],
+                          'Brazil': [-14.2350, -51.9253],
+                          'India': [20.5937, 78.9629],
+                          'Thailand': [15.8700, 100.9925],
+                          'Singapore': [1.3521, 103.8198],
+                          'Indonesia': [-0.7893, 113.9213]
+                        };
+                        
+                        const position = centroids[country];
+                        if (!position) return null;
+                        
+                        // Calculate bubble size based on application count
+                        const maxCount = Math.max(...Object.values(countryCounts));
+                        const minSize = 8;
+                        const maxSize = 40;
+                        const size = minSize + (count / maxCount) * (maxSize - minSize);
+                        
+                        // Color intensity based on count
+                        const intensity = count / maxCount;
+                        const bubbleColor = intensity > 0.7 ? '#1d4ed8' : intensity > 0.4 ? '#3b82f6' : '#60a5fa';
+                        
+                        return (
+                          <Marker 
+                            key={country} 
+                            position={position} 
+                            icon={L.divIcon({
+                              html: `
+                                <div style="
+                                  position: relative;
+                                  width: ${size}px;
+                                  height: ${size}px;
+                                ">
+                                  <div style="
+                                    width: 100%;
+                                    height: 100%;
+                                    border-radius: 50%;
+                                    background-color: ${bubbleColor};
+                                    opacity: 0.7;
+                                    border: 2px solid white;
+                                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                                    animation: pulse 2s infinite;
+                                  "></div>
+                                  <div style="
+                                    position: absolute;
+                                    top: 50%;
+                                    left: 50%;
+                                    transform: translate(-50%, -50%);
+                                    color: white;
+                                    font-weight: bold;
+                                    font-size: ${size > 25 ? '10px' : '8px'};
+                                    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+                                  ">${count}</div>
+                                </div>
+                                <style>
+                                  @keyframes pulse {
+                                    0% { box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 0 0 ${bubbleColor}; }
+                                    70% { box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 0 10px rgba(59, 130, 246, 0); }
+                                    100% { box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 0 0 0 rgba(59, 130, 246, 0); }
+                                  }
+                                </style>
+                              `,
+                              className: '',
+                              iconSize: [size, size],
+                              iconAnchor: [size/2, size/2]
+                            })}
+                          >                            <Popup>
+                              <div className="text-center">
+                                <div className="font-semibold text-gray-900">{country}</div>
+                                <div className="text-sm text-gray-600">Applications: <span className="font-bold text-blue-600">{count}</span></div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  {((count / Object.values(countryCounts).reduce((a, b) => a + b, 0)) * 100).toFixed(1)}% of total
+                                </div>
+                                {(() => {
+                                  // Find detailed analytics for this location
+                                  const locationData = locationAnalytics.filter(item => 
+                                    item.current_location === country
+                                  );
+                                  
+                                  if (locationData.length > 0) {
+                                    const avgAge = locationData.reduce((sum, item) => sum + (item.avg_age || 0), 0) / locationData.length;
+                                    const statusCounts = locationData.reduce((acc, item) => {
+                                      acc[item.status] = (acc[item.status] || 0) + (item.count || 0);
+                                      return acc;
+                                    }, {} as { [key: string]: number });
+                                    
+                                    return (
+                                      <div className="mt-2 pt-2 border-t border-gray-200">
+                                        <div className="text-xs text-gray-600">
+                                          Avg Age: <span className="font-semibold">{avgAge.toFixed(1)} years</span>
+                                        </div>
+                                        <div className="text-xs text-gray-600 mt-1">
+                                          Status: {Object.entries(statusCounts).map(([status, count]) => 
+                                            `${status}: ${count}`
+                                          ).join(', ')}
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })()}
+                              </div>
+                            </Popup>
+                          </Marker>
+                        );
+                      })}
+                    </MapContainer>
+                  </div>
+                  
+                  {/* Map Controls Overlay */}
+                  <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-2 space-y-2">
+                    <div className="text-xs font-medium text-gray-700">Legend</div>
+                    <div className="flex items-center space-x-1">
+                      <div className="w-3 h-3 bg-blue-600 rounded-full opacity-70"></div>
+                      <span className="text-xs text-gray-600">High volume</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <div className="w-2.5 h-2.5 bg-blue-400 rounded-full opacity-70"></div>
+                      <span className="text-xs text-gray-600">Medium</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-blue-300 rounded-full opacity-70"></div>
+                      <span className="text-xs text-gray-600">Low volume</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-3 justify-center">
-                  {Object.entries(countryCounts)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 8)
-                    .map(([country, count]) => (
-                      <div key={country} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                        {country}: {count}
+
+                {/* Enhanced Statistics Panel */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Top Regions List */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Top Regions
+                    </h4>
+                    <div className="space-y-2">
+                      {Object.entries(countryCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 10)
+                        .map(([country, count], index) => {
+                          const total = Object.values(countryCounts).reduce((a, b) => a + b, 0);
+                          const percentage = ((count / total) * 100).toFixed(1);
+                          return (
+                            <div key={country} className="flex items-center justify-between py-2 border-b border-gray-200 last:border-0">
+                              <div className="flex items-center space-x-3">
+                                <div className="flex-shrink-0 w-6 text-center">
+                                  <span className="text-xs font-medium text-gray-500">#{index + 1}</span>
+                                </div>
+                                <span className="text-sm font-medium text-gray-900">{country}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-16 bg-gray-200 rounded-full h-2">
+                                  <div 
+                                    className="bg-blue-600 h-2 rounded-full transition-all duration-500" 
+                                    style={{ width: `${percentage}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-sm font-bold text-blue-600 w-8 text-right">{count}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>                  {/* Summary Statistics */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4">
+                    <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      Geographic Insights
+                    </h4>
+                    <div className="space-y-3">                      <div className="flex justify-between items-center p-2 bg-white rounded">
+                        <span className="text-sm text-gray-600">Total Locations</span>
+                        <span className="font-bold text-lg text-indigo-600">{Object.keys(countryCounts).length}</span>
                       </div>
-                    ))}
-                  {Object.keys(countryCounts).length > 8 && (
-                    <div className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">+{Object.keys(countryCounts).length - 8} more</div>
-                  )}
+                      <div className="flex justify-between items-center p-2 bg-white rounded">
+                        <span className="text-sm text-gray-600">Leading Location</span>
+                        <span className="font-medium text-sm text-indigo-600">
+                          {Object.entries(countryCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-white rounded">
+                        <span className="text-sm text-gray-600">Avg per Location</span>
+                        <span className="font-bold text-lg text-indigo-600">
+                          {Object.keys(countryCounts).length > 0 
+                            ? Math.round(Object.values(countryCounts).reduce((a, b) => a + b, 0) / Object.keys(countryCounts).length)
+                            : 0
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>{/* Time-based insights */}
+                <div className="text-xs text-gray-500 bg-gray-50 rounded p-3">
+                  <div className="flex items-center justify-between">
+                    <span>Analytics data updated: {new Date().toLocaleTimeString()}</span>
+                    <span className="flex items-center">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></div>
+                      Real-time analytics {autoRefresh ? '(auto-refresh on)' : '(manual refresh)'}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between">
+                    <span>Data source: application_intake_analytics view</span>
+                    <span className="text-green-600 font-medium">
+                      {locationAnalytics.length} analytics records processed
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
@@ -871,19 +1137,16 @@ const Applications: React.FC = () => {
   const [currentApplicationTitle, setCurrentApplicationTitle] = useState<string>("");
   const [applicationMessagesCount, setApplicationMessagesCount] = useState<{[key: string]: number}>({});
   const { toast } = useToast();
-  // List of document fields and their labels - matches MyApplicationsPage.tsx
+
+  // List of document fields and their labels
   const documentFields = [
-    { key: "birth_certificate", label: "Birth Certificate", storageKey: "birth_certificate_url" },
-    { key: "consent_form", label: "Consent Form", storageKey: "consent_form_url" },
-    { key: "marriage_or_divorce_certificate", label: "Marriage/Divorce Certificate", storageKey: "marriage_certificate_url" },
-    { key: "old_passport_copy", label: "Old Passport Copy", storageKey: "old_passport_url" },
-    { key: "signature", label: "Signature", storageKey: "signature_url" },
-    { key: "photo_id", label: "Photo ID", storageKey: "photo_id_url" },
-    { key: "social_security_card", label: "Social Security Card/Number", storageKey: "social_security_card_url" },
-    { key: "passport_photo", label: "Passport Photo", storageKey: "passport_photo_url" },
-    { key: "relationship_proof", label: "Relationship Proof", storageKey: "relationship_proof_url" },
-    { key: "parent_guardian_id", label: "Parent/Guardian Identification", storageKey: "parent_guardian_id_url" },
-  ];useEffect(() => {
+    { key: "birth_certificate_url", label: "Birth Certificate" },
+    { key: "consent_form_url", label: "Consent Form" },
+    { key: "marriage_certificate_url", label: "Marriage/Divorce Certificate" },
+    { key: "old_passport_url", label: "Old Passport Copy" },
+    { key: "signature_url", label: "Signature" },
+    { key: "photo_id_url", label: "Photo ID" },
+  ];  useEffect(() => {
     const fetchApplications = async () => {
       setLoading(true);
       setError(null);
@@ -1098,13 +1361,14 @@ const Applications: React.FC = () => {
       supabase.removeChannel(channel);
     };
   }, [applications, user?.id]);
+
   // Generate signed URLs for all document fields when viewApp changes
   useEffect(() => {
     if (!viewApp) return;
     (async () => {
       const newUrls: { [key: string]: string } = {};
       for (const doc of documentFields) {
-        const url = viewApp[doc.storageKey];
+        const url = viewApp[doc.key];
         if (url && url.trim() !== "") {
           // Extract the file path from the public URL
           const match = url.match(/passport-documents\/(.+)$/);
@@ -1642,85 +1906,137 @@ const Applications: React.FC = () => {
                   {[viewApp.surname, viewApp.first_middle_names].filter(Boolean).join(' ')}
                 </h1>
                 <p className="text-gray-600">Application ID: {viewApp.id}</p>
-              </div>              {/* Two Column Layout */}
+              </div>
+
+              {/* Two Column Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column: Applicant Information */}
-                <div className="bg-gray-50 rounded-lg p-4 border">
-                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Applicant Information</h4>
-                  <div className="space-y-2.5 text-sm">
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Full Name:</span>
-                      <span className="text-gray-900">{[viewApp.surname, viewApp.first_middle_names].filter(Boolean).join(' ') || '—'}</span>
+                <div className="space-y-6">
+                  <div className="bg-gray-50 rounded-lg p-4 border">
+                    <h4 className="font-semibold text-lg text-gray-900 mb-3">Applicant Information</h4>
+                    <div className="space-y-2.5 text-sm">
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Full Name:</span>
+                        <span className="text-gray-900">{[viewApp.surname, viewApp.first_middle_names].filter(Boolean).join(' ') || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Email:</span>
+                        <span className="text-gray-900">{viewApp.email || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Phone:</span>
+                        <span className="text-gray-900">{viewApp.phone_number || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Address:</span>
+                        <span className="text-gray-900">{[viewApp.address_unit, viewApp.street_name, viewApp.city, viewApp.state, viewApp.postal_code].filter(Boolean).join(', ') || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Application Type:</span>
+                        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded print:bg-transparent print:text-black print:px-0 print:py-0">
+                          {formatApplicationType(viewApp.application_type)}
+                        </span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Current Status:</span>
+                        <span className="print:text-black">
+                          <span className="print:hidden">{statusBadge(viewApp.status)}</span>
+                          <span className="hidden print:inline">{viewApp.status}</span>
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Email:</span>
-                      <span className="text-gray-900">{viewApp.email || '—'}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Phone:</span>
-                      <span className="text-gray-900">{viewApp.phone_number || '—'}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Address:</span>
-                      <span className="text-gray-900">{[viewApp.address_unit, viewApp.street_name, viewApp.city, viewApp.state, viewApp.postal_code].filter(Boolean).join(', ') || '—'}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Application Type:</span>
-                      <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded print:bg-transparent print:text-black print:px-0 print:py-0">
-                        {formatApplicationType(viewApp.application_type)}
-                      </span>
-                    </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Current Status:</span>
-                      <span className="print:text-black">
-                        <span className="print:hidden">{statusBadge(viewApp.status)}</span>
-                        <span className="hidden print:inline">{viewApp.status}</span>
-                      </span>
+                  </div>
+
+                  {/* Personal Details */}
+                  <div className="bg-gray-50 rounded-lg p-4 border">
+                    <h4 className="font-semibold text-lg text-gray-900 mb-3">Personal Details</h4>
+                    <div className="space-y-2.5 text-sm">
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Gender:</span>
+                        <span className="text-gray-900">{viewApp.gender || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Date of Birth:</span>
+                        <span className="text-gray-900">{viewApp.date_of_birth || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Place of Birth:</span>
+                        <span className="text-gray-900">{[viewApp.place_of_birth_city, viewApp.place_of_birth_state, viewApp.country_of_birth].filter(Boolean).join(', ') || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Hair Color:</span>
+                        <span className="text-gray-900">{viewApp.hair_color || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Eye Color:</span>
+                        <span className="text-gray-900">{viewApp.eye_color || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Height:</span>
+                        <span className="text-gray-900">
+                          {viewApp.height_feet && viewApp.height_inches ? `${viewApp.height_feet}' ${viewApp.height_inches}"` : '—'}
+                        </span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">Marital Status:</span>
+                        <span className="text-gray-900">{viewApp.marital_status || '—'}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-medium text-gray-700 w-32 shrink-0">SSN:</span>
+                        <span className="text-gray-900">{viewApp.social_security_number || '—'}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Right Column: Personal Details */}
-                <div className="bg-gray-50 rounded-lg p-4 border">
-                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Personal Details</h4>
-                  <div className="space-y-2.5 text-sm">
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Gender:</span>
-                      <span className="text-gray-900">{viewApp.gender || '—'}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Date of Birth:</span>
-                      <span className="text-gray-900">{viewApp.date_of_birth || '—'}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Place of Birth:</span>
-                      <span className="text-gray-900">{[viewApp.place_of_birth_city, viewApp.place_of_birth_state, viewApp.country_of_birth].filter(Boolean).join(', ') || '—'}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Hair Color:</span>
-                      <span className="text-gray-900">{viewApp.hair_color || '—'}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Eye Color:</span>
-                      <span className="text-gray-900">{viewApp.eye_color || '—'}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Height:</span>
-                      <span className="text-gray-900">
-                        {viewApp.height_feet && viewApp.height_inches ? `${viewApp.height_feet}' ${viewApp.height_inches}"` : '—'}
-                      </span>
-                    </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">Marital Status:</span>
-                      <span className="text-gray-900">{viewApp.marital_status || '—'}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="font-medium text-gray-700 w-32 shrink-0">SSN:</span>
-                      <span className="text-gray-900">{viewApp.social_security_number || '—'}</span>
+                {/* Right Column: Uploaded Documents */}
+                <div className="print:hidden">
+                  <div className="bg-gray-50 rounded-lg p-4 border">
+                    <h4 className="font-semibold text-lg text-gray-900 mb-3">Uploaded Documents</h4>
+                    <div className="space-y-2">
+                      {documentFields.map(doc => {
+                        const url = signedUrls[doc.key];
+                        if (!viewApp[doc.key]) return null;
+                        return (
+                          <div key={doc.key} className="flex items-center justify-between p-3 bg-white border rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                              </div>
+                              <span className="font-medium text-gray-900">{doc.label}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <a 
+                                href={url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
+                                title={`View ${doc.label}`}
+                              >
+                                <EyeIcon className="w-4 h-4 text-blue-600" />
+                              </a>
+                              <a 
+                                href={url} 
+                                download 
+                                className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
+                                title={`Download ${doc.label}`}
+                              >
+                                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                </svg>
+                              </a>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {documentFields.filter(doc => viewApp[doc.key]).length === 0 && (
+                        <p className="text-gray-500 text-sm italic">No documents uploaded</p>
+                      )}
                     </div>
                   </div>
-                </div>
-              </div>
+                </div>              </div>
 
               {/* Emergency Contact - Full Width */}
               <div className="col-span-1 lg:col-span-2 mt-6">
@@ -1786,81 +2102,12 @@ const Applications: React.FC = () => {
                       <div className="flex">
                         <span className="font-medium text-gray-700 w-32 shrink-0">Nationality:</span>
                         <span className="text-gray-900">{viewApp.mother_nationality || '—'}</span>
-                      </div>                      <div className="flex">
+                      </div>
+                                           <div className="flex">
                         <span className="font-medium text-gray-700 w-32 shrink-0">Place of Birth:</span>
                         <span className="text-gray-900">{[viewApp.mother_birth_city, viewApp.mother_birth_state, viewApp.mother_birth_country].filter(Boolean).join(', ') || '—'}</span>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>              {/* Uploaded Documents - Full Width */}
-              <div className="col-span-1 lg:col-span-2 mt-6 print:hidden">
-                <div className="bg-gray-50 rounded-lg p-4 border">
-                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Document Status</h4>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                    {documentFields.map(doc => {
-                      const url = signedUrls[doc.key];
-                      // Check both the display key and storage key for document existence
-                      const documentExists = !!(viewApp[doc.key] || viewApp[doc.storageKey]);
-                      
-                      return (
-                        <div key={doc.key} className="flex items-center justify-between p-3 bg-white border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                              documentExists ? 'bg-green-100' : 'bg-gray-100'
-                            }`}>
-                              {documentExists ? (
-                                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                              ) : (
-                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L4.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                </svg>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <span className="font-medium text-gray-900 text-sm">{doc.label}</span>
-                              <p className={`text-xs ${documentExists ? 'text-green-600' : 'text-gray-500'}`}>
-                                {documentExists ? 'Uploaded' : 'Not uploaded'}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            {documentExists && url ? (
-                              <>
-                                <a 
-                                  href={url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer" 
-                                  className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
-                                  title={`View ${doc.label}`}
-                                >
-                                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                  </svg>
-                                </a>
-                                <a 
-                                  href={url} 
-                                  download 
-                                  className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
-                                  title={`Download ${doc.label}`}
-                                >
-                                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                                  </svg>
-                                </a>
-                              </>
-                            ) : (
-                              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                No file
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
                   </div>
                 </div>
               </div>

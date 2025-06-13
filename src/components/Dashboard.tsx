@@ -770,10 +770,9 @@ const PassportDashboard: React.FC = () => {
       alert("An unexpected error occurred. Please try again.")
     }
   }
-
   const handleProfileClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    navigate({ to: "/profile" })
+    navigate({ to: "/my-profile" })
   }
 
   // Show loading while session or profile is being determined
