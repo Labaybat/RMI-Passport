@@ -96,6 +96,7 @@ verify-*.bat
 *.test.ts
 *.spec.js
 *.spec.ts
+check-*.js
 
 # Specific test files
 rate-limit-test.mjs
@@ -138,6 +139,7 @@ USER_DELETION_SETUP.md
 
 # Temporary directories and files
 -p/
+*-p/
 *.tmp
 *.temp
 /tmp/
