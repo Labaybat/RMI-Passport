@@ -191,7 +191,9 @@ export const logActivityEvent = async (action: string, recordId?: string, detail
           ...details,
           applicantName: applicantName
         };
-      }
+      }        // Note: IP address collection requires server-side integration
+        // Client-side JavaScript can't reliably get the user's real IP address
+        // A server-side function or API endpoint would be needed for this
         await logAdminActivity({
         userId: user.data.user.id,
         userName: userFullName || user.data.user.email || 'Admin User',
@@ -199,6 +201,7 @@ export const logActivityEvent = async (action: string, recordId?: string, detail
         recordId,
         details: enrichedDetails,
         isAdmin: isAdmin,
+        ipAddress: "client-side-unavailable", // We need a server-side solution to get real IP
         deviceInfo: getDeviceInfo()
       });
     }
@@ -490,15 +493,18 @@ const ActivityLog: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const itemsPerPage = 20; // Limit to 20 entries per page
-
   // State for activity summary data
   const [activitySummary, setActivitySummary] = useState({ today: 0, yesterday: 0 });
-  const [uniqueUsers, setUniqueUsers] = useState({ staff: 0, admin: 0 });
-
-  // Fetch activity log data from Supabase
-  const fetchActivityData = async () => {
+  const [uniqueUsers, setUniqueUsers] = useState({ staff: 0, admin: 0 });  /**
+   * Fetch activity log data from Supabase
+   * @param silent When true, won't show loading state
+   * This reduces UI flicker during auto-refresh
+   */
+  const fetchActivityData = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       
       // Build the query based on filters
       let countQuery = supabase.from('admin_activity_log').select('*', { count: 'exact', head: true });
@@ -637,52 +643,33 @@ const ActivityLog: React.FC = () => {
           };
         });
       }
-      
-      setActivityData(transformedData);
-      
-      // Apply post-fetch user type filtering
-      if (filters.userType !== 'all') {
-        const filteredData = transformedData.filter(item => 
-          filters.userType === 'admin' 
-            ? item.user_role === 'admin' 
-            : item.user_role === 'staff'
-        );
-        setActivityData(filteredData);
-      } else {
-        setActivityData(transformedData);
-      }
-        // Log this view action if auto-logging is enabled
-      if (autoRefresh) {
-        const user = await supabase.auth.getUser();
-        if (user && user.data && user.data.user) {
-          // Fetch user's profile information for name
-          const { data: userProfile } = await supabase
-            .from('profiles')
-            .select('first_name, last_name, role')
-            .eq('id', user.data.user.id)
-            .single();
-          
-          // Create user's full name
-          const userFullName = userProfile ? 
-            `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() : '';
-            
-          await logAdminActivity({
-            userId: user.data.user.id,
-            userName: userFullName || user.data.user.email || 'Admin User',
-            action: 'Viewed Activity Log',
-            isAdmin: userProfile?.role === 'admin', // Only true if user has admin role
-            deviceInfo: getDeviceInfo()
-          });
+          // Apply post-fetch user type filtering
+        if (filters.userType !== 'all') {
+          const filteredData = transformedData.filter(item => 
+            filters.userType === 'admin' 
+              ? item.user_role === 'admin' 
+              : item.user_role === 'staff'
+          );
+          setActivityData(filteredData);
+        } else {
+          setActivityData(transformedData);
         }
-      }
+
+      // No longer logging "Viewed Activity Log" entries as requested
     } catch (error) {
       console.error('Error fetching activity data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch activity data. Please try again."
-      });
+      // Only show error toast if not in silent mode
+      if (!silent) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch activity data. Please try again."
+        });
+      }
     } finally {
-      setLoading(false);
+      // Only update loading state if not in silent mode
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
@@ -765,15 +752,15 @@ const ActivityLog: React.FC = () => {
     fetchActivityData();
     fetchActivitySummary(); // Fetch summary data independently
   }, [filters, currentPage]);
-  
-  // Update summary periodically if auto-refresh is enabled
+    // Update data periodically if auto-refresh is enabled
   useEffect(() => {
     if (!autoRefresh) return;
     
-    // Initial fetch
+    // Initial fetch for summary only, main data is already fetched
     fetchActivitySummary();
-    
-    const interval = setInterval(() => {
+      const interval = setInterval(() => {
+      // Refresh both data and summary silently without showing loading state
+      fetchActivityData(true); // Pass true for silent mode
       fetchActivitySummary();
     }, 30000); // Every 30 seconds
     

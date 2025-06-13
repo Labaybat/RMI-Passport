@@ -4,6 +4,7 @@ import supabase from "../lib/supabase/client"
 import toast from "react-hot-toast"
 import { useAuth } from "../contexts/AuthContext"
 import Footer from "./Footer"
+import { logActivityEvent } from "./ActivityLogComponents"
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -143,11 +144,30 @@ export function LoginPage() {
           setLoading(false)
           return
         }
-      }
-
-      // Success! Set states and redirect
+      }      // Success! Set states and redirect
       console.log("[Login] Success, preparing to redirect...")
       toast.success("Login successful! Redirecting...")
+      
+      // Get user role to determine if admin/staff login
+      const { data: roleData } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", signInData.user.id)
+        .single()
+        
+      // Log login activity for admin and staff users
+      if (roleData && (roleData.role === "admin" || roleData.role === "staff")) {
+        console.log("[Login] Logging admin/staff login activity...")
+        await logActivityEvent(
+          "User Login",
+          signInData.user.id,
+          {
+            loginType: roleData.role,
+            method: "password"
+          }
+        )
+      }
+      
       setLoading(false)
       await new Promise(res => setTimeout(res, 500))
       console.log("[Login] Redirecting based on role...")

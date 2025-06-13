@@ -5048,13 +5048,23 @@ function getProgressForStatus(status: string) {
 export default function AdminPage() {
   useAdminGuard();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const { signOut } = useAuth();
+  const { signOut, user, profile } = useAuth();
   const navigate = useNavigate();
-
   const handleLogout = async () => {
+    // Log the logout activity before signing out
+    if (user && profile && (profile.role === "admin" || profile.role === "staff")) {
+      await logActivityEvent(
+        "User Logout",
+        user.id,
+        {
+          logoutType: profile.role,
+          method: "manual"
+        }
+      );
+    }
     await signOut();
     navigate({ to: "/login" });
-  };  const renderContent = () => {
+  };const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
         return <Dashboard />;
