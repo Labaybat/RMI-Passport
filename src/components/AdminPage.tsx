@@ -12,6 +12,9 @@ import MessageModal from "./MessageModal"; // Import for messaging system
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+// Import Activity Log component and logging utility
+import ActivityLog from './ActivityLogComponents';
+import { logActivityEvent } from './ActivityLogComponents';
 
 // Components for different sections
 
@@ -1398,10 +1401,22 @@ const Applications: React.FC = () => {
       toast({ title: "Deleted", description: "Application deleted." });
     }
   };
-
-  const handleView = (id: string) => {
+  const handleView = async (id: string) => {
     const app = applications.find(a => a.id === id);
     setViewApp(app);
+    
+    // Log application view activity
+    if (app) {
+      await logActivityEvent(
+        "Viewed Application",
+        app.id,
+        {
+          applicantName: app.applicant_name || 'Unknown',
+          applicationType: app.application_type,
+          applicationStatus: app.status
+        }
+      );
+    }
   };
   const handleEdit = (id: string) => {
     const app = applications.find(a => a.id === id);
@@ -1596,8 +1611,7 @@ const Applications: React.FC = () => {
   const handleStatusSave = async () => {
     if (!statusApp) return;
     setStatusSaving(true);
-    
-    // Get admin name for tracking
+      // Get admin name for tracking
     const adminName = profile 
       ? [profile.first_name, profile.last_name].filter(Boolean).join(' ')
       : 'Admin User';
@@ -1618,6 +1632,18 @@ const Applications: React.FC = () => {
     if (error) {
       toast({ title: "Error", description: "Failed to update status." });
     } else {
+      // Log this activity in the admin activity log
+      await logActivityEvent(
+        `Changed Application Status to ${statusValue}`,
+        statusApp.id,
+        { 
+          previousStatus: statusApp.status,
+          newStatus: statusValue,
+          applicantName: statusApp.applicant_name || 'Unknown',
+          applicationId: statusApp.id
+        }
+      );
+      
       setApplications(applications.map(app => app.id === statusApp.id ? { 
         ...app, 
         status: statusValue,
@@ -2546,11 +2572,22 @@ const Users: React.FC = () => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
   };
-
   // Handle view user
-  const handleViewUser = (user: any) => {
+  const handleViewUser = async (user: any) => {
     setSelectedUser(user);
     setShowViewUserModal(true);
+    
+    // Log user profile view activity
+    await logActivityEvent(
+      "Viewed User Profile",
+      user.id,
+      {
+        userName: getUserFullName(user),
+        email: user.email,
+        role: user.role,
+        userStatus: user.status
+      }
+    );
   };
   // Handle close view user modal
   const handleCloseViewUser = () => {
@@ -2646,12 +2683,26 @@ const Users: React.FC = () => {
       
       if (error) {
         throw error;
-      }
-
+      }      // Log the user edit activity
+      await logActivityEvent(
+        "Updated User Profile",
+        selectedUser.id,
+        {
+          userName: `${editUserForm.firstName} ${editUserForm.lastName}`,
+          previousRole: selectedUser.role,
+          newRole: editUserForm.role,
+          previousStatus: selectedUser.status,
+          newStatus: editUserForm.status,
+          email: editUserForm.email
+        }
+      );
+      
       toast({
         title: "Success",
-        description: "User updated successfully!",
-      });      // Reset form and close modal
+        description: "User updated successfully!"
+      });
+      
+      // Reset form and close modal
       resetEditUserForm();
       setShowEditUserModal(false);
       
@@ -2701,10 +2752,20 @@ const Users: React.FC = () => {
       try {
         const { data, error } = await supabase.functions.invoke('delete-user', {
           body: { user_id: user.id }
-        });
-
-        if (!error && data?.success) {
+        });        if (!error && data?.success) {
           // Edge function succeeded!
+          
+          // Log this activity
+          await logActivityEvent(
+            "Deleted User",
+            user.id,
+            {
+              userName: getUserFullName(user),
+              email: user.email,
+              role: user.role
+            }
+          );
+          
           toast({
             title: "Success",
             description: "User and all associated data deleted successfully!"
@@ -2763,8 +2824,17 @@ const Users: React.FC = () => {
 
     if (profileError) {
       throw new Error(`Failed to delete profile: ${profileError.message}`);
-    }
-
+    }    // Log this activity (fallback approach)
+    await logActivityEvent(
+      "Deleted User (Fallback Method)",
+      user.id,
+      {
+        userName: getUserFullName(user),
+        email: user.email,
+        role: user.role
+      }
+    );
+    
     toast({
       title: "Success",
       description: "User profile deleted successfully. You may need to contact the system administrator to fully remove the authentication record."
@@ -4909,6 +4979,7 @@ const sidebarItems = [
   { id: 'dashboard', label: 'Dashboard', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6m-6 0v6m0 0H7m6 0h6" /></svg> },
   { id: 'applications', label: 'Applications', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2v-5a2 2 0 00-2-2h-2a2 2 0 00-2 2v5a2 2 0 012 2z" /></svg> },
   { id: 'users', label: 'Users', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M16 3.13a4 4 0 010 5.75M8 3.13a4 4 0 010 5.75" /></svg> },
+  { id: 'activity-log', label: 'Activity Log', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z M19 14l-7 7m0 0l-7-7m7 7V3" /></svg> },
   { id: 'system-health', label: 'System Health', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
   { id: 'settings', label: 'Settings', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
 ];
@@ -4983,8 +5054,7 @@ export default function AdminPage() {
   const handleLogout = async () => {
     await signOut();
     navigate({ to: "/login" });
-  };
-  const renderContent = () => {
+  };  const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
         return <Dashboard />;
@@ -4992,6 +5062,8 @@ export default function AdminPage() {
         return <Applications />;
       case "users":
         return <Users />;
+      case "activity-log":
+        return <ActivityLog />;
       case "system-health":
         return <SystemHealth />;
       case "settings":

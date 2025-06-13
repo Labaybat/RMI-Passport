@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/use-toast';
 import { ArrowPathIcon, TrashIcon } from '@heroicons/react/24/solid';
 import supabase from '../lib/supabase/client';
+import { logActivityEvent } from './ActivityLogComponents';
 
 // Type definitions for AdminComments
 interface CommentProfile {
@@ -112,8 +113,18 @@ const AdminComments: React.FC<AdminCommentsProps> = ({ applicationId }) => {
         toast({
           title: "Error",
           description: "Failed to add comment",
-        });
-      } else {
+        });      } else {
+        // Log the comment addition activity
+        await logActivityEvent(
+          "Added Comment",
+          applicationId,
+          {
+            commentId: data?.[0]?.id,
+            applicationId: applicationId,
+            commentText: newComment.trim().substring(0, 50) + (newComment.length > 50 ? '...' : '')
+          }
+        );
+        
         setNewComment('');
         await fetchComments(); // Refresh comments to include the new comment with profile data
         toast({
@@ -147,8 +158,17 @@ const AdminComments: React.FC<AdminCommentsProps> = ({ applicationId }) => {
         toast({
           title: "Error",
           description: "Failed to delete comment",
-        });
-      } else {
+        });      } else {
+        // Log the comment deletion activity
+        await logActivityEvent(
+          "Deleted Comment",
+          applicationId,
+          {
+            commentId: commentId,
+            applicationId: applicationId
+          }
+        );
+        
         await fetchComments(); // Refresh comments
         toast({
           title: "Success",

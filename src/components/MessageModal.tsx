@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import supabase from '../lib/supabase/client';
 import Button from './ui/Button';
 import { useAuth } from '../contexts/AuthContext';
+import { logActivityEvent } from './ActivityLogComponents';
 
 interface Message {
   id?: string;
@@ -82,6 +83,18 @@ const MessageModal: React.FC<MessageModalProps> = ({
     // Clear processed message IDs when switching applications
     processedMessageIds.current.clear();
     fetchMessages();
+    
+    // Log activity when admin opens the message modal
+    if (isAdmin) {
+      logActivityEvent(
+        "Viewed Messages",
+        applicationId,
+        {
+          applicationId: applicationId,
+          applicationTitle: applicationTitle
+        }
+      );
+    }
       // Set up real-time subscription
     console.log('🔄 Setting up real-time subscription for application:', applicationId);
     
@@ -454,8 +467,7 @@ const MessageModal: React.FC<MessageModalProps> = ({
         console.error('❌ Error marking messages as read:', error);
         return;
       }
-      
-      console.log(`✅ Successfully marked ${data?.length || 0} messages as read`);
+        console.log(`✅ Successfully marked ${data?.length || 0} messages as read`);
       
       // Update local state to reflect read status
       setMessages(current => 
@@ -476,6 +488,19 @@ const MessageModal: React.FC<MessageModalProps> = ({
         })
       );    
       setUnreadCount(0);
+      
+      // Log activity when admin marks messages as read
+      if (isAdmin && data && data.length > 0) {
+        await logActivityEvent(
+          "Read Messages",
+          applicationId,
+          {
+            applicationId: applicationId,
+            applicationTitle: applicationTitle,
+            messageCount: data.length
+          }
+        );
+      }
     } catch (error) {
       console.error('❌ Unexpected error marking messages as read:', error);
     }
@@ -589,8 +614,7 @@ const MessageModal: React.FC<MessageModalProps> = ({
       .from('messages')
       .insert(dbMessage)
       .select('*'); // Return the inserted record to get the real ID
-      
-    if (error) {
+        if (error) {
       console.error('❌ Error sending message:', error);
       // Remove the temporary message on error
       setMessages(currentMessages => 
@@ -609,6 +633,20 @@ const MessageModal: React.FC<MessageModalProps> = ({
           )
         );
         console.log('🔄 Replaced temporary message with real database record');
+        
+        // Log the activity if the sender is an admin
+        if (isAdmin) {
+          await logActivityEvent(
+            "Sent Message",
+            applicationId,
+            {
+              messageId: data[0].id,
+              applicationId: applicationId,
+              applicationTitle: applicationTitle,
+              messageContent: newMessage.trim().substring(0, 50) + (newMessage.length > 50 ? '...' : '')
+            }
+          );
+        }
       }
     }
   };
