@@ -22,6 +22,7 @@ import MyApplicationsPage from "./components/MyApplicationsPage"
 import { PasswordRecoveryPage } from "./components/PasswordRecoveryPage"
 import { PasswordResetPage } from "./components/PasswordResetPage"
 import TermsAndConditions from "./components/TermsAndConditions"
+import RequiredDocumentsGuide from "./components/RequiredDocumentsGuide"
 
 // Root layout
 const rootRoute = createRootRoute({
@@ -105,6 +106,12 @@ const termsAndConditionsRoute = createRoute({
   component: TermsAndConditions,
 })
 
+const requiredDocumentsRoute = createRoute({
+  path: "/required-documents",
+  getParentRoute: () => rootRoute,
+  component: RequiredDocumentsGuide,
+})
+
 // Router setup
 const router = createRouter({
   routeTree: rootRoute.addChildren([
@@ -120,6 +127,7 @@ const router = createRouter({
     passwordRecoveryRoute,
     passwordResetRoute,
     termsAndConditionsRoute,
+    requiredDocumentsRoute,
   ]),
 })
 

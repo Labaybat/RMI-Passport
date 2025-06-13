@@ -972,9 +972,8 @@ const PassportDashboard: React.FC = () => {
           </div>
 
           {/* Main Content */}
-          <div className="space-y-4 sm:space-y-6">
-            {/* Action Buttons Grid */}
-            <div className="grid w-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">              <Button
+          <div className="space-y-4 sm:space-y-6">            {/* Action Buttons Grid */}
+            <div className="grid w-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2"><Button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 onClick={() => {
                   console.log("[Dashboard] Button clicked! Current label:", buttonLabel);
@@ -1090,11 +1089,9 @@ const PassportDashboard: React.FC = () => {
                 <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
                   View Passport Act PDF
                 </span>
-              </Button>
-
-              <Button
+              </Button>              <Button
                 className="group relative flex h-14 sm:h-16 items-center overflow-hidden rounded-xl bg-gradient-to-br from-cyan-50 to-sky-50 px-4 sm:px-6 shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
-                onClick={() => console.log("Upload Documents clicked")}
+                onClick={() => navigate({ to: "/required-documents" })}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 to-cyan-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
                 <div className="mr-3 sm:mr-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-cyan-100 text-cyan-600 shadow-sm transition-all duration-300 group_hover:bg-cyan-200 group_hover:text-cyan-700 group-hover:shadow">
@@ -1110,13 +1107,15 @@ const PassportDashboard: React.FC = () => {
                     strokeLinejoin="round"
                     className="sm:w-5 sm:h-5"
                   >
-                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
-                    <path d="M12 12v9"></path>
-                    <path d="m16 16-4-4-4 4"></path>
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <path d="M14 2v6h6"></path>
+                    <path d="M16 13H8"></path>
+                    <path d="M16 17H8"></path>
+                    <path d="M10 9H8"></path>
                   </svg>
                 </div>
                 <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
-                  Upload Documents
+                  Required Documents Guide
                 </span>
               </Button>
 
@@ -1142,8 +1141,7 @@ const PassportDashboard: React.FC = () => {
                     <path d="M12 16v-4"></path>
                     <path d="M12 8h.01"></path>
                   </svg>
-                </div>
-                <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
+                </div>                <span className="text-sm sm:text-base font-medium text-gray-700 transition-colors duration-300 group-hover:text-gray-900">
                   Photo Guidelines
                 </span>
               </Button>

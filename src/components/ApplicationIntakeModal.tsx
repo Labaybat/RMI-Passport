@@ -152,29 +152,52 @@ const ApplicationIntakeModal: React.FC<ApplicationIntakeModalProps> = ({
       };
     }
   };const getRequiredDocuments = () => {
-    const baseDocuments = [
-      'Birth certificate',
-      'Photo identification',
-      'Passport photo (2x2 inches, white background)',
-    ];
-
-    // Add additional documents based on responses
-    if (formData.applicantRelationship === 'child') {
-      baseDocuments.push('Parental consent form', 'Parent/guardian identification');
+    // Base documents that everyone needs
+    const baseDocuments = [];
+    
+    // For applicants applying for themselves (regardless of passport history)
+    if (formData.applicantRelationship === 'myself') {
+      baseDocuments.push(
+        'Birth certificate',
+        'Photo identification',
+        'Passport photo (45mm height x 35mm width)',
+        'Copy of social security card',
+        'Consent form'
+      );
+    }    // For child applications
+    else if (formData.applicantRelationship === 'child') {
+      baseDocuments.push(
+        'Your child\'s birth certificate',
+        formData.hasPreviousRmiPassport 
+          ? 'Your child\'s photo identification'
+          : 'Your child\'s photo identification (if available)',
+        'Passport photo (45mm height x 35mm width)',
+        'Copy of your child\'s social security card',
+        'Parental consent form', 
+        'Parent identification'
+      );
     }
-      if (formData.applicantRelationship === 'guardianship') {
-      baseDocuments.push('Legal guardianship documents', 'Guardian identification');
+    // Default documents for other cases
+    else {
+      baseDocuments.push(
+        'Birth certificate',
+        'Photo identification',
+        'Passport photo (45mm height x 35mm width)',
+      );
+    }      if (formData.applicantRelationship === 'guardianship') {
+      baseDocuments.push('Legal guardianship documents', 'Guardian identification', 'Copy of birth certificate');
     }
     
     if (formData.applicantRelationship === 'others') {
-      baseDocuments.push('Proof of relationship or authorization', 'Your identification');
+      baseDocuments.push('Proof of relationship or authorization', 'Your identification', 'Copy of birth certificate');
     }
 
     if (formData.hasPreviousRmiPassport) {
       baseDocuments.push('Previous RMI passport (if available)');
     }
 
-    if (formData.applicantAge < 16) {
+    // Add requirement for both parents' consent only if not already covered by parental consent form
+    if (formData.applicantAge < 16 && formData.applicantRelationship !== 'child') {
       baseDocuments.push('Both parents\' identification or consent');
     }
 
@@ -362,8 +385,7 @@ const ApplicationIntakeModal: React.FC<ApplicationIntakeModalProps> = ({
           {/* Step 5: Required Documents */}
           {currentStep === 5 && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">📋 Required Documents</h3>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-gray-900">📋 Required Documents</h3>              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800 font-medium mb-3">
                   You must have all these documents ready before proceeding:
                 </p>
@@ -375,14 +397,21 @@ const ApplicationIntakeModal: React.FC<ApplicationIntakeModalProps> = ({
                     </li>
                   ))}
                 </ul>
-              </div>
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <p className="text-xs text-blue-600 mt-3 italic">
+                  Note: Additional documents may be requested during the review process based on your specific circumstances.
+                </p>
+              </div>              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                 <p className="text-sm text-amber-800">
-                  📸 Need help with passport photos? View our{' '}
-                  <button className="underline font-medium hover:text-amber-900">
-                    photo guidelines
-                  </button>{' '}
-                  for detailed requirements.
+                  📋 Need detailed document information? View our{' '}
+                  <a 
+                    href="/required-documents" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline font-medium hover:text-amber-900"
+                  >
+                    complete document guide
+                  </a>{' '}
+                  for comprehensive requirements and photo guidelines.
                 </p>
               </div>
             </div>
