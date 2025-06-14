@@ -8,6 +8,9 @@ import { useToast } from "../hooks/use-toast";
 import { CheckCircleIcon, XCircleIcon, ClockIcon, PencilIcon, EyeIcon, TrashIcon, ArrowPathIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 import AdminComments from "./AdminComments";
 import MessageModal from "./MessageModal"; // Import for messaging system
+// Import Application component for edit modal
+import Application from "./Application";
+import DocumentViewerAdmin from "./DocumentViewerAdmin";
 // 1. Import for map
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -1133,12 +1136,14 @@ const Applications: React.FC = () => {
     gender: "",
     role: "user",
     status: "active"
-  });
-  // Add states for message functionality
+  });  // Add states for message functionality
   const [messageModalOpen, setMessageModalOpen] = useState(false);
   const [currentApplicationId, setCurrentApplicationId] = useState<string>("");
   const [currentApplicationTitle, setCurrentApplicationTitle] = useState<string>("");
   const [applicationMessagesCount, setApplicationMessagesCount] = useState<{[key: string]: number}>({});
+  // Add state for Application modal
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [applicationToEdit, setApplicationToEdit] = useState<any | null>(null);
   const { toast } = useToast();
 
   // List of document fields and their labels
@@ -1437,11 +1442,24 @@ const Applications: React.FC = () => {
         }
       );
     }
-  };
-  const handleEdit = (id: string) => {
+  };  const handleEdit = async (id: string) => {
     const app = applications.find(a => a.id === id);
-    setEditApp(app);
-    setEditForm({ ...app });
+    if (app) {
+      // Log application edit activity
+      await logActivityEvent(
+        "Started Editing Application",
+        app.id,
+        {
+          applicantName: app.applicant_name || 'Unknown',
+          applicationType: app.application_type,
+          applicationStatus: app.status
+        }
+      );
+      
+      // Set the application to edit and open the Application modal
+      setApplicationToEdit(app);
+      setShowApplicationModal(true);
+    }
   };
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setEditForm({ ...editForm, [e.target.name]: e.target.value });
@@ -1676,9 +1694,16 @@ const Applications: React.FC = () => {
       toast({ title: "Status Updated", description: "Application status updated." });
     }
   };
-
   const handleViewClose = () => setViewApp(null);
   const handleEditClose = () => setEditApp(null);
+    // Handle Application modal close
+  const handleApplicationModalClose = () => {
+    setShowApplicationModal(false);
+    setApplicationToEdit(null);
+    // Refresh applications by updating state (this will trigger the useEffect to refetch)
+    window.location.reload();
+  };
+  
   // Print application details
   const handlePrintApplication = () => {
     const printContents = document.getElementById('application-print-content')?.innerHTML;
@@ -2349,13 +2374,19 @@ const Applications: React.FC = () => {
           </div>
         </div>
       )}
-      
-      {/* Add Message Modal */}
+        {/* Add Message Modal */}
       <MessageModal 
         isOpen={messageModalOpen}
         onClose={handleCloseMessages}
         applicationId={currentApplicationId}
         applicationTitle={currentApplicationTitle}
+      />
+      
+      {/* Add Application Edit Modal */}
+      <ApplicationModal
+        isOpen={showApplicationModal}
+        onClose={handleApplicationModalClose}
+        applicationData={applicationToEdit}
       />
     </div>
   );
@@ -5066,6 +5097,948 @@ function getProgressForStatus(status: string) {
     default: return 0;
   }
 }
+
+// Application Modal Component for Admin Edit
+interface ApplicationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  applicationData: any;
+}
+
+const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, applicationData }) => {
+  if (!isOpen || !applicationData) return null;
+
+  return (    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-4 relative max-h-[95vh] flex flex-col">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-blue-50">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <PencilIcon className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Edit Application</h2>
+              <p className="text-sm text-gray-600">
+                {[applicationData.surname, applicationData.first_middle_names].filter(Boolean).join(' ') || 'Unnamed Applicant'} - 
+                {applicationData.id ? ` ID: ${applicationData.id.slice(-8).toUpperCase()}` : ''}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Application Component Container */}
+        <div className="flex-1 overflow-y-auto bg-gray-50">
+          <ApplicationEditWrapper applicationData={applicationData} onClose={onClose} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Wrapper component for Application in edit mode
+interface ApplicationEditWrapperProps {
+  applicationData: any;
+  onClose: () => void;
+}
+
+const ApplicationEditWrapper: React.FC<ApplicationEditWrapperProps> = ({ applicationData, onClose }) => {  return (
+    <div className="application-edit-wrapper">
+      <style>
+        {`
+          .application-edit-wrapper .min-h-screen {
+            min-height: auto !important;
+          }
+          .application-edit-wrapper .bg-gray-50 {
+            background-color: #f9fafb !important;
+          }
+          .application-edit-wrapper .fixed {
+            position: relative !important;
+          }
+          .application-edit-wrapper .inset-0 {
+            inset: auto !important;
+          }          /* Ensure form text is visible */
+          .application-edit-wrapper input,
+          .application-edit-wrapper select,
+          .application-edit-wrapper textarea {
+            color: #111827 !important;  /* text-gray-900 equivalent */
+            background-color: #ffffff !important;
+            border: 1px solid #D1D5DB !important;  /* border-gray-300 equivalent */
+          }
+          .application-edit-wrapper input::placeholder,
+          .application-edit-wrapper select::placeholder,
+          .application-edit-wrapper textarea::placeholder {
+            color: #9CA3AF !important;  /* text-gray-400 equivalent */
+          }
+          .application-edit-wrapper input:focus,
+          .application-edit-wrapper select:focus,
+          .application-edit-wrapper textarea:focus {
+            border-color: #3B82F6 !important;  /* border-blue-500 equivalent */
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;  /* ring-2 ring-blue-200 equivalent */
+          }
+        `}
+      </style>
+      <ApplicationInEditMode 
+        initialData={applicationData} 
+        onSave={onClose}
+        onCancel={onClose}
+        isModalMode={true}
+      />
+    </div>
+  );
+};
+
+// Application Edit component that reuses the actual Application step components
+const ApplicationInEditMode: React.FC<{
+  initialData: any;
+  onSave: () => void;
+  onCancel: () => void;
+  isModalMode: boolean;
+}> = ({ initialData, onSave, onCancel, isModalMode }) => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState(initialData || {});
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const totalSteps = 6;
+  // Update form data when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData((prev: any) => ({
+        ...prev,
+        ...Object.fromEntries(
+          Object.entries(initialData).map(([k, v]) => [k, v === null ? "" : v])
+        )
+      }));
+    }
+  }, [initialData]);
+
+  // Function to update form data (matches Application.tsx interface)
+  const updateFormData = (updates: Partial<any>) => {
+    setFormData((prev: any) => ({ ...prev, ...updates }));
+  };
+  // Auto-save functionality to update database as user makes changes
+  const autoSave = async (updates: Partial<any>) => {
+    if (!initialData?.id) return;
+    
+    try {
+      // Filter out the profiles property if it exists
+      const { profiles, ...cleanUpdates } = updates;
+      
+      const { error } = await supabase
+        .from("passport_applications")
+        .update({
+          ...cleanUpdates,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", initialData.id);
+
+      if (error) {
+        console.error("Auto-save error:", error);
+      }
+    } catch (error) {
+      console.error("Auto-save failed:", error);
+    }
+  };
+
+  // Enhanced update function with auto-save
+  const updateFormDataWithSave = (updates: Partial<any>) => {
+    updateFormData(updates);
+    // Debounced auto-save (save after 1 second of no changes)
+    setTimeout(() => autoSave(updates), 1000);
+  };
+  // Final save function
+  const handleSave = async () => {
+    if (!initialData?.id) {
+      toast({ title: "Error", description: "No application ID found." });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Create a clean copy of formData without any non-table properties
+      const { profiles, ...cleanFormData } = formData;
+      
+      const { error } = await supabase
+        .from("passport_applications")
+        .update({
+          ...cleanFormData,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", initialData.id);
+
+      if (error) throw error;
+
+      toast({ 
+        title: "Success", 
+        description: "Application updated successfully." 
+      });
+      
+      onSave(); // Close modal
+    } catch (error: any) {
+      console.error("Error updating application:", error);
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to update application." 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Navigation functions
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const goToStep = (step: number) => {
+    if (step >= 1 && step <= totalSteps) {
+      setCurrentStep(step);
+    }
+  };
+
+  // Create a temporary Application instance to access its step components
+  // We'll create individual step instances directly here for now
+  const renderStep = () => {
+    // For now, we'll create a simplified version since we can't directly import the step components
+    // In a full implementation, we would extract the step components to separate files
+    
+    const stepTitles = [
+      "Personal Information",
+      "Contact Information", 
+      "Emergency Contact",
+      "Parental Information",
+      "Document Uploads",
+      "Review & Submit"
+    ];
+
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 max-w-3xl mx-auto">
+        <div className="text-center space-y-1 sm:space-y-2 mb-6">
+          <h2 className="text-xl font-bold text-blue-900">Edit Application</h2>
+          <h3 className="text-lg font-semibold text-gray-800">{stepTitles[currentStep - 1]}</h3>
+        </div>
+
+        {/* For now, show a simplified edit interface for key fields */}
+        <div className="space-y-4">          {currentStep === 1 && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Application Type <span className="text-red-500">*</span>
+                </label>                <select
+                  value={formData.application_type || ''}
+                  onChange={(e) => updateFormDataWithSave({ application_type: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                >
+                  <option value="">Select application type</option>
+                  <option value="new">New Passport</option>
+                  <option value="renewal">Passport Renewal</option>
+                  <option value="replacement">Replacement (Lost/Stolen)</option>
+                  <option value="name-change">Name Change</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Surname or Family Name <span className="text-red-500">*</span>
+                </label>                <input
+                  type="text"
+                  value={formData.surname || ''}
+                  onChange={(e) => updateFormDataWithSave({ surname: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  First and Middle Names <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.first_middle_names || ''}
+                  onChange={(e) => updateFormDataWithSave({ first_middle_names: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Social Security Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.social_security_number || ''}
+                  onChange={(e) => updateFormDataWithSave({ social_security_number: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  City of Birth <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.place_of_birth_city || ''}
+                  onChange={(e) => updateFormDataWithSave({ place_of_birth_city: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  State (if in U.S.)
+                </label>
+                <input
+                  type="text"
+                  value={formData.place_of_birth_state || ''}
+                  onChange={(e) => updateFormDataWithSave({ place_of_birth_state: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Country of Birth <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.country_of_birth || ''}
+                  onChange={(e) => updateFormDataWithSave({ country_of_birth: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date of Birth <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={formData.date_of_birth || ''}
+                  onChange={(e) => updateFormDataWithSave({ date_of_birth: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Gender <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.gender || ''}
+                  onChange={(e) => updateFormDataWithSave({ gender: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="non-binary">Non-binary</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Hair Color <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.hair_color || ''}
+                  onChange={(e) => updateFormDataWithSave({ hair_color: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select hair color</option>
+                  <option value="black">Black</option>
+                  <option value="brown">Brown</option>
+                  <option value="blonde">Blonde</option>
+                  <option value="red">Red</option>
+                  <option value="gray">Gray</option>
+                  <option value="white">White</option>
+                  <option value="bald">Bald/Shaved</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Marital Status <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.marital_status || ''}
+                  onChange={(e) => updateFormDataWithSave({ marital_status: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select marital status</option>
+                  <option value="single">Single</option>
+                  <option value="married">Married</option>
+                  <option value="divorced">Divorced</option>
+                  <option value="widowed">Widowed</option>
+                  <option value="separated">Separated</option>
+                </select>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Height (Feet) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.height_feet || ''}
+                    onChange={(e) => updateFormDataWithSave({ height_feet: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Height (Inches) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.height_inches || ''}
+                    onChange={(e) => updateFormDataWithSave({ height_inches: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Eye Color <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.eye_color || ''}
+                  onChange={(e) => updateFormDataWithSave({ eye_color: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select eye color</option>
+                  <option value="brown">Brown</option>
+                  <option value="blue">Blue</option>
+                  <option value="green">Green</option>
+                  <option value="hazel">Hazel</option>
+                  <option value="gray">Gray</option>
+                  <option value="amber">Amber</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </>
+          )}          {currentStep === 2 && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Unit and/or House Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.address_unit || ''}
+                  onChange={(e) => updateFormDataWithSave({ address_unit: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Street Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.street_name || ''}
+                  onChange={(e) => updateFormDataWithSave({ street_name: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone_number || ''}
+                  onChange={(e) => updateFormDataWithSave({ phone_number: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  City or Town <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.city || ''}
+                  onChange={(e) => updateFormDataWithSave({ city: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  State <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.state || ''}
+                  onChange={(e) => updateFormDataWithSave({ state: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Postal Code <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.postal_code || ''}
+                  onChange={(e) => updateFormDataWithSave({ postal_code: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </>
+          )}          {currentStep === 3 && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.emergency_full_name || ''}
+                  onChange={(e) => updateFormDataWithSave({ emergency_full_name: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={formData.emergency_phone_number || ''}
+                  onChange={(e) => updateFormDataWithSave({ emergency_phone_number: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Unit and/or House Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.emergency_address_unit || ''}
+                  onChange={(e) => updateFormDataWithSave({ emergency_address_unit: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Street Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.emergency_street_name || ''}
+                  onChange={(e) => updateFormDataWithSave({ emergency_street_name: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  City or Town <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.emergency_city || ''}
+                  onChange={(e) => updateFormDataWithSave({ emergency_city: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  State <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.emergency_state || ''}
+                  onChange={(e) => updateFormDataWithSave({ emergency_state: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Postal Code <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.emergency_postal_code || ''}
+                  onChange={(e) => updateFormDataWithSave({ emergency_postal_code: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </>
+          )}          {currentStep === 4 && (
+            <>
+              <div className="space-y-8">
+                {/* Father Section */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold text-gray-800">Father</h4>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Father's Full Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.father_full_name || ''}
+                      onChange={(e) => updateFormDataWithSave({ father_full_name: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Father's Date of Birth <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.father_dob || ''}
+                      onChange={(e) => updateFormDataWithSave({ father_dob: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nationality <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.father_nationality || ''}
+                      onChange={(e) => updateFormDataWithSave({ father_nationality: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      City or Town <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.father_birth_city || ''}
+                      onChange={(e) => updateFormDataWithSave({ father_birth_city: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      State <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.father_birth_state || ''}
+                      onChange={(e) => updateFormDataWithSave({ father_birth_state: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Country <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.father_birth_country || ''}
+                      onChange={(e) => updateFormDataWithSave({ father_birth_country: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                {/* Mother Section */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold text-gray-800">Mother</h4>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Mother's Full Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.mother_full_name || ''}
+                      onChange={(e) => updateFormDataWithSave({ mother_full_name: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Mother's Date of Birth <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.mother_dob || ''}
+                      onChange={(e) => updateFormDataWithSave({ mother_dob: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nationality <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.mother_nationality || ''}
+                      onChange={(e) => updateFormDataWithSave({ mother_nationality: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      City or Town <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.mother_birth_city || ''}
+                      onChange={(e) => updateFormDataWithSave({ mother_birth_city: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      State <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.mother_birth_state || ''}
+                      onChange={(e) => updateFormDataWithSave({ mother_birth_state: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Country <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.mother_birth_country || ''}
+                      onChange={(e) => updateFormDataWithSave({ mother_birth_country: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}          {currentStep === 5 && (
+            <div>
+              <h4 className="text-lg font-semibold text-blue-900 mb-4">Document Management</h4>
+              <div className="space-y-6">
+                <DocumentViewerAdmin formData={formData} updateFormData={updateFormDataWithSave} />
+              </div>
+            </div>
+          )}{currentStep === 6 && (
+            <div className="space-y-6">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                <h4 className="text-lg font-semibold text-green-900 mb-4">Review Changes</h4>
+                <div className="space-y-5">
+                  <div className="border-b border-green-200 pb-3">
+                    <h5 className="font-medium text-green-800 mb-2">Personal Information</h5>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                      <div><strong>Application Type:</strong> {formData.application_type || 'N/A'}</div>
+                      <div><strong>Full Name:</strong> {[formData.surname, formData.first_middle_names].filter(Boolean).join(' ') || 'N/A'}</div>
+                      <div><strong>SSN:</strong> {formData.social_security_number ? '****' + formData.social_security_number.slice(-4) : 'N/A'}</div>
+                      <div><strong>City of Birth:</strong> {formData.place_of_birth_city || 'N/A'}</div>
+                      <div><strong>State of Birth:</strong> {formData.place_of_birth_state || 'N/A'}</div>
+                      <div><strong>Country of Birth:</strong> {formData.country_of_birth || 'N/A'}</div>
+                      <div><strong>Date of Birth:</strong> {formData.date_of_birth || 'N/A'}</div>
+                      <div><strong>Gender:</strong> {formData.gender || 'N/A'}</div>
+                      <div><strong>Hair Color:</strong> {formData.hair_color || 'N/A'}</div>
+                      <div><strong>Marital Status:</strong> {formData.marital_status || 'N/A'}</div>
+                      <div><strong>Height:</strong> {formData.height_feet ? `${formData.height_feet}'${formData.height_inches || 0}"` : 'N/A'}</div>
+                      <div><strong>Eye Color:</strong> {formData.eye_color || 'N/A'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-b border-green-200 pb-3">
+                    <h5 className="font-medium text-green-800 mb-2">Contact Information</h5>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                      <div><strong>Unit/House Number:</strong> {formData.address_unit || 'N/A'}</div>
+                      <div><strong>Street Name:</strong> {formData.street_name || 'N/A'}</div>
+                      <div><strong>Phone Number:</strong> {formData.phone_number || 'N/A'}</div>
+                      <div><strong>City:</strong> {formData.city || 'N/A'}</div>
+                      <div><strong>State:</strong> {formData.state || 'N/A'}</div>
+                      <div><strong>Postal Code:</strong> {formData.postal_code || 'N/A'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-b border-green-200 pb-3">
+                    <h5 className="font-medium text-green-800 mb-2">Emergency Contact</h5>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                      <div><strong>Full Name:</strong> {formData.emergency_full_name || 'N/A'}</div>
+                      <div><strong>Phone Number:</strong> {formData.emergency_phone_number || 'N/A'}</div>
+                      <div><strong>Unit/House Number:</strong> {formData.emergency_address_unit || 'N/A'}</div>
+                      <div><strong>Street Name:</strong> {formData.emergency_street_name || 'N/A'}</div>
+                      <div><strong>City:</strong> {formData.emergency_city || 'N/A'}</div>
+                      <div><strong>State:</strong> {formData.emergency_state || 'N/A'}</div>
+                      <div><strong>Postal Code:</strong> {formData.emergency_postal_code || 'N/A'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-b border-green-200 pb-3">
+                    <h5 className="font-medium text-green-800 mb-2">Father's Information</h5>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                      <div><strong>Full Name:</strong> {formData.father_full_name || 'N/A'}</div>
+                      <div><strong>Date of Birth:</strong> {formData.father_dob || 'N/A'}</div>
+                      <div><strong>Nationality:</strong> {formData.father_nationality || 'N/A'}</div>
+                      <div><strong>Birth City:</strong> {formData.father_birth_city || 'N/A'}</div>
+                      <div><strong>Birth State:</strong> {formData.father_birth_state || 'N/A'}</div>
+                      <div><strong>Birth Country:</strong> {formData.father_birth_country || 'N/A'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-b border-green-200 pb-3">
+                    <h5 className="font-medium text-green-800 mb-2">Mother's Information</h5>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                      <div><strong>Full Name:</strong> {formData.mother_full_name || 'N/A'}</div>
+                      <div><strong>Date of Birth:</strong> {formData.mother_dob || 'N/A'}</div>
+                      <div><strong>Nationality:</strong> {formData.mother_nationality || 'N/A'}</div>
+                      <div><strong>Birth City:</strong> {formData.mother_birth_city || 'N/A'}</div>
+                      <div><strong>Birth State:</strong> {formData.mother_birth_state || 'N/A'}</div>
+                      <div><strong>Birth Country:</strong> {formData.mother_birth_country || 'N/A'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-b border-green-200 pb-3">
+                    <h5 className="font-medium text-green-800 mb-2">Documents</h5>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                      {formData.birth_certificate_url && <div><strong>Birth Certificate:</strong> <span className="text-blue-600">Uploaded</span></div>}
+                      {formData.consent_form_url && <div><strong>Consent Form:</strong> <span className="text-blue-600">Uploaded</span></div>}
+                      {formData.marriage_certificate_url && <div><strong>Marriage/Divorce Certificate:</strong> <span className="text-blue-600">Uploaded</span></div>}
+                      {formData.old_passport_url && <div><strong>Previous Passport:</strong> <span className="text-blue-600">Uploaded</span></div>}
+                      {formData.signature_url && <div><strong>Signature Sample:</strong> <span className="text-blue-600">Uploaded</span></div>}
+                      {formData.photo_id_url && <div><strong>Photo ID:</strong> <span className="text-blue-600">Uploaded</span></div>}
+                      {formData.social_security_card_url && <div><strong>Social Security Card:</strong> <span className="text-blue-600">Uploaded</span></div>}
+                      {formData.passport_photo_url && <div><strong>Passport Photo:</strong> <span className="text-blue-600">Uploaded</span></div>}
+                      {formData.relationship_proof_url && <div><strong>Relationship Proof:</strong> <span className="text-blue-600">Uploaded</span></div>}
+                      {formData.parent_guardian_id_url && <div><strong>Parent/Guardian ID:</strong> <span className="text-blue-600">Uploaded</span></div>}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-medium text-green-800 mb-2">Application Status</h5>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div><strong>Current Status:</strong> {formData.status || 'N/A'}</div>
+                      {formData.submitted_at && <div><strong>Submitted:</strong> {new Date(formData.submitted_at).toLocaleString()}</div>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render the modal interface
+  return (
+    <div className="min-h-auto bg-gray-50 py-8">
+      {/* Compact Progress Indicator */}
+      <div className="max-w-4xl mx-auto px-4 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <div key={i + 1} className="flex items-center">
+              <button
+                onClick={() => goToStep(i + 1)}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                  i + 1 === currentStep
+                    ? 'bg-blue-600 text-white ring-2 ring-blue-200'
+                    : i + 1 < currentStep
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                }`}
+              >
+                {i + 1 < currentStep ? '✓' : i + 1}
+              </button>
+              {i < totalSteps - 1 && (
+                <div className={`h-0.5 w-8 mx-1 ${
+                  i + 1 < currentStep ? 'bg-green-600' : 'bg-gray-200'
+                }`} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step Content */}
+      {renderStep()}
+
+      {/* Navigation Controls */}
+      <div className="max-w-4xl mx-auto px-4 mt-8">
+        <div className="flex justify-between items-center">
+          <button
+            onClick={prevStep}
+            disabled={currentStep === 1}
+            className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Previous
+          </button>
+          
+          <div className="flex gap-3">
+            <button
+              onClick={onCancel}
+              className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            
+            {currentStep === totalSteps ? (
+              <button
+                onClick={handleSave}
+                disabled={loading}
+                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? 'Saving...' : 'Save Changes'}
+              </button>
+            ) : (
+              <button
+                onClick={nextStep}
+                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Next
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Main Admin Page Component
 export default function AdminPage() {
