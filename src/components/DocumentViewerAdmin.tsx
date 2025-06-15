@@ -489,8 +489,7 @@ const DocumentViewerAdmin: React.FC<DocumentViewerAdminProps> = ({ formData, upd
       if (!filePath) {
         throw new Error("Could not extract file path from document URL");
       }
-      
-      // Delete the file from storage
+        // Delete the file from storage
       const { error } = await supabase.storage
         .from("passport-documents")
         .remove([filePath]);
@@ -498,12 +497,44 @@ const DocumentViewerAdmin: React.FC<DocumentViewerAdminProps> = ({ formData, upd
       if (error) {
         console.error("Supabase storage error:", error);
         throw new Error(`Failed to delete file from storage: ${error.message}`);
-      }
-        // Update the formData to remove the document URL
+      }      // Immediately update the database to remove both the document URL and name
+      // This prevents "Error loading" when the modal is closed without saving
+      if (formData.id) {
+        // Get the corresponding name field for this URL field
+        const nameField = documentTypeMapping[key];
+        
+        // Prepare the update object with both URL and name fields cleared
+        const updateFields: any = {
+          [key]: "", // Clear the URL field
+          updated_at: new Date().toISOString()
+        };
+        
+        // If there's a corresponding name field, clear it too
+        if (nameField) {
+          updateFields[nameField] = "";
+        }
+        
+        const { error: updateError } = await supabase
+          .from("passport_applications")
+          .update(updateFields)
+          .eq("id", formData.id);
+          
+        if (updateError) {
+          console.error("Error updating database after document deletion:", updateError);
+          throw new Error(`Failed to update database: ${updateError.message}`);
+        }
+      }        
+      // Update the formData to remove both the document URL and name
+      const nameField = documentTypeMapping[key];
       const updatedData = {
         ...formData,
-        [key]: ""
+        [key]: "" // Clear the URL field
       };
+      
+      // If there's a corresponding name field, clear it too
+      if (nameField) {
+        updatedData[nameField] = "";
+      }
       
       // Clear the signed URL immediately for this document
       setSignedUrls(prev => ({

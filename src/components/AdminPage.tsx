@@ -1693,15 +1693,98 @@ const Applications: React.FC = () => {
       setStatusApp(null);
       toast({ title: "Status Updated", description: "Application status updated." });
     }
-  };
-  const handleViewClose = () => setViewApp(null);
+  };  const handleViewClose = () => setViewApp(null);
   const handleEditClose = () => setEditApp(null);
-    // Handle Application modal close
+  
+  // Function to refresh applications data
+  const refreshApplications = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Try the join query first (same as the original fetchApplications)
+      const { data, error } = await supabase
+        .from("passport_applications")
+        .select(`
+          *,
+          profiles!user_id (
+            first_name,
+            last_name,
+            email
+          )
+        `)
+        .order("created_at", { ascending: false });
+        
+      if (error) {
+        console.error("Error with join query:", error);
+        // Fall back to manual join approach
+        await refreshApplicationsWithManualJoin();
+      } else {
+        setApplications(data || []);
+        setFilteredApplications(data || []);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("Unexpected error in refreshApplications:", err);
+      await refreshApplicationsWithManualJoin();
+    }
+  };
+  
+  const refreshApplicationsWithManualJoin = async () => {
+    try {
+      // Fetch applications without join
+      const { data: appsData, error: appsError } = await supabase
+        .from("passport_applications")
+        .select("*")
+        .order("created_at", { ascending: false });
+        
+      if (appsError) {
+        throw appsError;
+      }
+      
+      // Get user IDs from applications
+      const userIds = [...new Set(appsData?.map(app => app.user_id).filter(Boolean))];
+      
+      // Fetch profiles for these users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, email")
+        .in("id", userIds);
+      
+      if (profilesError) {
+        console.warn("Error fetching profiles:", profilesError);
+      }
+      
+      // Create a map of user_id to profile
+      const profilesMap = new Map();
+      profilesData?.forEach(profile => {
+        profilesMap.set(profile.id, profile);
+      });
+      
+      // Merge the data
+      const applications = appsData?.map(app => ({
+        ...app,
+        profiles: profilesMap.get(app.user_id) || null
+      })) || [];
+      
+      setApplications(applications);
+      setFilteredApplications(applications);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error in manual join fallback:", err);
+      setError("Failed to refresh applications");
+      setApplications([]);
+      setFilteredApplications([]);
+      setLoading(false);
+    }
+  };
+  
+  // Handle Application modal close
   const handleApplicationModalClose = () => {
     setShowApplicationModal(false);
     setApplicationToEdit(null);
-    // Refresh applications by updating state (this will trigger the useEffect to refetch)
-    window.location.reload();
+    // Refresh applications data without page reload
+    refreshApplications();
   };
   
   // Print application details
@@ -5204,8 +5287,7 @@ const ApplicationInEditMode: React.FC<{
 }> = ({ initialData, onSave, onCancel, isModalMode }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState(initialData || {});
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);  const { toast } = useToast();
   const { user } = useAuth();
   const totalSteps = 6;
   // Update form data when initialData changes
@@ -5219,42 +5301,10 @@ const ApplicationInEditMode: React.FC<{
       }));
     }
   }, [initialData]);
-
   // Function to update form data (matches Application.tsx interface)
   const updateFormData = (updates: Partial<any>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
-  };
-  // Auto-save functionality to update database as user makes changes
-  const autoSave = async (updates: Partial<any>) => {
-    if (!initialData?.id) return;
-    
-    try {
-      // Filter out the profiles property if it exists
-      const { profiles, ...cleanUpdates } = updates;
-      
-      const { error } = await supabase
-        .from("passport_applications")
-        .update({
-          ...cleanUpdates,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", initialData.id);
-
-      if (error) {
-        console.error("Auto-save error:", error);
-      }
-    } catch (error) {
-      console.error("Auto-save failed:", error);
-    }
-  };
-
-  // Enhanced update function with auto-save
-  const updateFormDataWithSave = (updates: Partial<any>) => {
-    updateFormData(updates);
-    // Debounced auto-save (save after 1 second of no changes)
-    setTimeout(() => autoSave(updates), 1000);
-  };
-  // Final save function
+  };// Final save function
   const handleSave = async () => {
     if (!initialData?.id) {
       toast({ title: "Error", description: "No application ID found." });
@@ -5275,6 +5325,22 @@ const ApplicationInEditMode: React.FC<{
         .eq("id", initialData.id);
 
       if (error) throw error;
+
+      // Log the final save activity
+      const applicantName = initialData.applicant_name || 
+        [initialData.surname, initialData.first_middle_names].filter(Boolean).join(' ') || 
+        'Unknown';
+        await logActivityEvent(
+        "Updated an Application",
+        initialData.id,
+        {
+          applicantName: applicantName,
+          applicationType: initialData.application_type || 'Unknown',
+          applicationStatus: initialData.status || 'Unknown',
+          finalSave: true,
+          editMode: 'modal'
+        }
+      );
 
       toast({ 
         title: "Success", 
@@ -5342,7 +5408,7 @@ const ApplicationInEditMode: React.FC<{
                   Application Type <span className="text-red-500">*</span>
                 </label>                <select
                   value={formData.application_type || ''}
-                  onChange={(e) => updateFormDataWithSave({ application_type: e.target.value })}
+                  onChange={(e) => updateFormData({ application_type: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 >
                   <option value="">Select application type</option>
@@ -5359,7 +5425,7 @@ const ApplicationInEditMode: React.FC<{
                 </label>                <input
                   type="text"
                   value={formData.surname || ''}
-                  onChange={(e) => updateFormDataWithSave({ surname: e.target.value })}
+                  onChange={(e) => updateFormData({ surname: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 />
               </div>
@@ -5371,7 +5437,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.first_middle_names || ''}
-                  onChange={(e) => updateFormDataWithSave({ first_middle_names: e.target.value })}
+                  onChange={(e) => updateFormData({ first_middle_names: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5383,7 +5449,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.social_security_number || ''}
-                  onChange={(e) => updateFormDataWithSave({ social_security_number: e.target.value })}
+                  onChange={(e) => updateFormData({ social_security_number: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5395,7 +5461,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.place_of_birth_city || ''}
-                  onChange={(e) => updateFormDataWithSave({ place_of_birth_city: e.target.value })}
+                  onChange={(e) => updateFormData({ place_of_birth_city: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5407,7 +5473,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.place_of_birth_state || ''}
-                  onChange={(e) => updateFormDataWithSave({ place_of_birth_state: e.target.value })}
+                  onChange={(e) => updateFormData({ place_of_birth_state: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5419,7 +5485,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.country_of_birth || ''}
-                  onChange={(e) => updateFormDataWithSave({ country_of_birth: e.target.value })}
+                  onChange={(e) => updateFormData({ country_of_birth: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5431,7 +5497,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="date"
                   value={formData.date_of_birth || ''}
-                  onChange={(e) => updateFormDataWithSave({ date_of_birth: e.target.value })}
+                  onChange={(e) => updateFormData({ date_of_birth: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5442,7 +5508,7 @@ const ApplicationInEditMode: React.FC<{
                 </label>
                 <select
                   value={formData.gender || ''}
-                  onChange={(e) => updateFormDataWithSave({ gender: e.target.value })}
+                  onChange={(e) => updateFormData({ gender: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select gender</option>
@@ -5459,7 +5525,7 @@ const ApplicationInEditMode: React.FC<{
                 </label>
                 <select
                   value={formData.hair_color || ''}
-                  onChange={(e) => updateFormDataWithSave({ hair_color: e.target.value })}
+                  onChange={(e) => updateFormData({ hair_color: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select hair color</option>
@@ -5479,7 +5545,7 @@ const ApplicationInEditMode: React.FC<{
                 </label>
                 <select
                   value={formData.marital_status || ''}
-                  onChange={(e) => updateFormDataWithSave({ marital_status: e.target.value })}
+                  onChange={(e) => updateFormData({ marital_status: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select marital status</option>
@@ -5499,7 +5565,7 @@ const ApplicationInEditMode: React.FC<{
                   <input
                     type="number"
                     value={formData.height_feet || ''}
-                    onChange={(e) => updateFormDataWithSave({ height_feet: e.target.value })}
+                    onChange={(e) => updateFormData({ height_feet: e.target.value })}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -5510,7 +5576,7 @@ const ApplicationInEditMode: React.FC<{
                   <input
                     type="number"
                     value={formData.height_inches || ''}
-                    onChange={(e) => updateFormDataWithSave({ height_inches: e.target.value })}
+                    onChange={(e) => updateFormData({ height_inches: e.target.value })}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -5522,7 +5588,7 @@ const ApplicationInEditMode: React.FC<{
                 </label>
                 <select
                   value={formData.eye_color || ''}
-                  onChange={(e) => updateFormDataWithSave({ eye_color: e.target.value })}
+                  onChange={(e) => updateFormData({ eye_color: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select eye color</option>
@@ -5545,7 +5611,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.address_unit || ''}
-                  onChange={(e) => updateFormDataWithSave({ address_unit: e.target.value })}
+                  onChange={(e) => updateFormData({ address_unit: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5557,7 +5623,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.street_name || ''}
-                  onChange={(e) => updateFormDataWithSave({ street_name: e.target.value })}
+                  onChange={(e) => updateFormData({ street_name: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5569,7 +5635,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="tel"
                   value={formData.phone_number || ''}
-                  onChange={(e) => updateFormDataWithSave({ phone_number: e.target.value })}
+                  onChange={(e) => updateFormData({ phone_number: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5581,7 +5647,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.city || ''}
-                  onChange={(e) => updateFormDataWithSave({ city: e.target.value })}
+                  onChange={(e) => updateFormData({ city: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5593,7 +5659,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.state || ''}
-                  onChange={(e) => updateFormDataWithSave({ state: e.target.value })}
+                  onChange={(e) => updateFormData({ state: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5605,7 +5671,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.postal_code || ''}
-                  onChange={(e) => updateFormDataWithSave({ postal_code: e.target.value })}
+                  onChange={(e) => updateFormData({ postal_code: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5619,7 +5685,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.emergency_full_name || ''}
-                  onChange={(e) => updateFormDataWithSave({ emergency_full_name: e.target.value })}
+                  onChange={(e) => updateFormData({ emergency_full_name: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5631,7 +5697,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="tel"
                   value={formData.emergency_phone_number || ''}
-                  onChange={(e) => updateFormDataWithSave({ emergency_phone_number: e.target.value })}
+                  onChange={(e) => updateFormData({ emergency_phone_number: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5643,7 +5709,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.emergency_address_unit || ''}
-                  onChange={(e) => updateFormDataWithSave({ emergency_address_unit: e.target.value })}
+                  onChange={(e) => updateFormData({ emergency_address_unit: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5655,7 +5721,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.emergency_street_name || ''}
-                  onChange={(e) => updateFormDataWithSave({ emergency_street_name: e.target.value })}
+                  onChange={(e) => updateFormData({ emergency_street_name: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5667,7 +5733,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.emergency_city || ''}
-                  onChange={(e) => updateFormDataWithSave({ emergency_city: e.target.value })}
+                  onChange={(e) => updateFormData({ emergency_city: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5679,7 +5745,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.emergency_state || ''}
-                  onChange={(e) => updateFormDataWithSave({ emergency_state: e.target.value })}
+                  onChange={(e) => updateFormData({ emergency_state: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5691,7 +5757,7 @@ const ApplicationInEditMode: React.FC<{
                 <input
                   type="text"
                   value={formData.emergency_postal_code || ''}
-                  onChange={(e) => updateFormDataWithSave({ emergency_postal_code: e.target.value })}
+                  onChange={(e) => updateFormData({ emergency_postal_code: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -5710,7 +5776,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="text"
                       value={formData.father_full_name || ''}
-                      onChange={(e) => updateFormDataWithSave({ father_full_name: e.target.value })}
+                      onChange={(e) => updateFormData({ father_full_name: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5722,7 +5788,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="date"
                       value={formData.father_dob || ''}
-                      onChange={(e) => updateFormDataWithSave({ father_dob: e.target.value })}
+                      onChange={(e) => updateFormData({ father_dob: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5734,7 +5800,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="text"
                       value={formData.father_nationality || ''}
-                      onChange={(e) => updateFormDataWithSave({ father_nationality: e.target.value })}
+                      onChange={(e) => updateFormData({ father_nationality: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5746,7 +5812,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="text"
                       value={formData.father_birth_city || ''}
-                      onChange={(e) => updateFormDataWithSave({ father_birth_city: e.target.value })}
+                      onChange={(e) => updateFormData({ father_birth_city: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5758,7 +5824,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="text"
                       value={formData.father_birth_state || ''}
-                      onChange={(e) => updateFormDataWithSave({ father_birth_state: e.target.value })}
+                      onChange={(e) => updateFormData({ father_birth_state: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5770,7 +5836,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="text"
                       value={formData.father_birth_country || ''}
-                      onChange={(e) => updateFormDataWithSave({ father_birth_country: e.target.value })}
+                      onChange={(e) => updateFormData({ father_birth_country: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5787,7 +5853,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="text"
                       value={formData.mother_full_name || ''}
-                      onChange={(e) => updateFormDataWithSave({ mother_full_name: e.target.value })}
+                      onChange={(e) => updateFormData({ mother_full_name: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5799,7 +5865,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="date"
                       value={formData.mother_dob || ''}
-                      onChange={(e) => updateFormDataWithSave({ mother_dob: e.target.value })}
+                      onChange={(e) => updateFormData({ mother_dob: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5811,7 +5877,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="text"
                       value={formData.mother_nationality || ''}
-                      onChange={(e) => updateFormDataWithSave({ mother_nationality: e.target.value })}
+                      onChange={(e) => updateFormData({ mother_nationality: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5823,7 +5889,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="text"
                       value={formData.mother_birth_city || ''}
-                      onChange={(e) => updateFormDataWithSave({ mother_birth_city: e.target.value })}
+                      onChange={(e) => updateFormData({ mother_birth_city: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5835,7 +5901,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="text"
                       value={formData.mother_birth_state || ''}
-                      onChange={(e) => updateFormDataWithSave({ mother_birth_state: e.target.value })}
+                      onChange={(e) => updateFormData({ mother_birth_state: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5847,7 +5913,7 @@ const ApplicationInEditMode: React.FC<{
                     <input
                       type="text"
                       value={formData.mother_birth_country || ''}
-                      onChange={(e) => updateFormDataWithSave({ mother_birth_country: e.target.value })}
+                      onChange={(e) => updateFormData({ mother_birth_country: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -5858,103 +5924,260 @@ const ApplicationInEditMode: React.FC<{
             <div>
               <h4 className="text-lg font-semibold text-blue-900 mb-4">Document Management</h4>
               <div className="space-y-6">
-                <DocumentViewerAdmin formData={formData} updateFormData={updateFormDataWithSave} />
+                <DocumentViewerAdmin formData={formData} updateFormData={updateFormData} />
               </div>
-            </div>
-          )}{currentStep === 6 && (
+            </div>          )}{currentStep === 6 && (
             <div className="space-y-6">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-                <h4 className="text-lg font-semibold text-green-900 mb-4">Review Changes</h4>
-                <div className="space-y-5">
-                  <div className="border-b border-green-200 pb-3">
-                    <h5 className="font-medium text-green-800 mb-2">Personal Information</h5>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                      <div><strong>Application Type:</strong> {formData.application_type || 'N/A'}</div>
-                      <div><strong>Full Name:</strong> {[formData.surname, formData.first_middle_names].filter(Boolean).join(' ') || 'N/A'}</div>
-                      <div><strong>SSN:</strong> {formData.social_security_number ? '****' + formData.social_security_number.slice(-4) : 'N/A'}</div>
-                      <div><strong>City of Birth:</strong> {formData.place_of_birth_city || 'N/A'}</div>
-                      <div><strong>State of Birth:</strong> {formData.place_of_birth_state || 'N/A'}</div>
-                      <div><strong>Country of Birth:</strong> {formData.country_of_birth || 'N/A'}</div>
-                      <div><strong>Date of Birth:</strong> {formData.date_of_birth || 'N/A'}</div>
-                      <div><strong>Gender:</strong> {formData.gender || 'N/A'}</div>
-                      <div><strong>Hair Color:</strong> {formData.hair_color || 'N/A'}</div>
-                      <div><strong>Marital Status:</strong> {formData.marital_status || 'N/A'}</div>
-                      <div><strong>Height:</strong> {formData.height_feet ? `${formData.height_feet}'${formData.height_inches || 0}"` : 'N/A'}</div>
-                      <div><strong>Eye Color:</strong> {formData.eye_color || 'N/A'}</div>
-                    </div>
+              {/* Application Overview */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                   </div>
-                  
-                  <div className="border-b border-green-200 pb-3">
-                    <h5 className="font-medium text-green-800 mb-2">Contact Information</h5>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                      <div><strong>Unit/House Number:</strong> {formData.address_unit || 'N/A'}</div>
-                      <div><strong>Street Name:</strong> {formData.street_name || 'N/A'}</div>
-                      <div><strong>Phone Number:</strong> {formData.phone_number || 'N/A'}</div>
-                      <div><strong>City:</strong> {formData.city || 'N/A'}</div>
-                      <div><strong>State:</strong> {formData.state || 'N/A'}</div>
-                      <div><strong>Postal Code:</strong> {formData.postal_code || 'N/A'}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="border-b border-green-200 pb-3">
-                    <h5 className="font-medium text-green-800 mb-2">Emergency Contact</h5>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                      <div><strong>Full Name:</strong> {formData.emergency_full_name || 'N/A'}</div>
-                      <div><strong>Phone Number:</strong> {formData.emergency_phone_number || 'N/A'}</div>
-                      <div><strong>Unit/House Number:</strong> {formData.emergency_address_unit || 'N/A'}</div>
-                      <div><strong>Street Name:</strong> {formData.emergency_street_name || 'N/A'}</div>
-                      <div><strong>City:</strong> {formData.emergency_city || 'N/A'}</div>
-                      <div><strong>State:</strong> {formData.emergency_state || 'N/A'}</div>
-                      <div><strong>Postal Code:</strong> {formData.emergency_postal_code || 'N/A'}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="border-b border-green-200 pb-3">
-                    <h5 className="font-medium text-green-800 mb-2">Father's Information</h5>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                      <div><strong>Full Name:</strong> {formData.father_full_name || 'N/A'}</div>
-                      <div><strong>Date of Birth:</strong> {formData.father_dob || 'N/A'}</div>
-                      <div><strong>Nationality:</strong> {formData.father_nationality || 'N/A'}</div>
-                      <div><strong>Birth City:</strong> {formData.father_birth_city || 'N/A'}</div>
-                      <div><strong>Birth State:</strong> {formData.father_birth_state || 'N/A'}</div>
-                      <div><strong>Birth Country:</strong> {formData.father_birth_country || 'N/A'}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="border-b border-green-200 pb-3">
-                    <h5 className="font-medium text-green-800 mb-2">Mother's Information</h5>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                      <div><strong>Full Name:</strong> {formData.mother_full_name || 'N/A'}</div>
-                      <div><strong>Date of Birth:</strong> {formData.mother_dob || 'N/A'}</div>
-                      <div><strong>Nationality:</strong> {formData.mother_nationality || 'N/A'}</div>
-                      <div><strong>Birth City:</strong> {formData.mother_birth_city || 'N/A'}</div>
-                      <div><strong>Birth State:</strong> {formData.mother_birth_state || 'N/A'}</div>
-                      <div><strong>Birth Country:</strong> {formData.mother_birth_country || 'N/A'}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="border-b border-green-200 pb-3">
-                    <h5 className="font-medium text-green-800 mb-2">Documents</h5>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                      {formData.birth_certificate_url && <div><strong>Birth Certificate:</strong> <span className="text-blue-600">Uploaded</span></div>}
-                      {formData.consent_form_url && <div><strong>Consent Form:</strong> <span className="text-blue-600">Uploaded</span></div>}
-                      {formData.marriage_certificate_url && <div><strong>Marriage/Divorce Certificate:</strong> <span className="text-blue-600">Uploaded</span></div>}
-                      {formData.old_passport_url && <div><strong>Previous Passport:</strong> <span className="text-blue-600">Uploaded</span></div>}
-                      {formData.signature_url && <div><strong>Signature Sample:</strong> <span className="text-blue-600">Uploaded</span></div>}
-                      {formData.photo_id_url && <div><strong>Photo ID:</strong> <span className="text-blue-600">Uploaded</span></div>}
-                      {formData.social_security_card_url && <div><strong>Social Security Card:</strong> <span className="text-blue-600">Uploaded</span></div>}
-                      {formData.passport_photo_url && <div><strong>Passport Photo:</strong> <span className="text-blue-600">Uploaded</span></div>}
-                      {formData.relationship_proof_url && <div><strong>Relationship Proof:</strong> <span className="text-blue-600">Uploaded</span></div>}
-                      {formData.parent_guardian_id_url && <div><strong>Parent/Guardian ID:</strong> <span className="text-blue-600">Uploaded</span></div>}
-                    </div>
-                  </div>
-                  
                   <div>
-                    <h5 className="font-medium text-green-800 mb-2">Application Status</h5>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div><strong>Current Status:</strong> {formData.status || 'N/A'}</div>
-                      {formData.submitted_at && <div><strong>Submitted:</strong> {new Date(formData.submitted_at).toLocaleString()}</div>}
+                    <h4 className="text-lg font-semibold text-blue-900">Application Summary</h4>
+                    <p className="text-sm text-blue-700">Review all application details before saving changes</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                  <div className="bg-white rounded-lg p-4 border border-blue-200">
+                    <div className="text-sm text-blue-600 font-medium">Application ID</div>
+                    <div className="text-lg font-semibold text-blue-900">
+                      {formData.id ? formData.id.slice(-8).toUpperCase() : 'N/A'}
                     </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-blue-200">
+                    <div className="text-sm text-blue-600 font-medium">Current Status</div>
+                    <div className="text-lg font-semibold text-blue-900">
+                      {formData.status || 'N/A'}
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-blue-200">
+                    <div className="text-sm text-blue-600 font-medium">Last Updated</div>
+                    <div className="text-lg font-semibold text-blue-900">
+                      {formData.updated_at ? new Date(formData.updated_at).toLocaleDateString() : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Information Sections */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h4 className="text-lg font-semibold text-gray-900 mb-6">Application Details</h4>
+                <div className="space-y-6">
+                  
+                  {/* Personal Information */}
+                  <div className="border-l-4 border-l-blue-500 bg-blue-50 rounded-lg p-4">
+                    <h5 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Personal Information
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+                      <div><span className="font-medium text-gray-700">Application Type:</span> <span className="text-gray-900">{formData.application_type || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Full Name:</span> <span className="text-gray-900">{[formData.surname, formData.first_middle_names].filter(Boolean).join(' ') || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">SSN:</span> <span className="text-gray-900">{formData.social_security_number ? '****' + formData.social_security_number.slice(-4) : 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Date of Birth:</span> <span className="text-gray-900">{formData.date_of_birth ? new Date(formData.date_of_birth).toLocaleDateString() : 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Gender:</span> <span className="text-gray-900">{formData.gender || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Marital Status:</span> <span className="text-gray-900">{formData.marital_status || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Birth City:</span> <span className="text-gray-900">{formData.place_of_birth_city || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Birth State:</span> <span className="text-gray-900">{formData.place_of_birth_state || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Birth Country:</span> <span className="text-gray-900">{formData.country_of_birth || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Hair Color:</span> <span className="text-gray-900">{formData.hair_color || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Eye Color:</span> <span className="text-gray-900">{formData.eye_color || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Height:</span> <span className="text-gray-900">{formData.height_feet ? `${formData.height_feet}'${formData.height_inches || 0}"` : 'N/A'}</span></div>
+                    </div>
+                  </div>
+                  
+                  {/* Contact Information */}
+                  <div className="border-l-4 border-l-green-500 bg-green-50 rounded-lg p-4">
+                    <h5 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Contact Information
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+                      <div><span className="font-medium text-gray-700">Phone Number:</span> <span className="text-gray-900">{formData.phone_number || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Email:</span> <span className="text-gray-900">{formData.email || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Unit/House Number:</span> <span className="text-gray-900">{formData.address_unit || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Street Name:</span> <span className="text-gray-900">{formData.street_name || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">City:</span> <span className="text-gray-900">{formData.city || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">State:</span> <span className="text-gray-900">{formData.state || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Postal Code:</span> <span className="text-gray-900">{formData.postal_code || 'N/A'}</span></div>
+                    </div>
+                  </div>
+                  
+                  {/* Emergency Contact */}
+                  <div className="border-l-4 border-l-orange-500 bg-orange-50 rounded-lg p-4">
+                    <h5 className="font-semibold text-orange-900 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                      Emergency Contact
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+                      <div><span className="font-medium text-gray-700">Full Name:</span> <span className="text-gray-900">{formData.emergency_full_name || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Phone Number:</span> <span className="text-gray-900">{formData.emergency_phone_number || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Relationship:</span> <span className="text-gray-900">{formData.emergency_relationship || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Unit/House Number:</span> <span className="text-gray-900">{formData.emergency_address_unit || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Street Name:</span> <span className="text-gray-900">{formData.emergency_street_name || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">City:</span> <span className="text-gray-900">{formData.emergency_city || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">State:</span> <span className="text-gray-900">{formData.emergency_state || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Postal Code:</span> <span className="text-gray-900">{formData.emergency_postal_code || 'N/A'}</span></div>
+                    </div>
+                  </div>
+                  
+                  {/* Father's Information */}
+                  <div className="border-l-4 border-l-purple-500 bg-purple-50 rounded-lg p-4">
+                    <h5 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Father's Information
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+                      <div><span className="font-medium text-gray-700">Full Name:</span> <span className="text-gray-900">{formData.father_full_name || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Date of Birth:</span> <span className="text-gray-900">{formData.father_dob ? new Date(formData.father_dob).toLocaleDateString() : 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Nationality:</span> <span className="text-gray-900">{formData.father_nationality || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Birth City:</span> <span className="text-gray-900">{formData.father_birth_city || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Birth State:</span> <span className="text-gray-900">{formData.father_birth_state || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Birth Country:</span> <span className="text-gray-900">{formData.father_birth_country || 'N/A'}</span></div>
+                    </div>
+                  </div>
+                  
+                  {/* Mother's Information */}
+                  <div className="border-l-4 border-l-pink-500 bg-pink-50 rounded-lg p-4">
+                    <h5 className="font-semibold text-pink-900 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Mother's Information
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+                      <div><span className="font-medium text-gray-700">Full Name:</span> <span className="text-gray-900">{formData.mother_full_name || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Date of Birth:</span> <span className="text-gray-900">{formData.mother_dob ? new Date(formData.mother_dob).toLocaleDateString() : 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Nationality:</span> <span className="text-gray-900">{formData.mother_nationality || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Birth City:</span> <span className="text-gray-900">{formData.mother_birth_city || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Birth State:</span> <span className="text-gray-900">{formData.mother_birth_state || 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Birth Country:</span> <span className="text-gray-900">{formData.mother_birth_country || 'N/A'}</span></div>
+                    </div>
+                  </div>
+                  
+                  {/* Documents Status */}
+                  <div className="border-l-4 border-l-indigo-500 bg-indigo-50 rounded-lg p-4">
+                    <h5 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Document Status
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        {formData.birth_certificate_url ? (
+                          <><svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-gray-700">Birth Certificate</span></>
+                        ) : (
+                          <><svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg><span className="text-gray-500">Birth Certificate</span></>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {formData.consent_form_url ? (
+                          <><svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-gray-700">Consent Form</span></>
+                        ) : (
+                          <><svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg><span className="text-gray-500">Consent Form</span></>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {formData.marriage_certificate_url ? (
+                          <><svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-gray-700">Marriage/Divorce Certificate</span></>
+                        ) : (
+                          <><svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg><span className="text-gray-500">Marriage/Divorce Certificate</span></>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {formData.old_passport_url ? (
+                          <><svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-gray-700">Previous Passport</span></>
+                        ) : (
+                          <><svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg><span className="text-gray-500">Previous Passport</span></>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {formData.signature_url ? (
+                          <><svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-gray-700">Signature Sample</span></>
+                        ) : (
+                          <><svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg><span className="text-gray-500">Signature Sample</span></>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {formData.photo_id_url ? (
+                          <><svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-gray-700">Photo ID</span></>
+                        ) : (
+                          <><svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg><span className="text-gray-500">Photo ID</span></>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {formData.social_security_card_url ? (
+                          <><svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-gray-700">Social Security Card</span></>
+                        ) : (
+                          <><svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg><span className="text-gray-500">Social Security Card</span></>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {formData.passport_photo_url ? (
+                          <><svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-gray-700">Passport Photo</span></>
+                        ) : (
+                          <><svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg><span className="text-gray-500">Passport Photo</span></>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {formData.relationship_proof_url ? (
+                          <><svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-gray-700">Relationship Proof</span></>
+                        ) : (
+                          <><svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg><span className="text-gray-500">Relationship Proof</span></>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {formData.parent_guardian_id_url ? (
+                          <><svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg><span className="text-gray-700">Parent/Guardian ID</span></>
+                        ) : (
+                          <><svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg><span className="text-gray-500">Parent/Guardian ID</span></>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Application Metadata */}
+                  <div className="border-l-4 border-l-gray-500 bg-gray-50 rounded-lg p-4">
+                    <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Application Timeline
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+                      <div><span className="font-medium text-gray-700">Created:</span> <span className="text-gray-900">{formData.created_at ? new Date(formData.created_at).toLocaleString() : 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Last Updated:</span> <span className="text-gray-900">{formData.updated_at ? new Date(formData.updated_at).toLocaleString() : 'N/A'}</span></div>
+                      <div><span className="font-medium text-gray-700">Submitted:</span> <span className="text-gray-900">{formData.submitted_at ? new Date(formData.submitted_at).toLocaleString() : 'Not submitted'}</span></div>
+                      {formData.last_modified_by_admin_name && (
+                        <div><span className="font-medium text-gray-700">Last Modified By:</span> <span className="text-gray-900">{formData.last_modified_by_admin_name}</span></div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>              {/* Save Notice */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <svg className="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <h6 className="font-medium text-blue-800">Manual Save Required</h6>
+                    <p className="text-sm text-blue-700">Changes will only be saved when you click the "Save Changes" button below.</p>
                   </div>
                 </div>
               </div>
