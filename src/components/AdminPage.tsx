@@ -1145,8 +1145,7 @@ const Applications: React.FC = () => {
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [applicationToEdit, setApplicationToEdit] = useState<any | null>(null);
   const { toast } = useToast();
-
-  // List of document fields and their labels
+  // List of document fields and their labels (matching database schema)
   const documentFields = [
     { key: "birth_certificate_url", label: "Birth Certificate" },
     { key: "consent_form_url", label: "Consent Form" },
@@ -1154,7 +1153,14 @@ const Applications: React.FC = () => {
     { key: "old_passport_url", label: "Old Passport Copy" },
     { key: "signature_url", label: "Signature" },
     { key: "photo_id_url", label: "Photo ID" },
-  ];  useEffect(() => {
+    { key: "social_security_card_url", label: "Social Security Card" },
+    { key: "passport_photo_url", label: "Passport Photo" },
+    { key: "relationship_proof_url", label: "Relationship Proof" },
+    { key: "parent_guardian_id_url", label: "Parent/Guardian ID" },
+    { key: "legal_guardianship_docs_url", label: "Legal Guardianship Documents" },
+    { key: "guardian_id_url", label: "Guardian ID" },
+    { key: "representative_id_url", label: "Representative ID" },
+  ];useEffect(() => {
     const fetchApplications = async () => {
       setLoading(true);
       setError(null);
@@ -1369,7 +1375,6 @@ const Applications: React.FC = () => {
       supabase.removeChannel(channel);
     };
   }, [applications, user?.id]);
-
   // Generate signed URLs for all document fields when viewApp changes
   useEffect(() => {
     if (!viewApp) return;
@@ -1389,7 +1394,75 @@ const Applications: React.FC = () => {
       }
       setSignedUrls(newUrls);
     })();
-  }, [viewApp]);
+  }, [viewApp]);  // Handle document download
+  const [downloadingDoc, setDownloadingDoc] = useState<string | null>(null);
+  
+  const handleDownloadDocument = async (url: string, documentLabel: string) => {
+    try {
+      setDownloadingDoc(documentLabel);
+      
+      // Fetch the file
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch document');
+      }
+      
+      // Get the blob
+      const blob = await response.blob();
+      
+      // Get applicant name for filename
+      const applicantName = viewApp ? 
+        [viewApp.surname, viewApp.first_middle_names].filter(Boolean).join(' ') : 
+        'Unknown_Applicant';
+      
+      // Clean the applicant name for filename
+      const cleanApplicantName = applicantName.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+      
+      // Find the document key for this URL to get the original filename
+      let fileExtension = 'pdf'; // default
+      let originalFilename = '';
+      
+      for (const doc of documentFields) {
+        if (signedUrls[doc.key] === url && viewApp[doc.key]) {
+          // Extract file extension from the original storage URL
+          const match = viewApp[doc.key].match(/\.([^./?]+)(\?|$)/);
+          if (match) {
+            fileExtension = match[1];
+          }
+          
+          // Try to extract original filename from the storage path
+          const pathMatch = viewApp[doc.key].match(/\/([^/?]+\.[^./?]+)(\?|$)/);
+          if (pathMatch) {
+            originalFilename = pathMatch[1];
+          }
+          break;
+        }
+      }
+      
+      // Create download filename with applicant name
+      const cleanDocumentLabel = documentLabel.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+      const downloadFilename = `${cleanApplicantName}_${cleanDocumentLabel}.${fileExtension}`;
+      
+      // Create download link
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = downloadFilename;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+        // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+      
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      // Could add a simple error indicator here if needed
+    } finally {
+      setDownloadingDoc(null);
+    }
+  };
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this application?")) return;
     setDeletingId(id);
@@ -2021,13 +2094,12 @@ const Applications: React.FC = () => {
             )}
           </div>
           {/* Pagination controls could go here */}        </div>
-      </div>
-      {/* View Modal */}
+      </div>      {/* View Modal */}
       {viewApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 relative text-gray-900 max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl relative text-gray-900 max-h-[90vh] flex flex-col overflow-hidden">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
               <h3 className="text-xl font-semibold text-gray-900">
                 Application Details - {viewApp.id.split('-')[0].toUpperCase()}
               </h3>
@@ -2060,9 +2132,7 @@ const Applications: React.FC = () => {
                   {[viewApp.surname, viewApp.first_middle_names].filter(Boolean).join(' ')}
                 </h1>
                 <p className="text-gray-600">Application ID: {viewApp.id}</p>
-              </div>
-
-              {/* Two Column Layout */}
+              </div>              {/* Two Column Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column: Applicant Information */}
                 <div className="space-y-6">
@@ -2100,8 +2170,10 @@ const Applications: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Personal Details */}
+                {/* Right Column: Personal Details */}
+                <div className="space-y-6">
                   <div className="bg-gray-50 rounded-lg p-4 border">
                     <h4 className="font-semibold text-lg text-gray-900 mb-3">Personal Details</h4>
                     <div className="space-y-2.5 text-sm">
@@ -2142,55 +2214,7 @@ const Applications: React.FC = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Right Column: Uploaded Documents */}
-                <div className="print:hidden">
-                  <div className="bg-gray-50 rounded-lg p-4 border">
-                    <h4 className="font-semibold text-lg text-gray-900 mb-3">Uploaded Documents</h4>
-                    <div className="space-y-2">
-                      {documentFields.map(doc => {
-                        const url = signedUrls[doc.key];
-                        if (!viewApp[doc.key]) return null;
-                        return (
-                          <div key={doc.key} className="flex items-center justify-between p-3 bg-white border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                              </div>
-                              <span className="font-medium text-gray-900">{doc.label}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <a 
-                                href={url} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
-                                title={`View ${doc.label}`}
-                              >
-                                <EyeIcon className="w-4 h-4 text-blue-600" />
-                              </a>
-                              <a 
-                                href={url} 
-                                download 
-                                className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
-                                title={`Download ${doc.label}`}
-                              >
-                                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                                </svg>
-                              </a>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {documentFields.filter(doc => viewApp[doc.key]).length === 0 && (
-                        <p className="text-gray-500 text-sm italic">No documents uploaded</p>
-                      )}
-                    </div>
-                  </div>
-                </div>              </div>
+              </div>
 
               {/* Emergency Contact - Full Width */}
               <div className="col-span-1 lg:col-span-2 mt-6">
@@ -2261,7 +2285,115 @@ const Applications: React.FC = () => {
                         <span className="font-medium text-gray-700 w-32 shrink-0">Place of Birth:</span>
                         <span className="text-gray-900">{[viewApp.mother_birth_city, viewApp.mother_birth_state, viewApp.mother_birth_country].filter(Boolean).join(', ') || '—'}</span>
                       </div>
-                    </div>
+                    </div>                  </div>
+                </div>
+              </div>
+
+              {/* Uploaded Documents - Full Width with Two Columns */}
+              <div className="col-span-1 lg:col-span-2 print:hidden">
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <h4 className="font-semibold text-lg text-gray-900 mb-3">Uploaded Documents</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {documentFields.map(doc => {
+                      const url = signedUrls[doc.key];
+                      // A document exists if it has a non-empty URL in viewApp
+                      const hasDocument = viewApp && viewApp[doc.key] && viewApp[doc.key].trim() !== '';
+                      
+                      return (
+                        <div 
+                          key={doc.key} 
+                          className={`flex items-center justify-between p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow ${
+                            hasDocument ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                              hasDocument ? 'bg-green-100' : 'bg-gray-100'
+                            }`}>
+                              {hasDocument ? (
+                                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                                </svg>
+                              )}
+                            </div>
+                            <div>
+                              <span className={`font-medium text-sm ${hasDocument ? 'text-gray-900' : 'text-gray-500'}`}>
+                                {doc.label}
+                              </span>
+                              <span className={`text-xs block ${hasDocument ? 'text-green-600' : 'text-gray-400'}`}>
+                                {hasDocument ? 
+                                  `Uploaded: ${new Date(
+                                    parseInt(viewApp[doc.key]?.match(/_(\d+)\./)?.[1] || Date.now())
+                                  ).toLocaleDateString()}` : 
+                                  'Not uploaded'}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            {hasDocument ? (
+                              // Document exists - show actions based on signed URL status
+                              url && url !== 'error' ? (
+                                // Signed URL available - show view/download
+                                <>                                  <a 
+                                    href={url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="p-1.5 hover:bg-blue-100 rounded transition-colors" 
+                                    title={`View ${doc.label}`}
+                                  >
+                                    <EyeIcon className="w-4 h-4 text-blue-600" />
+                                  </a>                                  <button 
+                                    onClick={() => handleDownloadDocument(url, doc.label)}
+                                    className="p-1.5 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1" 
+                                    title={`Download ${doc.label}`}
+                                    type="button"
+                                    disabled={downloadingDoc === doc.label}
+                                  >
+                                    {downloadingDoc === doc.label ? (
+                                      <>
+                                        <svg className="w-4 h-4 text-gray-600 animate-spin" fill="none" viewBox="0 0 24 24">
+                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span className="text-xs text-gray-600">Downloading...</span>
+                                      </>
+                                    ) : (
+                                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                </>
+                              ) : url === 'error' ? (
+                                // Error loading signed URL - show error
+                                <div className="flex items-center space-x-1">
+                                  <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                  </svg>
+                                  <span className="text-xs text-amber-700">Error loading</span>
+                                </div>
+                              ) : (
+                                // Document exists but signed URL is still loading
+                                <div className="flex items-center space-x-1">
+                                  <div className="w-3 h-3 rounded-full bg-blue-200 animate-pulse"></div>
+                                  <span className="text-xs text-gray-500">Loading...</span>
+                                </div>
+                              )
+                            ) : (
+                              // No document - show not uploaded status
+                              <span className="text-xs text-gray-400 px-2 py-1 bg-gray-100 rounded">
+                                Not uploaded
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

@@ -203,14 +203,14 @@ const FileUploadAdmin: React.FC<{
   );
 };
 
-const DocumentViewerAdmin: React.FC<DocumentViewerAdminProps> = ({ formData, updateFormData }) => {
-  const [signedUrls, setSignedUrls] = useState<{ [key: string]: string | null }>({});
+const DocumentViewerAdmin: React.FC<DocumentViewerAdminProps> = ({ formData, updateFormData }) => {  const [signedUrls, setSignedUrls] = useState<{ [key: string]: string | null }>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [uploadingDocKey, setUploadingDocKey] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [deletingDocKey, setDeletingDocKey] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [processingUpload, setProcessingUpload] = useState<boolean>(false);
+  const [downloadingDoc, setDownloadingDoc] = useState<string | null>(null);
     // Get the current user from context - for admin users, we'll use the application's user ID if available
   const userId = formData?.user_id || 'admin';  // Define document fields based on your database schema
   const documentFields: DocumentField[] = [
@@ -317,11 +317,81 @@ const DocumentViewerAdmin: React.FC<DocumentViewerAdminProps> = ({ formData, upd
     } catch (error: any) {
       console.error("Error uploading document:", error);
       setUploadError(error.message || "Could not upload file");
-      setUploadingDocKey(null);
-    } finally {
+      setUploadingDocKey(null);    } finally {
       setProcessingUpload(false);
     }
-  };  // Generate signed URL for a specific document
+  };
+  // Handle document download
+  const handleDownloadDocument = async (url: string, documentLabel: string, documentKey: string) => {
+    try {
+      setDownloadingDoc(documentLabel);
+      
+      // Fetch the file
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch document');
+      }
+      
+      // Get the blob
+      const blob = await response.blob();
+      
+      // Get applicant name for filename
+      const applicantName = formData ? 
+        [formData.surname, formData.first_middle_names].filter(Boolean).join(' ') : 
+        'Unknown_Applicant';
+      
+      // Clean the applicant name for filename
+      const cleanApplicantName = applicantName.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+      
+      // Extract file extension and original filename from the formData URL
+      let fileExtension = 'pdf'; // default
+      let originalFilename = '';
+      
+      if (formData[documentKey]) {
+        // Extract file extension from the original storage URL
+        const match = formData[documentKey].match(/\.([^./?]+)(\?|$)/);
+        if (match) {
+          fileExtension = match[1];
+        }
+        
+        // Try to extract original filename from the storage path
+        const pathMatch = formData[documentKey].match(/\/([^/?]+\.[^./?]+)(\?|$)/);
+        if (pathMatch) {
+          originalFilename = pathMatch[1];
+        }
+      }
+      
+      // Create download filename with applicant name
+      const cleanDocumentLabel = documentLabel.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+      const downloadFilename = `${cleanApplicantName}_${cleanDocumentLabel}.${fileExtension}`;
+      
+      // Create download link
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = downloadFilename;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+      
+      // Show success feedback
+      setSuccessMessage(`${documentLabel} for ${applicantName} is downloading...`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+      
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      setUploadError(`Failed to download ${documentLabel}. Please try again.`);
+      // Clear error after 3 seconds
+      setTimeout(() => setUploadError(null), 3000);
+    } finally {
+      setDownloadingDoc(null);
+    }
+  };// Generate signed URL for a specific document
   const generateSignedUrlForDocument = async (key: string, publicUrl: string) => {
     if (!publicUrl || publicUrl.trim() === '') {
       // If the document URL is empty, clear any existing signed URL
@@ -681,8 +751,7 @@ const DocumentViewerAdmin: React.FC<DocumentViewerAdminProps> = ({ formData, upd
                   // Document exists - show actions based on signed URL status
                   url && url !== 'error' ? (
                     // Signed URL available - show view/download/delete
-                    <>
-                      <a 
+                    <>                      <a 
                         href={url} 
                         target="_blank" 
                         rel="noopener noreferrer" 
@@ -691,16 +760,16 @@ const DocumentViewerAdmin: React.FC<DocumentViewerAdminProps> = ({ formData, upd
                       >
                         <EyeIcon className="w-4 h-4 text-blue-600" />
                       </a>
-                      <a 
-                        href={url} 
-                        download 
+                      <button 
+                        onClick={() => handleDownloadDocument(url, doc.label, doc.key)}
                         className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
                         title={`Download ${doc.label}`}
+                        type="button"
                       >
                         <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
                         </svg>
-                      </a>
+                      </button>
                       <button 
                         onClick={() => handleDeleteDocument(doc.key)}
                         className={`p-1.5 rounded transition-colors ${

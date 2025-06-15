@@ -1,0 +1,10 @@
+[33mc8cf524[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix duplicate icons in PhotoGuideline.tsx section titles
+[33mc79a8ea[m Update Required Documents Guide and fix activity log features
+[33md0f719b[m Remove Document Processing option from Activity Log filters
+[33mdd0a5fc[m Enhanced auto-refresh functionality in ActivityLog with Live indicator, visual indicators for refresh state, and consistent styling matching Dashboard
+[33m8b56b53[m Fix login/logout tracking for mobile devices (especially iPads) by improving user agent detection
+[33m0725ed1[m Fix activity log issues: 1) Remove excessive view entries 2) Fix syntax errors 3) Fix iPad login tracking
+[33ma907534[m Add Activity Log Name Display documentation
+[33mad813c2[m Update .gitignore to exclude test files and temporary directories
+[33m3e2b1d8[m Fix admin/staff message alignment and shared notification system
+[33m4ba4b6c[m Add activity logging features for admin dashboard with pagination and applicant name display

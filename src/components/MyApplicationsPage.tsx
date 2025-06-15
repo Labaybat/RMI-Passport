@@ -81,18 +81,25 @@ const MyApplicationsPage: React.FC = () => {
   const [messageModalOpen, setMessageModalOpen] = useState(false)
   const [currentApplicationId, setCurrentApplicationId] = useState<string>("")
   const [currentApplicationTitle, setCurrentApplicationTitle] = useState<string>("")
-  const [applicationMessagesCount, setApplicationMessagesCount] = useState<{[key: string]: number}>({})
-  // Add state for ApplicationIntakeModal
+  const [applicationMessagesCount, setApplicationMessagesCount] = useState<{[key: string]: number}>({})  // Add state for ApplicationIntakeModal
   const [showIntakeModal, setShowIntakeModal] = useState<boolean>(false)
-
-  // Define document field mappings with storage keys and display keys
+  // Add state for download tracking
+  const [downloadingDoc, setDownloadingDoc] = useState<string | null>(null)
+  // Define document field mappings (matching AdminPage.tsx structure)
   const documentFields = [
-    { key: "birth_certificate", label: "Birth Certificate", storageKey: "birth_certificate_url" },
-    { key: "consent_form", label: "Consent Form", storageKey: "consent_form_url" },
-    { key: "marriage_or_divorce_certificate", label: "Marriage/Divorce Certificate", storageKey: "marriage_certificate_url" },
-    { key: "old_passport_copy", label: "Old Passport Copy", storageKey: "old_passport_url" },
-    { key: "signature", label: "Signature", storageKey: "signature_url" },
-    { key: "photo_id", label: "Photo ID", storageKey: "photo_id_url" },
+    { key: "birth_certificate_url", label: "Birth Certificate" },
+    { key: "consent_form_url", label: "Consent Form" },
+    { key: "marriage_certificate_url", label: "Marriage/Divorce Certificate" },
+    { key: "old_passport_url", label: "Old Passport Copy" },
+    { key: "signature_url", label: "Signature" },
+    { key: "photo_id_url", label: "Photo ID" },
+    { key: "social_security_card_url", label: "Social Security Card" },
+    { key: "passport_photo_url", label: "Passport Photo" },
+    { key: "relationship_proof_url", label: "Relationship Proof" },
+    { key: "parent_guardian_id_url", label: "Parent/Guardian ID" },
+    { key: "legal_guardianship_docs_url", label: "Legal Guardianship Documents" },
+    { key: "guardian_id_url", label: "Guardian ID" },
+    { key: "representative_id_url", label: "Representative ID" },
   ]
 
   // Fetch session and profile
@@ -364,23 +371,22 @@ const MyApplicationsPage: React.FC = () => {
       console.error("Error handling view application:", error)
     }
   }
-  
-  // Handle closing the view application modal
+    // Handle closing the view application modal
   const handleViewClose = () => {
     setViewApp(null)
     setSignedUrls({})
   }
+  
   // Generate signed URLs for all document fields
   const generateSignedUrls = async (application: PassportApplication) => {
     const newUrls: { [key: string]: string } = {}
     
     for (const doc of documentFields) {
       try {
-        // First try to get URL from the application using the storageKey (what's saved in DB)
-        // This is the field that actually contains the full URL
-        const documentUrl = application[doc.storageKey] || application[doc.key]
+        // Get the document URL directly from the application using the doc.key
+        const documentUrl = application[doc.key]
         
-        console.log(`Document "${doc.label}" - Field key: ${doc.key}, Storage key: ${doc.storageKey}`)
+        console.log(`Document "${doc.label}" - Field key: ${doc.key}`)
         console.log(`Document URL from application: ${documentUrl}`)
         
         if (documentUrl && typeof documentUrl === 'string' && documentUrl.trim() !== "") {
@@ -413,14 +419,68 @@ const MyApplicationsPage: React.FC = () => {
         console.error(`Error processing document ${doc.label}:`, error)
       }
     }
-    
-    setSignedUrls(newUrls)
+      setSignedUrls(newUrls)
   }
-  
+    
   // Handle printing application details
   const handlePrintApplication = () => {
     window.print()
   }
+
+  // Handle document download
+  const handleDownloadDocument = async (url: string, documentLabel: string, documentKey: string) => {
+    try {
+      setDownloadingDoc(documentLabel);
+      
+      // Fetch the file
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch document');
+      }
+      
+      // Get the blob
+      const blob = await response.blob();
+      
+      // Extract file extension and original filename from the viewApp data
+      let fileExtension = 'pdf'; // default
+      let originalFilename = '';
+      
+      if (viewApp && viewApp[documentKey]) {
+        // Extract file extension from the original storage URL
+        const match = viewApp[documentKey].match(/\.([^./?]+)(\?|$)/);
+        if (match) {
+          fileExtension = match[1];
+        }
+        
+        // Try to extract original filename from the storage path
+        const pathMatch = viewApp[documentKey].match(/\/([^/?]+\.[^./?]+)(\?|$)/);
+        if (pathMatch) {
+          originalFilename = pathMatch[1];
+        }
+      }
+      
+      // Create download filename
+      const downloadFilename = originalFilename || 
+        `${documentLabel.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_')}.${fileExtension}`;
+      
+      // Create download link
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = downloadFilename;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      // Could add a simple error indicator here if needed
+    } finally {
+      setDownloadingDoc(null);
+    }
+  };
   
   // Format application type for display
   const formatApplicationType = (type: string | null): string => {
@@ -1077,64 +1137,106 @@ const MyApplicationsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
-              {/* Uploaded Documents - Moved to bottom */}
-              <div className="mt-6">
+                {/* Uploaded Documents - Full Width with Two Columns (matching AdminPage.tsx) */}
+              <div className="col-span-1 lg:col-span-2 print:hidden">
                 <div className="bg-gray-50 rounded-lg p-4 border">
                   <h4 className="font-semibold text-lg text-gray-900 mb-3">Uploaded Documents</h4>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {documentFields.map(doc => {
                       const url = signedUrls[doc.key];
-                      // Check both the display key and storage key for document existence
-                      const documentExists = !!(viewApp[doc.key] || viewApp[doc.storageKey]);
-                      
-                      // For debugging, add to the console 
-                      console.log(`Document ${doc.label} - exists: ${documentExists}, url: ${url ? 'Yes' : 'No'}`);
-                      
-                      // Skip if document doesn't exist or no signed URL generated
-                      if (!documentExists || !url) return null;
+                      // A document exists if it has a non-empty URL in viewApp
+                      const hasDocument = viewApp && viewApp[doc.key] && viewApp[doc.key].trim() !== '';
                       
                       return (
-                        <div key={doc.key} className="flex items-center justify-between p-3 bg-white border rounded-lg">
+                        <div 
+                          key={doc.key} 
+                          className={`flex items-center justify-between p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow ${
+                            hasDocument ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                          }`}
+                        >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                              hasDocument ? 'bg-green-100' : 'bg-gray-100'
+                            }`}>
+                              {hasDocument ? (
+                                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                                </svg>
+                              )}
                             </div>
-                            <span className="font-medium text-gray-900">{doc.label}</span>
+                            <div>
+                              <span className={`font-medium text-sm ${hasDocument ? 'text-gray-900' : 'text-gray-500'}`}>
+                                {doc.label}
+                              </span>
+                              <span className={`text-xs block ${hasDocument ? 'text-green-600' : 'text-gray-400'}`}>
+                                {hasDocument ? 
+                                  `Uploaded: ${new Date(
+                                    parseInt(viewApp[doc.key]?.match(/_(\d+)\./)?.[1] || Date.now())
+                                  ).toLocaleDateString()}` : 
+                                  'Not uploaded'}
+                              </span>
+                            </div>
                           </div>
+                          
                           <div className="flex items-center gap-2">
-                            <a 
-                              href={url} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
-                              title={`View ${doc.label}`}
-                            >
-                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                            </a>
-                            <a 
-                              href={url} 
-                              download 
-                              className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
-                              title={`Download ${doc.label}`}
-                            >
-                              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                              </svg>
-                            </a>
+                            {hasDocument ? (
+                              // Document exists - show actions based on signed URL status
+                              url && url !== 'error' ? (
+                                // Signed URL available - show view/download
+                                <>
+                                  <a 
+                                    href={url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="p-1.5 hover:bg-blue-100 rounded transition-colors" 
+                                    title={`View ${doc.label}`}
+                                  >
+                                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                  </a>                                  <button 
+                                    onClick={() => handleDownloadDocument(url, doc.label, doc.key)}
+                                    className="p-1.5 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1" 
+                                    title={`Download ${doc.label}`}
+                                    disabled={downloadingDoc === doc.label}
+                                  >
+                                    {downloadingDoc === doc.label ? (
+                                      <>
+                                        <svg className="w-4 h-4 text-gray-600 animate-spin" fill="none" viewBox="0 0 24 24">
+                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span className="text-xs text-gray-600">Downloading...</span>
+                                      </>
+                                    ) : (
+                                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                </>
+                              ) : (
+                                // Document exists but no signed URL (loading/error)
+                                <div className="flex items-center gap-2 text-xs text-amber-600">
+                                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  <span>Loading...</span>
+                                </div>
+                              )
+                            ) : (
+                              // No document uploaded
+                              <span className="text-xs text-gray-400 font-medium">Not uploaded</span>
+                            )}
                           </div>
-                        </div>
-                      );
+                        </div>                      );
                     })}
-                    {/* Show message if no documents are found or if no signed URLs were generated */}
-                    {documentFields.filter(doc => (viewApp[doc.key] || viewApp[doc.storageKey]) && signedUrls[doc.key]).length === 0 && (
-                      <p className="text-gray-500 text-sm italic">No documents available to view</p>
-                    )}
                   </div>
                 </div>
               </div>
